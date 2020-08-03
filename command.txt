@@ -1,0 +1,1 @@
+g++ FFDemo.cpp -o FFDemo -I/usr/local/include -L/usr/local/lib -lavformat -lavcodec -lswscale -lswresample -lavutil -lm -lz
