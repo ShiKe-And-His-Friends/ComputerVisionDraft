@@ -1,0 +1,6 @@
+#Some codes of the Computer Vision Area
+
+##202008 ffmpeg the offical codes.
+
+###Commands:
+r/local/include -L/usr/local/lib -lavformat -lavcodec -lswscale -lswresample -lavutil -lm -lz
