@@ -1,3 +1,5 @@
+# opencv 3.4.3 
+
 # cmake needs this line
 cmake_minimum_required(VERSION 3.1)
 
