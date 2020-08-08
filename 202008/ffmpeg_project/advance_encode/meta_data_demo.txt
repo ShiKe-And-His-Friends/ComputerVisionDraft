@@ -1,0 +1,9 @@
+./meta_data /home/shike/Videos/sugar.mp4 
+major_brand=isom
+minor_version=512
+compatible_brands=isomiso2avc1mp41
+artist=Maroon 5
+comment=163 key(Don't modify):tZFi+e+YvedOBFLaSLTdFGuWp1Veb0F4l1HTBMEPBlkCcEV1sH5c2oSITCyl5eQ8MK+OJX4dsO896uIXt5kGkWw6s9L6aRHKcIV3ToIM5A5MYgVptpemlnZtoAN7NUlnLe0ER2z0VO56yMQgo9LwofuLqieQJ59dO2XOEoJxYr6S7JgEfSbC6NP9c/USB2aImtj6jiC4rvMb8FsIrHQXaU8VVvWxGbSx0yr40pTxo9mRFqDrXOoKoFhx3K8TJC+27Xc5IPV4hI7Qj44ZkwSE+OFeu15//A+leKH2CQuspjQ=
+title=Sugar
+encoder=Lavf55.19.104
+
