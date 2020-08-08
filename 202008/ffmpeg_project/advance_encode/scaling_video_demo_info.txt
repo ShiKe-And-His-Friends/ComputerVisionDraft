@@ -1,0 +1,22 @@
+./scaling_video scaling_video_demo 6.0000
+Invalid size '6.0000', must be in the form WxH or a valid size abbreviation
+shike@ubuntu:~/Documents/computerVisionDraft/202008/ffmpeg_project/advance_encode$ ./scaling_video scaling_video_demo 640x360
+Scaling succeeded. Play the output file with the command:
+ffplay -f rawvideo -pix_fmt rgb24 -video_size 640x360 scaling_video_demo
+shike@ubuntu:~/Documents/computerVisionDraft/202008/ffmpeg_project/advance_encode$ ffplay -f rawvideo -pix_fmt rgb24 -video_size 640x360 scaling_video_demo
+ffplay version 4.1.6 Copyright (c) 2003-2020 the FFmpeg developers
+  built with gcc 9 (Ubuntu 9.3.0-10ubuntu2)
+  configuration: --enable-shared
+  libavutil      56. 22.100 / 56. 22.100
+  libavcodec     58. 35.100 / 58. 35.100
+  libavformat    58. 20.100 / 58. 20.100
+  libavdevice    58.  5.100 / 58.  5.100
+  libavfilter     7. 40.101 /  7. 40.101
+  libswscale      5.  3.100 /  5.  3.100
+  libswresample   3.  3.100 /  3.  3.100
+Option -pix_fmt is deprecated, use -pixel_format.
+[rawvideo @ 0x7ff490000bc0] Estimating duration from bitrate, this may be inaccurate
+Input #0, rawvideo, from 'scaling_video_demo':
+  Duration: 00:00:04.00, start: 0.000000, bitrate: 138240 kb/s
+    Stream #0:0: Video: rawvideo (RGB[24] / 0x18424752), rgb24, 640x360, 138240 kb/s, 25 tbr, 25 tbn, 25 tbc
+   1.89 M-V:  0.000 fd=   0 aq=    0KB vq=15527KB sq=    0B f=0/0  
