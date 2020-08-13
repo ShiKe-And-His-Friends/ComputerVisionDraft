@@ -45,7 +45,32 @@ void testWritePicture () {
 	}
 }
 
+/**
+ * video capture
+ * **/
+void videoCapture () {
+	system("color F0");  // control GUI backgound colors
+	VideoCapture video("/home/shike/Videos/sugar.mp4");
+	if (video.isOpened()) {
+		cout << "width = " <<  video.get(CAP_PROP_FRAME_WIDTH) << "\n"
+		<< "height = " << video.get(CAP_PROP_FRAME_HEIGHT) << "\n"
+		<< "frame = " << video.get(CAP_PROP_FRAME_COUNT) << endl;
+	} else {
+		cout << "video capture failure." << endl;
+	}
+	while (1) {
+		Mat frame;
+		video >> frame ;
+		if (frame.empty()) {
+			break;
+		}
+		imshow("OpenCV Video" ,frame);
+		waitKey(1000 / video.get(CAP_PROP_FPS));
+	}
+	waitKey();
+}
+
 int main(int argc ,char ** argv) {
-	testWritePicture();
+	videoCapture();	
 	return 0;
 }
