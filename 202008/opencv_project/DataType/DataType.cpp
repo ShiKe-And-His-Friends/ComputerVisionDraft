@@ -36,7 +36,35 @@ void MatContent () {
 	waitKey(0);
 }
 
+
+int trackBarValue;
+Mat img1 ,img2;
+
+/**
+ * track bar
+ * **/
+
+static void trackBarCallback (int ,void*) {
+	float a = trackBarValue / 100.0;
+	img2 = img1 * a;
+	imshow("track bar light intensity" ,img2);
+}
+
+void TrackBar () {
+	img1 = imread("/home/shike/Pictures/lenna_head_jpg_type.jpg");
+	if (!img1.data) {
+		cout << "image file failure." << endl;
+		return;
+	}
+	namedWindow("track bar light intensity");
+	imshow("track bar light intensity" ,img1);
+	trackBarValue = 100;
+	createTrackbar("xxx" ,"track bar light intensity" ,&trackBarValue ,600 ,trackBarCallback ,0);
+	waitKey();
+}
+
 int main() {
-	MatContent();	
+	TrackBar();	
 	return 0;
 }
+
