@@ -1,0 +1,3 @@
+/home/shike/Documents/computerVisionDraft/202008/opencv_project/WriteRead/build/CMakeFiles/rebuild_cache.dir
+/home/shike/Documents/computerVisionDraft/202008/opencv_project/WriteRead/build/CMakeFiles/edit_cache.dir
+/home/shike/Documents/computerVisionDraft/202008/opencv_project/WriteRead/build/CMakeFiles/opencv_demo.dir
