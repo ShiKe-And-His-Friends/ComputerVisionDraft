@@ -63,8 +63,32 @@ void TrackBar () {
 	waitKey();
 }
 
+/**
+ * CV color
+ * **/
+void CvColor() {
+	Mat img = imread("/home/shike/Pictures/lenna_head_jpg_type.jpg");
+	if (img.empty()) {
+		cout << "picture date empty." << endl;
+		return;
+	}
+	Mat gray ,HSV ,YUV ,Lab ,img32;
+	img.convertTo(img32 ,CV_32F ,1.0/255);  // CV_8U convert to CV_32F
+
+	cvtColor(img32 ,HSV ,COLOR_BGR2HSV);
+	cvtColor(img32 ,YUV ,COLOR_BGR2YUV);
+	cvtColor(img32 ,Lab ,COLOR_BGR2Lab);
+	cvtColor(img32 ,gray ,COLOR_BGR2GRAY);
+	imshow("raw" ,img32);
+	imshow("HSV" ,HSV);
+	imshow("YUV" ,YUV);
+	imshow("lab" ,Lab);
+	imshow("gray" ,gray);
+	waitKey(0);
+}
+
 int main() {
-	TrackBar();	
+	CvColor();
 	return 0;
 }
 
