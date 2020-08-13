@@ -123,8 +123,27 @@ void DeepShallowCopy() {
 	waitKey(0);
 }
 
+/**
+ * Filp picture
+ * **/
+void FilpPicture () {
+	Mat img = imread("/home/shike/Pictures/lenna_head_peng_type.png");
+	if (img.empty()) {
+		cout << "picture file empty." << endl;
+		return;
+	}
+	Mat img_x ,img_y ,img_xy;
+	flip(img ,img_x ,0);
+	flip(img ,img_y ,1);
+	flip(img ,img_xy ,-1);
+	imshow("X Filp" ,img_x);
+	imshow("Y Filp" ,img_y);
+	imshow("XY Filp" ,img_xy);
+	waitKey(0);
+}
+
 int main() {
-	DeepShallowCopy();
+	FilpPicture();
 	return 0;
 }
 
