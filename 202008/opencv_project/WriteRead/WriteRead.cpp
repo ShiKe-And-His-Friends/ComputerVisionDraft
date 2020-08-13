@@ -117,7 +117,69 @@ void videoWrite () {
 	return;
 }
 
+/**
+ * YAML file
+ * **/
+
+void HandleYAML () {
+	system("color F0");
+	//string fileName = "data.xml";
+	string fileName = "data.yaml";
+	cv::FileStorage fwrite(fileName ,cv::FileStorage::WRITE);
+	Mat mat = Mat::eye(3 ,3 ,CV_8U);
+	fwrite.write("mat" ,mat);
+	float x = 100;
+	fwrite << "x" << x;
+	string str = "Learn OpenCV4";
+	fwrite << "str" << str;
+	fwrite << "number_array" << "[" <<4<<5<<6<<"]";
+	fwrite << "multi_nodes" << "{" << "month" << 8 << "day" << 13
+		<< "year" << 2020 << "time"<< "[" << 0 << 1 << 2 << 3 << "]" << "}";
+	fwrite.release();
+	cv::FileStorage fread(fileName ,cv::FileStorage::READ);
+	if (!fread.isOpened()) {
+		cout << "open yaml file failure." << endl;
+		return;
+	} else {
+		cout << "open yaml file success." << endl;
+	}
+	float XRead;
+	fread["x"] >> XRead;
+	cout << "x=" << XRead << endl;
+	string strRead;
+	fread["str"] >> strRead;
+	cout << "str=" << strRead << endl;
+	FileNode fileNode = fread["number_array"];
+	cout << "number_array=[";
+	for (FileNodeIterator i = fileNode.begin() ; i != fileNode.end() ; i++) {
+		float a;
+		*i >> a;
+		cout << a << " ";
+	}
+	cout << "]" << endl;
+
+	//read yaml date
+	Mat matRead;
+	fread["mat="] >> matRead;
+	cout << "mat=" << mat << endl;
+	FileNode fileNodeOne = fread["multi_nodes"];
+	int month = (int)fileNodeOne["month"];
+	int day = (int)fileNodeOne["day"];
+	int year = (int)fileNodeOne["year"];
+	cout << "multi_nodes:" <<endl;
+	cout << " month = " << month << " day = " << day
+		<< " year = " << year;
+	cout << " time=[";
+	for (int i = 0 ; i < 4 ; i++) {
+		int a = (int)fileNodeOne["time"][i];
+		cout << a << " ";
+	}
+	cout << "]" << endl;
+
+	fread.release();
+
+}
 int main(int argc ,char ** argv) {
-	videoWrite();	
+	HandleYAML();
 	return 0;
 }
