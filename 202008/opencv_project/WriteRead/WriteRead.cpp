@@ -70,6 +70,53 @@ void videoCapture () {
 	waitKey();
 }
 
+/**
+ * video write
+ * **/
+void videoWrite () {
+	Mat img;
+	VideoCapture video(0);  // Linux camera
+	if (video.isOpened()) {
+		cout << "width = " <<  video.get(CAP_PROP_FRAME_WIDTH) << "\n"
+		<< "height = " << video.get(CAP_PROP_FRAME_HEIGHT) << "\n"
+		<< "frame = " << video.get(CAP_PROP_FRAME_COUNT) << endl;
+	} else {
+		cout << "video capture failure." << endl;
+	}
+	video >> img;
+	if (img.empty()) {
+		cout << "video image empty." << endl;
+		return;
+	}
+	bool isColorChannel = (img.type() == CV_8UC3);
+	VideoWriter write;
+	int codec = VideoWriter::fourcc("M" ,"J" ,"P" ,"G"); // choose decode format
+	double fps = 25.0;
+	string fileName = "camera_video.avi";
+	write.open(fileName , codec ,fps ,img.size() ,isColorChannel);
+	if (!write.isOpened()) {
+		cout << "camera stream fialure." << endl;
+		return;
+	}
+	while(1) {
+		if (!video.read(img)) {
+			cout << "camera connection break." << endl;
+			break;
+		}
+		write.write(img);
+		//write << img;
+		imshow("Camera" ,img);
+		char c = waitKey(50);
+		if (c == 27) {
+			break;//ESC
+		}
+
+	}
+	video.release();
+	write.release();
+	return;
+}
+
 int main(int argc ,char ** argv) {
 	videoCapture();	
 	return 0;
