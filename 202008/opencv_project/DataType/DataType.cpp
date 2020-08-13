@@ -87,8 +87,44 @@ void CvColor() {
 	waitKey(0);
 }
 
+/**
+ * DeepShallowCopy
+ * **/
+void DeepShallowCopy() {
+	Mat img = imread("/home/shike/Pictures/lenna.jpg");
+	Mat noobcv = imread("/home/shike/Pictures/me.png");
+	if (img.empty() || noobcv.empty()) {
+		cout << "picture data empty." << endl;
+		return;
+	}
+	Mat ROI1 ,ROI2 ,ROI2_copy ,mask ,img2 , img_copy ,img_copy2;
+	resize(noobcv ,mask , Size(200 ,200));
+	img2 = img;  // light shallow
+	
+	img.copyTo(img_copy2);  // one of two deep shallow
+	copyTo(img ,img_copy ,img);
+
+	Rect rect(206 ,206 ,200 ,200);  // get ROI area in light shallow
+	ROI1 = img(rect);
+	ROI2 = img(Range(300 ,500) ,Range(300 ,500));
+
+	img(Range(300 ,500) ,Range(300 ,500)).copyTo(ROI2_copy);  // get ROI area in deep shallow
+
+	mask.copyTo(ROI1);  // add part picture
+	
+	imshow("added noobcv" ,img);
+	imshow("ROI to ROI2" ,ROI2);
+	imshow("deep shallow ROI2_copy" ,ROI2_copy);
+	circle(img ,Point(300 ,300) ,20 ,Scalar(0 , 0 ,255) ,-1);
+	imshow("light shallow" ,img2);
+	imshow("deep shallow img_copy" ,img_copy);
+	imshow("deep shallow img_copy2" ,img_copy2);
+	imshow("Circle to ROI1 " ,ROI1);
+	waitKey(0);
+}
+
 int main() {
-	CvColor();
+	DeepShallowCopy();
 	return 0;
 }
 
