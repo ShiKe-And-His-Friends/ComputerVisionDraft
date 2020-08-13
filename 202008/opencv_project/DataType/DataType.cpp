@@ -142,8 +142,79 @@ void FilpPicture () {
 	waitKey(0);
 }
 
+/**
+ * LUT look up table
+ * **/
+
+void LookUpTable () {
+	uchar lutFirst[256];
+	for (int i = 0 ; i < 256 ; i ++) {
+		if (i <= 100) {
+			lutFirst[i] = 0;
+		}
+		if (i > 100 && i <= 200) {
+			lutFirst[i] = 100;
+		}
+		if (i > 200) {
+			lutFirst[i] = 255;
+		}
+	}
+	Mat lutOne(1 ,256 ,CV_8UC1 ,lutFirst);
+	
+	uchar lutSecond[256];
+	for (int i = 0 ; i < 256 ; i ++) {
+		if (i <= 100) {
+			lutSecond[i] = 0;
+		}
+		if (i > 100 && i <= 150) {
+			lutSecond[i] = 100;
+		}
+		if (i > 150 && i <= 200) {
+			lutSecond[i] = 150;
+		}
+		if (i > 200) { 
+			lutSecond[i] = 255;
+		}
+	}
+	Mat lutTwo(1 ,256 ,CV_8UC1 ,lutSecond);
+
+	uchar lutThird[256];
+	for (int i = 0 ; i < 256 ; i++) {
+		if (i <= 100) {
+			lutThird[i] = 100;
+		}
+		if (i > 100 && i <= 200) {
+			lutThird[i] = 200;
+		}
+		if (i > 200) {
+			lutThird[i] = 255;
+		}
+	}
+	Mat lutThree(1 ,256 ,CV_8UC1 ,lutThird);
+
+	vector<Mat> mergeMats;
+	mergeMats.push_back(lutOne);
+	mergeMats.push_back(lutTwo);
+	mergeMats.push_back(lutThree);
+	Mat LutTree;
+	merge(mergeMats ,LutTree);
+	Mat img = imread("/home/shike/Pictures/lenna_head_peng_type.png");
+	if (img.empty()) {
+		cout << "picture file empty." << endl;
+	}
+	Mat gray ,out0 ,out1 ,out2;
+	cvtColor(img ,gray ,COLOR_BGR2GRAY);
+	LUT(gray ,lutOne ,out0);
+	LUT(img ,lutTwo ,out1);
+	LUT(img ,lutThree ,out2);
+	imshow("out0" ,out0);
+	imshow("out1" ,out1);
+	imshow("out2" ,out2);
+	waitKey(0);
+}
+
 int main() {
-	FilpPicture();
+	LookUpTable();
 	return 0;
 }
 
