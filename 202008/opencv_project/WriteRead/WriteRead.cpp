@@ -90,7 +90,7 @@ void videoWrite () {
 	}
 	bool isColorChannel = (img.type() == CV_8UC3);
 	VideoWriter write;
-	int codec = VideoWriter::fourcc("M" ,"J" ,"P" ,"G"); // choose decode format
+	int codec = VideoWriter::fourcc('M' ,'J' ,'P' ,'G'); // choose decode format
 	double fps = 25.0;
 	string fileName = "camera_video.avi";
 	write.open(fileName , codec ,fps ,img.size() ,isColorChannel);
@@ -118,6 +118,6 @@ void videoWrite () {
 }
 
 int main(int argc ,char ** argv) {
-	videoCapture();	
+	videoWrite();	
 	return 0;
 }
