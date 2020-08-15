@@ -1,0 +1,3 @@
+/home/shike/Documents/computerVisionDraft/202008/opencv_project/offcical_sitching_detail_demo/build/CMakeFiles/rebuild_cache.dir
+/home/shike/Documents/computerVisionDraft/202008/opencv_project/offcical_sitching_detail_demo/build/CMakeFiles/edit_cache.dir
+/home/shike/Documents/computerVisionDraft/202008/opencv_project/offcical_sitching_detail_demo/build/CMakeFiles/opencv_demo_create_mask_detach.dir
