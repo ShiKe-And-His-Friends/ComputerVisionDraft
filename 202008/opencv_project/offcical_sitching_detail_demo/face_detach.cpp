@@ -1,6 +1,5 @@
-#include "pch.h"
 #include <opencv2/opencv.hpp>
-#include <opencv2/video/tracking.hpp>
+#include "opencv2/tracking.hpp"
 #include <opencv2/core/ocl.hpp>
 
 using namespace cv;
@@ -16,8 +15,11 @@ int main(int argc , char* argv[]){
 	string trackerTypes[7] = {"BOOSTING" ,"MIL" ,"KCF" ,"TLD" ,"MEDIANFLOW" ,"MOSSE" ,"CSRT"};
 	string trackerType = trackerTypes[5];
 	Ptr<Tracker> tracker = TrackerMOSSE::create();
-
-	switch (argv[0]) {
+	
+	int type = (int)(*argv[1]);
+	//int type = atoi(argv[1]);
+	cout << "type is "<< type << endl;
+	switch (type) {
 		case '0':
 			trackerType = trackerTypes[0];
 			tracker = TrackerBoosting::create();
@@ -35,7 +37,7 @@ int main(int argc , char* argv[]){
 
 		case '3':
 			trackerType = trackerTypes[3];
-			tracker = TrackerTLD::create():
+			tracker = TrackerTLD::create();
 			break;
 
 		case '4':
