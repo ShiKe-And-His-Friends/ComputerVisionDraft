@@ -1,4 +1,4 @@
-# Install script for directory: /home/shike/Documents/computerVisionDraft/202008/opencv_project/offcical_sitching_detail_demo
+# Install script for directory: /home/sk95120/Documents/ComputerVisionDraft/202008/opencv_project/offcical_sitching_detail_demo
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/shike/Documents/computerVisionDraft/202008/opencv_project/offcical_sitching_detail_demo/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/sk95120/Documents/ComputerVisionDraft/202008/opencv_project/offcical_sitching_detail_demo/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

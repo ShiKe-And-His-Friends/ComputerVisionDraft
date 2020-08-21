@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/shike/Documents/computerVisionDraft/202008/opencv_project/offcical_sitching_detail_demo/face_detach.cpp" "/home/shike/Documents/computerVisionDraft/202008/opencv_project/offcical_sitching_detail_demo/build/CMakeFiles/opencv_demo_create_mask_detach.dir/face_detach.cpp.o"
+  "/home/sk95120/Documents/ComputerVisionDraft/202008/opencv_project/offcical_sitching_detail_demo/face_detach.cpp" "/home/sk95120/Documents/ComputerVisionDraft/202008/opencv_project/offcical_sitching_detail_demo/build/CMakeFiles/opencv_demo_create_mask_detach.dir/face_detach.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
