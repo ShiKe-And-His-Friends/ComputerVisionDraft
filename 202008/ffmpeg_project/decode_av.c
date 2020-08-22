@@ -166,7 +166,7 @@ int main(int argc, char **argv)
             }
             data      += ret;
             data_size -= ret;
-
+	    av_log(NULL ,AV_LOG_INFO ,"ret size is %d",(int)ret );
             if (pkt->size)
                 decode(c, frame, pkt, outfilename);
         }
