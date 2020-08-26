@@ -1,0 +1,60 @@
+./avio /home/shike/Videos/sugar.mp4
+ptr: 0x7f4afa617000 size: 116299647 
+ptr: 0x7f4afa618000 size: 116295551 
+ptr: 0x7f4afa619000 size: 116291455 
+ptr: 0x7f4afa61a000 size: 116287359 
+ptr: 0x7f4afa61b000 size: 116283263 
+ptr: 0x7f4afa61c000 size: 116279167 
+ptr: 0x7f4afa61d000 size: 116275071 
+ptr: 0x7f4afa61e000 size: 116270975 
+ptr: 0x7f4afa61f000 size: 116266879 
+ptr: 0x7f4afa620000 size: 116262783 
+ptr: 0x7f4afa621000 size: 116258687 
+ptr: 0x7f4afa627412 size: 116233069 
+ptr: 0x7f4afa628412 size: 116228973 
+ptr: 0x7f4afa629412 size: 116224877 
+ptr: 0x7f4afa62a412 size: 116220781 
+ptr: 0x7f4afa62b412 size: 116216685 
+ptr: 0x7f4afa62c412 size: 116212589 
+ptr: 0x7f4afa62d412 size: 116208493 
+ptr: 0x7f4afa62e412 size: 116204397 
+ptr: 0x7f4afa62f412 size: 116200301 
+ptr: 0x7f4afa630412 size: 116196205 
+ptr: 0x7f4afa631412 size: 116192109 
+ptr: 0x7f4afa632412 size: 116188013 
+ptr: 0x7f4afa633412 size: 116183917 
+ptr: 0x7f4afa634412 size: 116179821 
+ptr: 0x7f4afa635412 size: 116175725 
+ptr: 0x7f4afa636412 size: 116171629 
+ptr: 0x7f4afa637412 size: 116167533 
+ptr: 0x7f4afa638412 size: 116163437 
+ptr: 0x7f4afa639412 size: 116159341 
+ptr: 0x7f4afa63a412 size: 116155245 
+ptr: 0x7f4afa63b412 size: 116151149 
+ptr: 0x7f4afa647179 size: 116102662 
+ptr: 0x7f4afa648179 size: 116098566 
+ptr: 0x7f4afa649179 size: 116094470 
+ptr: 0x7f4afa64a179 size: 116090374 
+ptr: 0x7f4afa64b179 size: 116086278 
+ptr: 0x7f4afa64c179 size: 116082182 
+ptr: 0x7f4afa64d179 size: 116078086 
+ptr: 0x7f4afa64e179 size: 116073990 
+ptr: 0x7f4afa64f179 size: 116069894 
+ptr: 0x7f4afa653768 size: 116051991 
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from '/home/shike/Videos/sugar.mp4':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    artist          : Maroon 5
+    comment         : 163 key(Don't modify):tZFi+e+YvedOBFLaSLTdFGuWp1Veb0F4l1HTBMEPBlkCcEV1sH5c2oSITCyl5eQ8MK+OJX4dsO896uIXt5kGkWw6s9L6aRHKcIV3ToIM5A5MYgVptpemlnZtoAN7NUlnLe0ER2z0VO56yMQgo9LwofuLqieQJ59dO2XOEoJxYr6S7JgEfSbC6NP9c/USB2aImtj6jiC4rvMb8FsIrHQXaU8VVvWxGbSx0yr40pTxo
+    title           : Sugar
+    encoder         : Lavf55.19.104
+  Duration: 00:05:01.34, start: 0.000000, bitrate: N/A
+    Stream #0:0(und): Video: h264 (Main) (avc1 / 0x31637661), yuv420p, 1280x720 [SAR 1:1 DAR 16:9], 2955 kb/s, 23.98 fps, 23.98 tbr, 24k tbn, 47.95 tbc (default)
+    Metadata:
+      handler_name    : VideoHandler
+    Stream #0:1(und): Audio: aac (LC) (mp4a / 0x6134706D), 44100 Hz, stereo, fltp, 125 kb/s (default)
+    Metadata:
+      handler_name    : SoundHandler
+
