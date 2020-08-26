@@ -1,7 +1,7 @@
-#include <linavcodec/avcodec.h>
+#include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <linavformat/avio.h>
-#include <linavutil/file.h>
+#include <libavformat/avio.h>
+#include <libavutil/file.h>
 
 struct buffer_data{
 	uint8_t *ptr;
@@ -23,14 +23,14 @@ static int read_packet(void *opaque ,uint8_t *buf ,int buf_size){
 	return buf_size;
 }
 
-int main (int agrc ,char *argv[]) {
+int main (int argc ,char *argv[]) {
 
 	AVFormatContext *fmt_ctx = NULL;
 	AVIOContext *avio_ctx = NULL;
 	uint8_t *buffer = NULL ,*avio_ctx_buffer = NULL;
 	size_t buffer_size ,avio_buffer_size = 4096;
 	char *input_filename = NULL;
-	it ret = 0;
+	int ret = 0;
 	struct buffer_data bd = {0};
 
 	if (argc != 2) {
@@ -84,8 +84,8 @@ end:
 	}
 	av_file_unmap(buffer ,buffer_size);
 	if (ret < 0){
-		fprintf(stderr ,"Error occurred %s \n" ,av_ere2str(ret));
-		retrun 1;
+		fprintf(stderr ,"Error occurred %s \n" ,av_err2str(ret));
+		return 1;
 	}
 	return 0;
 }
