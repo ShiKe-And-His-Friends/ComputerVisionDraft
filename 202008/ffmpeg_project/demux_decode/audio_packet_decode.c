@@ -21,7 +21,7 @@ static void decode(AVCodecContext *dec_ctx ,AVPacket *pkt ,AVFrame *frame ,FILE 
 
 	/** read all output frames(in general there may be any nember of them) **/
 	while (ret >= 0) {
-		ret = avcodec_recieve_frame(dec_ctx ,frame);
+		ret = avcodec_receive_frame(dec_ctx ,frame);
 		if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
 			return;
 		} else if (ret < 0) {
@@ -36,20 +36,20 @@ static void decode(AVCodecContext *dec_ctx ,AVPacket *pkt ,AVFrame *frame ,FILE 
 		}
 		for (i = 0 ;i < frame->nb_samples ;i++) {
 			for (ch = 0 ;ch < dec_ctx->channels ;ch++) {
-				fwrite(frame->data[ch] _ data_size * i ,1 ,data_size ,outfile);
+				fwrite(frame->data[ch] + data_size * i ,1 ,data_size ,outfile);
 			}
 		}
 	}
 }
 
-int main(argc ,char **argv){
+int main(int argc ,char **argv){
 
 	const char *outfilename ,*filename;
 	const AVCodec *codec;
 	AVCodecContext *c = NULL;
 	AVCodecParserContext *parser = NULL;
 	int len,ret;
-	File *f, *outfile;
+	FILE *f, *outfile;
 	uint8_t inbuf[AUDIO_INBF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
 	uint8_t *data;
 	size_t data_size;
@@ -109,7 +109,7 @@ int main(argc ,char **argv){
 			}
 		}
 		ret = av_parser_parse2(parser ,c ,&pkt->data ,&pkt->size
-				,data ,data_size ,AV_NPPTS_VALUE ,AV_NOPTS_VALUE ,0);
+				,data ,data_size ,AV_NOPTS_VALUE ,AV_NOPTS_VALUE ,0);
 		if (ret < 0) {
 			fprintf(stderr ,"Error while pasring\n");
 			exit(1);
@@ -118,7 +118,7 @@ int main(argc ,char **argv){
 		data_size -= ret;
 
 		if (pkt->size) {
-			decode(c ,decoded_frame ,outfile);
+			decode(c ,pkt ,decoded_frame ,outfile);
 		}
 		if (data_size < AUDIO_REFILL_THRESH) {
 			memmove(inbuf ,data ,data_size);
