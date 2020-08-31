@@ -50,7 +50,7 @@ static void decode(AVCodecContext *dec_ctx ,AVFrame *frame ,AVPacket *pkt ,const
 int main(int argc ,char **argv) {
 
 	const char *filename ,*outfilename;
-	const ACcodec *codec;
+	const AVCodec *codec;
 	AVCodecParserContext *parser;
 	AVCodecContext *c = NULL;
 	FILE *f;
@@ -58,16 +58,18 @@ int main(int argc ,char **argv) {
 	uint8_t inbuf[INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
 	uint8_t *data;
 	size_t data_size;
-	int ret;
+	int ret ,data_height ,data_width;
 	AVPacket *pkt;
 
-	if (argc <= 2) {
-		fprintf(stderr ,"Usage: %s <input_file> <output_file> \n" ,argv[0]);
-		ext(0);
+	if (argc <= 4) {
+		fprintf(stderr ,"Usage: %s <input_file> <raw_video_height> <raw_video_width>  <output_file> \n" ,argv[0]);
+		exit(0);
 	}
 
 	filename = argv[1];
-	outfilename = argv[2];
+	data_height = atoi(argv[2]);
+	data_width = atoi(argv[3]);
+	outfilename = argv[4];
 
 	pkt = av_packet_alloc();
 	if (!pkt) {
@@ -78,7 +80,7 @@ int main(int argc ,char **argv) {
 	memset(inbuf + INBUF_SIZE ,0 ,AV_INPUT_BUFFER_PADDING_SIZE);
 
 	/** find the MPEG-1 video decoder **/
-	codec = avcodec_find_decoder(AV_CODEC_ID_MPEG1VIDEO);
+	codec = avcodec_find_decoder(AV_CODEC_ID_MPEG4);
 	if (!codec) {
 		fprintf(stderr,"Could not found.\n");
 		exit(1);
@@ -95,10 +97,18 @@ int main(int argc ,char **argv) {
 		fprintf(stderr ,"Could not allocate video codec context.\n");
 		exit(1);
 	}
-
+	c->height = data_height;
+	c->width = data_width;
+	printf("codecer height=%d width=%d" ,c->height ,c->width);
 	/** For some codeces ,such as msmpeg4 and mpeg4 ,width and height MUST be initinalized there because this information is not available in the bitstream  **/
 	/** open it  **/
-	if (avcodec_open2(c ,codec ,NULL) < 0)) {
+	if (avcodec_open2(c ,codec ,NULL) < 0) {
+		fprintf(stderr ,"Could not open %s \n" ,filename);
+		exit(1);
+	}
+
+	f = fopen(filename ,"rb");
+	if (!f) {
 		fprintf(stderr ,"Could not open %s \n" ,filename);
 		exit(1);
 	}
