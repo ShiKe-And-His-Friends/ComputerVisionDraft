@@ -1,0 +1,14 @@
+Demuxing audio from file '/home/shike/Videos/sugar.mp4' into 'packet_decode_audio'
+ audio_frame  n:0 nb_samples:1024 pts:0.0609977
+audio_frame  n:1 nb_samples:1024 pts:0.0842177
+audio_frame  n:2 nb_samples:1024 pts:0.0842404
+audio_frame  n:3 nb_samples:1024 pts:0.084263
+audio_frame  n:4 nb_samples:1024 pts:0.0842857
+audio_frame  n:5 nb_samples:1024 pts:0.0919728
+audio_frame  n:6 nb_samples:1024 pts:0.115193
+
+audio_frame  n:12980 nb_samples:1024 pts:301.351
+Demuxing succeeded.
+Warning: the sample format the decoder produced is planner (fltp). This sample will output the first channel only.
+Play the output audio file with the command:
+ ffplay -f f32le -ac 1 -ar 44100 packet_decode_audio
