@@ -7,11 +7,11 @@
 #include <libavutil/opt.h>
 #include <libavutil/imgutils.h>
 
-static void encode(AVCodecContext *enc_ctx ,AVFrame *frame ,AVpacket *pkt ,FILE *outfile) {
+static void encode(AVCodecContext *enc_ctx ,AVFrame *frame ,AVPacket *pkt ,FILE *outfile) {
 	int ret;
 	/** send the frame to the encoder **/
 	if (frame) {
-		printf("Send frame %3"PRId64" \n");
+		printf("Send frame %3"PRId64" \n" ,frame->pts);
 	}
 	ret = avcodec_send_frame(enc_ctx ,frame);
 	if (ret < 0) {
@@ -19,7 +19,7 @@ static void encode(AVCodecContext *enc_ctx ,AVFrame *frame ,AVpacket *pkt ,FILE 
 		exit(1);
 	}
 	while (ret >= 0) {
-		ret = avcodec_recieve_packet(enc_ctx ,pkt);
+		ret = avcodec_receive_packet(enc_ctx ,pkt);
 		if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
 			return ;
 		} else if (ret < 0) {
@@ -29,7 +29,7 @@ static void encode(AVCodecContext *enc_ctx ,AVFrame *frame ,AVpacket *pkt ,FILE 
 		printf("Write packet %3"PRId64" (size=%5d)\n"
 				,pkt->pts ,pkt->size);
 		fwrite(pkt->data ,1 ,pkt->size ,outfile);
-		av_packrt_unref(pkt);
+		av_packet_unref(pkt);
 	}
 }
 
@@ -41,7 +41,7 @@ int main(int argc ,char **argv) {
 	FILE * f;
 	AVFrame *frame;
 	AVPacket *pkt;
-	uint8_t encode[] = {0 ,0 ,1 ,0xb7};
+	uint8_t endecode[] = {0 ,0 ,1 ,0xb7};
 
 	if (argc < 2) {
 		fprintf(stderr ,"Usage: %s <output file> <codec name>\n", argv[0]);
@@ -51,7 +51,7 @@ int main(int argc ,char **argv) {
 	codec_name = argv[2];
 
 	/** find the mpeg1video encoder **/
-	codec = avocdec_find_encoder_by_name(codec_name);
+	codec = avcodec_find_encoder_by_name(codec_name);
 	if (!codec) {
 		fprintf(stderr ,"Codec '%s' not found\n"
 				,codec_name);
@@ -70,8 +70,8 @@ int main(int argc ,char **argv) {
 	/** put some parameters **/
 	c->bit_rate = 400000;
 	/** resolution must be a multiple of two **/
-	c->width = 352;
-	c->height = 288;
+	c->width = 640;
+	c->height = 360;
 	/** frame per second **/
 	c->time_base = (AVRational){1 ,25};
 	c->framerate = (AVRational){25 ,1};
@@ -82,12 +82,12 @@ int main(int argc ,char **argv) {
 	c->max_b_frames = 1;
 	c->pix_fmt = AV_PIX_FMT_YUV420P;
 
-	if (codec->id == AV_PIX_FMT_ID_H264) {
+	if (codec->id == AV_CODEC_ID_H264) {
 		av_opt_set(c->priv_data ,"preset" ,"slow" ,0);
 	}
 	/** open it **/
 	ret = avcodec_open2(c ,codec ,NULL);
-	if (ret < 2) {
+	if (ret < 0) {
 		fprintf(stderr ,"Could not open codec: %s \n"
 				,av_err2str(ret));
 		exit(1);
@@ -144,7 +144,7 @@ int main(int argc ,char **argv) {
 	/** flush the encode **/
 	encode(c ,NULL ,pkt ,f);
 	/** add sequence end code to have a real MPEG file **/
-	fwrite(endcode ,1 ,sizeof(endcodec) ,f);
+	fwrite(endecode ,1 ,sizeof(endecode) ,f);
 	fclose(f);
 
 	avcodec_free_context(&c);
