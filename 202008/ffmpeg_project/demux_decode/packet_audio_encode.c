@@ -1,5 +1,5 @@
 #include <stdint.h>
-#inlcude <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <libavcodec/avcodec.h>
@@ -30,10 +30,10 @@ static int select_sample_rate(const AVCodec *codec) {
 	}
 	p = codec->supported_samplerates;
 	while (*p) {
-		if (!best_samplerate || abs(44100 - *p) < abs(44100 = best_samplerate)) {
+		if (!best_samplerate || abs(44100 - *p) < abs(44100 - best_samplerate)) {
 			best_samplerate = *p;
-			p++;
 		}
+		p++;
 	}
 	return best_samplerate;
 }
@@ -43,13 +43,13 @@ static int select_channel_layout(const AVCodec *codec) {
 	const uint64_t *p;
 	uint64_t best_ch_layout = 0;
 	int best_nb_channels = 0;
-	if (!codec->channel_layout) {
+	if (!codec->channel_layouts) {
 		return AV_CH_LAYOUT_STEREO;
 	}
-	p = codec->channel_layout;
+	p = codec->channel_layouts;
 	while (*p) {
 		int nb_channels = av_get_channel_layout_nb_channels(*p);
-		if (b_channels > best_nb_channels) {
+		if (nb_channels > best_nb_channels) {
 			best_ch_layout = *p;
 			best_nb_channels = nb_channels;
 		}
@@ -121,7 +121,7 @@ int main(int argc ,char **argv) {
 	/** select other audio parameters supported by the encoder **/
 	c->sample_rate  = select_sample_rate(codec);
 	c->channel_layout = select_channel_layout(codec);
-	c->channels = av_get_channel_layout_nb_channels(c->channels_layout);
+	c->channels = av_get_channel_layout_nb_channels(c->channel_layout);
 	/** open it **/
 	if (avcodec_open2(c ,codec ,NULL) < 0) {
 		fprintf(stderr ,"Could not open codec\n");
@@ -130,6 +130,12 @@ int main(int argc ,char **argv) {
 
 	f = fopen(filename ,"wb");
 	if (!f) {
+		fprintf(stderr ,"could not allocate the packet\n");
+		exit(1);
+	}
+	/** packet for holding encoded output **/
+	pkt = av_packet_alloc();
+	if (!pkt) {
 		fprintf(stderr ,"could not allocate the packet\n");
 		exit(1);
 	}
@@ -154,14 +160,14 @@ int main(int argc ,char **argv) {
 	tincr = 2 * M_PI * 440.0 / c->sample_rate;
 	for (i = 0 ; i < 200 ; i++) {
 		/** make sure the frame is writeable --make a copy if the encodr kept a reference inrternally **/
-		ret = av_frame_make_writeable(frame);
+		ret = av_frame_make_writable(frame);
 		if (ret < 0) {
 			exit(1);
 		}
 		samples = (uint16_t*)frame->data[0];
 		
 		for (j = 0 ; j < c->frame_size ; j++) {
-			sample[2*j] = (int)(sin(t) * 10000);
+			samples[2*j] = (int)(sin(t) * 10000);
 			for (k = 1 ; k < c->channels ; k++) {
 				samples[2*j + k] = samples[2*j];
 			}
