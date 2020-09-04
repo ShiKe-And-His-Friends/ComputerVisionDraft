@@ -28,10 +28,10 @@ static void process_client(AVIOContext *client ,const char *in_url) {
 	if (resource && resource[0] == '/' && !strcmp((resource+1) ,in_url)) {
 		replay_code = 200;
 	} else {
-		replay_code = AVERROR_HTTP_FOUND;
+		replay_code = AVERROR_HTTP_NOT_FOUND;
 	}
 	if ((ret = av_opt_set_int(client ,"replay_code" ,replay_code ,AV_OPT_SEARCH_CHILDREN)) < 0) {
-		av_log(client .AV_LOG_ERROR ,"Failed to set replay_code:%s \n"
+		av_log(client ,AV_LOG_ERROR ,"Failed to set replay_code:%s \n"
 				,av_err2str(ret));
 		goto end;
 	}
@@ -45,7 +45,7 @@ static void process_client(AVIOContext *client ,const char *in_url) {
 	if (replay_code != 200) {
 		goto end;
 	}
-	fprintf(stderr ,"Opening input file: %s \n",input->name);
+	fprintf(stderr ,"Opening input file.\n\n");
 
 	/** open file **/
 	if ((ret = avio_open2(&input ,in_url ,AVIO_FLAG_READ ,NULL ,NULL)) < 0) {
@@ -76,13 +76,13 @@ end:
 }
 
 int main(int argc, char **argv) {
-	AVDictionary *options = NULL:
+	AVDictionary *options = NULL;
 	AVIOContext *client = NULL ,*server = NULL;
 	const char *in_uri ,*out_uri;
 	int ret ,pid;
 	av_log_set_level(AV_LOG_TRACE);
 	if (argc < 3) {
-		printf("Usage " %s input http://hostname[:port] \n API example program to serve http tp multiple clients.\n\n" ,argv[0]);
+		printf("Usage  %s input http://hostname[:port] \n API example program to serve http tp multiple clients.\n\n" ,argv[0]);
 		return 1;
 	}
 
