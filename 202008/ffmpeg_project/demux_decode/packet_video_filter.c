@@ -123,4 +123,86 @@ end:
 	return ret;
 }
 
+static void display_frame(const AVFrame *frame ,AVRational time_base) {
+	int x,y;
+	uint8_t *p0 ,p;
+	int64_t delay;
+	if (frame->pts != AV_NOPTS_VALUE) {
+		if (last_pts != AV_NOPTS_VALUE) {
+			/** sleep roughly the right amount of time; usleep is in microseconds ,just like AV_TIME_BASE **/
+			delay = av_recale_q(frame->pts - last_pts ,time_base ,AV_TIME_BASE_Q);
+			if (delay > 0 && delay < 1000000) {
+				usleep(delay);
+			}
+		}
+		last_pts = frame->pts;
+	}
+	/** Trivial ASCII grayscale display. **/
+	p0 = frame->data[0];
+	puts("\033c");
+	for (y = 0 ; y < frame->height ; y++) {
+		p = p0;
+		for (x = 0 ; x <frame->width ;x++) {
+			putchar(" .-+#"[*(p++)/52]);
+		}
+		putchar("\n");
+		p0 += frame->linesize[0];
+	}
+	fflush(stdout);
+}
 
+int main(int argc ,char **argv) {
+	int ret;
+	AVPacket packet;
+	AVFrame *frame;
+	AVFrame *filter_frame;
+	if (argc != 2) {
+		fprintf(stderr ,"Usage : %s file\n", argv[0]);
+		exit(1);
+	}
+	frame = av_frame_alloc();
+	filter_frame = av_frame_alloc();
+	if (!frame || !filter_frame) {
+		perror("Could not allocate frame");
+		exit(1);
+	}
+	if ((ret = open_input_file(argv[1])) < 0) {
+		goto end;
+	}
+	if ((ret = init_filters(filter_descr)) < 0) {
+		goto end;
+	}
+	/** read all packet **/
+	while (1) {
+		if ((ret = av_read_frame(fmt_ctx ,&packet)) < 0) {
+			break;
+		}
+		if (packet.stream_index == video_stream_index) {
+			ret = avcodec_send_packet(dec_ctx ,&packet);
+			if (ret < 0) {
+				av_log(NULL ,AV_LOG_ERROR ,"Error while sending a packet to the decoder\n");
+				break;
+			}
+			while (ret >= 0) {
+				ret = avcodec_receive_frame(dec_ctx ,frame);
+				if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+					break;
+				} else if (ret < 0) {
+					av_log(NULL ,AV_LOG_ERROR ,"Error while receiving a frame from the decoder\n");
+					goto end;
+				}
+				frame->pts = frame->best_effort_timestamp;
+				/** push the decoded frame into the filtergraph **/
+				if (av_buffersrc_add_frame_flags(buffersrc_ctx ,frame ,AV_BUFFERSRC_FLAG_KEEP_REF) < 0) {
+					av_log(NULL ,AV_LOG_ERROR ,"Error while feeding the filtergraph\n");
+					break;
+				}
+
+				/** push filtered frames from the filtergraph **/
+				while(1) {
+					//TODO add process;
+				}
+			}
+		}
+	}
+}
