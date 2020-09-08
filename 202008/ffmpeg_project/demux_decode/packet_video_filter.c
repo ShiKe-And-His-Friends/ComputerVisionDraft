@@ -200,9 +200,31 @@ int main(int argc ,char **argv) {
 
 				/** push filtered frames from the filtergraph **/
 				while(1) {
-					//TODO add process;
+					ret = av_buffersink_get_frame(buffersink_ctx ,filter_name);
+					if (ret == AVERROR(EAGAIN) || ret = AVERROR_EOF) {
+						break;
+					}
+					if (ret < 0) {
+						goto end;
+					}
+					display_frame(filt_frame ,buffersink_ctx->inputs[0]->time_base);
+					av_frame_unref(filt_fram);
 				}
+				av_frame_unref(frame);
 			}
 		}
+		av_packet_unref(&packet);
 	}
+
+end:
+	avfilter_graph_free(&filter_graph);
+	avcodec_free_context(&dec_ctx);
+	avformat_close_input(&fmt_ctx);
+	av_frame_free(&frame);
+	av_frame_free(&filt_fram);
+	if (ret < 0 && ret != AVERROR_EOF) {
+		fprintf(stderr ,"Error occurred: %s \n",av_err2str(ret));
+		exit(1);
+	}
+	exit(0);
 }
