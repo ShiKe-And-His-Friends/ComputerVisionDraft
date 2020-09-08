@@ -3,13 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <linavcodec/avcodec.h>
+#include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
-#include <liavutil/opt.h>
+#include <libavutil/opt.h>
 
-const char *filter_descr = "scale=78:24,transpose=cclock"
+const char *filter_descr = "scale=78:24,transpose=cclock";
 /** other way:
  *  scale=78:24[scl]:[scl] transpose=cclock 
  *  //assumes "[in]" and "[out]" to be input output pads respectively
@@ -25,7 +25,7 @@ static int64_t last_pts = AV_NOPTS_VALUE;
 static int open_input_file(const char *filename) {
 	int ret;
 	AVCodec *dec;
-	if ((ret = avformat_input(&fmt_ctx ,filename ,NULL ,NULL)) < 0) {
+	if ((ret = avformat_open_input(&fmt_ctx ,filename ,NULL ,NULL)) < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Cannot open input file\n");
 		return ret;
 	}
@@ -64,19 +64,19 @@ static int init_filters(const char *filters_descr) {
 	const AVFilter *buffersink = avfilter_get_by_name("buffersink");
 	AVFilterInOut *outputs = avfilter_inout_alloc();
 	AVFilterInOut *inputs = avfilter_inout_alloc();
-	AvRational time_base = fmt_ctx->streams[video_stream_index]->time_base;
-	enum AVpixelFormat pix_fmts[] = {AV_PIX_FMT_GRAY8 ,AV_PIX_FMT_NONE};
+	AVRational time_base = fmt_ctx->streams[video_stream_index]->time_base;
+	enum AVPixelFormat pix_fmts[] = {AV_PIX_FMT_GRAY8 ,AV_PIX_FMT_NONE};
 	filter_graph = avfilter_graph_alloc();
-	if (!output || !input || !filter_graph) {
+	if (!outputs || !inputs || !filter_graph) {
 		ret = AVERROR(ENOMEM);
 		goto end;
 	}
 
 	/** buffer video source : the decoded frames from the decoders will be inserted here **/
-	snprintf(args ,sizeof(args) ,"video_size=%dx%s:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d" ,dec_ctx->width ,dec_ctx->height ,dex_ctx->pix_fmt ,time_base.num ,time_base.den ,dec_ctx->sample_aspect_ratio.num ,dec_ctx->sample_aspect_ratio.den);
+	snprintf(args ,sizeof(args) ,"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d" ,dec_ctx->width ,dec_ctx->height ,dec_ctx->pix_fmt ,time_base.num ,time_base.den ,dec_ctx->sample_aspect_ratio.num ,dec_ctx->sample_aspect_ratio.den);
 
 
-	ret = avfilter_graph_filter(&buffersrc_ctx ,buffersrc ,"in"
+	ret = avfilter_graph_create_filter(&buffersrc_ctx ,buffersrc ,"in"
 			,args ,NULL ,filter_graph);
 	if (ret < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Cannot create buffer source\n");
@@ -99,17 +99,17 @@ static int init_filters(const char *filters_descr) {
 	/** Set the endpoints for the filter graph.The filter_graph will be linked to the graph described by filters_descr **/
 	/** The buffer source output must be connected to the input pad of the first filter described by filters_descr;
 	 *  Since the first filter input label is not specified ,it is set to "in" by default **/
-	output->name = av_strdup("in");
-	output->filter_ctx = buffersink_ctx;
-	output->pad_idx = 0;
-	output->next = NULL;
+	outputs->name = av_strdup("in");
+	outputs->filter_ctx = buffersrc_ctx;
+	outputs->pad_idx = 0;
+	outputs->next = NULL;
 
 	/** The buffer sink input must be connected to the output pad of the last fiter described by fiters_descr;
 	 *  Since the last filter output label is not specified ,it is set to "out" by default **/
-	input->name = av_strdup("out");
-	input->filter_ctx = buffersink_ctx;
-	input->pad_idx = 0;
-	input->next = NULL;
+	inputs->name = av_strdup("out");
+	inputs->filter_ctx = buffersink_ctx;
+	inputs->pad_idx = 0;
+	inputs->next = NULL;
 	if ((ret = avfilter_graph_parse_ptr(filter_graph ,filters_descr ,&inputs ,&outputs ,NULL)) < 0) {
 		goto end;
 	}
@@ -125,12 +125,12 @@ end:
 
 static void display_frame(const AVFrame *frame ,AVRational time_base) {
 	int x,y;
-	uint8_t *p0 ,p;
+	uint8_t *p0 ,*p;
 	int64_t delay;
 	if (frame->pts != AV_NOPTS_VALUE) {
 		if (last_pts != AV_NOPTS_VALUE) {
 			/** sleep roughly the right amount of time; usleep is in microseconds ,just like AV_TIME_BASE **/
-			delay = av_recale_q(frame->pts - last_pts ,time_base ,AV_TIME_BASE_Q);
+			delay = av_rescale_q(frame->pts - last_pts ,time_base ,AV_TIME_BASE_Q);
 			if (delay > 0 && delay < 1000000) {
 				usleep(delay);
 			}
@@ -145,7 +145,7 @@ static void display_frame(const AVFrame *frame ,AVRational time_base) {
 		for (x = 0 ; x <frame->width ;x++) {
 			putchar(" .-+#"[*(p++)/52]);
 		}
-		putchar("\n");
+		putchar('\n');
 		p0 += frame->linesize[0];
 	}
 	fflush(stdout);
@@ -198,17 +198,17 @@ int main(int argc ,char **argv) {
 					break;
 				}
 
-				/** push filtered frames from the filtergraph **/
+				/** pull filtered frames from the filtergraph **/
 				while(1) {
-					ret = av_buffersink_get_frame(buffersink_ctx ,filter_name);
-					if (ret == AVERROR(EAGAIN) || ret = AVERROR_EOF) {
+					ret = av_buffersink_get_frame(buffersink_ctx ,filter_frame);
+					if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
 						break;
 					}
 					if (ret < 0) {
 						goto end;
 					}
-					display_frame(filt_frame ,buffersink_ctx->inputs[0]->time_base);
-					av_frame_unref(filt_fram);
+					display_frame(filter_frame ,buffersink_ctx->inputs[0]->time_base);
+					av_frame_unref(filter_frame);
 				}
 				av_frame_unref(frame);
 			}
@@ -221,7 +221,7 @@ end:
 	avcodec_free_context(&dec_ctx);
 	avformat_close_input(&fmt_ctx);
 	av_frame_free(&frame);
-	av_frame_free(&filt_fram);
+	av_frame_free(&filter_frame);
 	if (ret < 0 && ret != AVERROR_EOF) {
 		fprintf(stderr ,"Error occurred: %s \n",av_err2str(ret));
 		exit(1);
