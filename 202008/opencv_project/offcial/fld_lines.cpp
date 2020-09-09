@@ -11,7 +11,7 @@ using namespace cv::ximgproc;
 
 int main(int argc ,char **argv) {
 	std::string in;
-	cv::CommandLineParser parser(argc ,argv ,"{@input|../sample/data/corridor.jpg|input image}{help h||show help message}");
+	cv::CommandLineParser parser(argc ,argv ,"{@input|input image}{help h||show help message}");
 	if (parser.has("help")) {
 		parser.printMessage();
 		return 0;
