@@ -1,6 +1,6 @@
 #include <inttypes.h>
 #include <math.h>
-#include <stdin.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "libavutil/channel_layout.h"
@@ -15,11 +15,11 @@
 
 #define INPUT_SAMPLERATE 48000
 #define INPUT_FORMAT AV_SAMPLE_FMT_FLTP
-#define INPUT_CHANNEL_LAYOUT AV_CH_LAYOUT_SPOINT0
+#define INPUT_CHANNEL_LAYOUT AV_CH_LAYOUT_5POINT0
 
 #define VOLUME_VAL 0.90
 
-static int init_filter_graph(AVFilterGraph **graph ,AVFilterContext **src ,AVFIlterContext **sink) {
+static int init_filter_graph(AVFilterGraph **graph ,AVFilterContext **src ,AVFilterContext **sink) {
 	AVFilterGraph *filter_graph;
 	AVFilterContext *abuffer_ctx;
 	const AVFilter *abuffer;
@@ -103,8 +103,8 @@ static int init_filter_graph(AVFilterGraph **graph ,AVFilterContext **src ,AVFIl
 	}
 
 	/** A third way of passing the options is in a string of the form key1=value1:key2=walue2... **/
-	sprintf(option_str ,sizeof(option_str) ,"sample_fmt=&s:sample_rates=%d:channel_layout=0x%"PRIx64 ,av_get_sample_fmt_name(AV_SAMPLE_FMT_S16) ,44100 ,(uint64_t)AV_CH_LAYOUT_STEREO);
-	err = avfilter_init_str(aformat_ctx ,option_str);
+	snprintf(options_str ,sizeof(options_str) ,"sample_fmts=%s:sample_rates=%d:channel_layouts=0x%"PRIx64 ,av_get_sample_fmt_name(AV_SAMPLE_FMT_S16) ,44100 ,(uint64_t)AV_CH_LAYOUT_STEREO);
+	err = avfilter_init_str(aformat_ctx ,options_str);
 	if (err < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Could not initialize the aformat filter.\n");
 		return err;
@@ -156,14 +156,14 @@ static int init_filter_graph(AVFilterGraph **graph ,AVFilterContext **src ,AVFIl
 /** Do something uesful with the filtered data: this sample example ust prints the MD5 checksum of each plane to stdout. **/
 
 static int process_output(struct AVMD5 *md5 ,AVFrame *frame) {
-	int planar = av_sample_fmt_is_planner(frame->format);
+	int planar = av_sample_fmt_is_planar(frame->format);
 	int channels = av_get_channel_layout_nb_channels(frame->channel_layout);
 	int planes = planar ? channels : 1;
 	int bps = av_get_bytes_per_sample(frame->format);
 	int plane_size = bps * frame->nb_samples * (planar? 1 : channels);
 	int i,j;
 
-	for(i = 0 ; i < plannes ; i++) {
+	for(i = 0 ; i < planes ; i++) {
 		uint8_t checksum[16];
 		av_md5_init(md5);
 		av_md5_sum(checksum ,frame->extended_data[i] ,plane_size);
@@ -279,7 +279,7 @@ int main(int argc ,char *argv[]) {
 		}
 	}
 
-	av_filter_graph_free(&graph);
+	avfilter_graph_free(&graph);
 	av_frame_free(&frame);
 	av_free(&md5);
 	return 0;
