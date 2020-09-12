@@ -4,12 +4,14 @@
 #include <libavutil/pixdesc.h>
 #include <libavutil/hwcontext.h>
 #include <libavutil/opt.h>
+#include <libavutil/avassert.h>
+#include <libavutil/imgutils.h>
 
 static AVBufferRef *hw_device_ctx = NULL;
 static enum AVPixelFormat hw_pix_fmt;
 static FILE *output_file = NULL;
 
-static int hw_decodr_int(AVCodecContext *ctx ,const enum AVHWDeviceType type) {
+static int hw_decoder_init(AVCodecContext *ctx ,const enum AVHWDeviceType type) {
 	int err = 0;
 	if ((err = av_hwdevice_ctx_create(&hw_device_ctx ,type , NULL ,NULL ,0)) < 0) {
 		fprintf(stderr ,"Failed to create specified HW device.\n");
@@ -20,7 +22,7 @@ static int hw_decodr_int(AVCodecContext *ctx ,const enum AVHWDeviceType type) {
 	return err;
 }
 
-static enum AVPixelFormat get_hw_format(AVCodecContext *ctx ,const enum ABPixelFormat *pix_fmts) {
+static enum AVPixelFormat get_hw_format(AVCodecContext *ctx ,const enum AVPixelFormat *pix_fmts) {
 	const enum AVPixelFormat *p;
 	for (p = pix_fmts ;*p != -1 ; p++) {
 		if (*p == hw_pix_fmt) {
@@ -34,7 +36,7 @@ static enum AVPixelFormat get_hw_format(AVCodecContext *ctx ,const enum ABPixelF
 static int decode_write(AVCodecContext *avctx ,AVPacket *packet) {
 	AVFrame *frame = NULL ,*sw_frame = NULL;
 	AVFrame *tmp_frame = NULL;
-	AVFrame *buffer = NULL;
+	uint8_t *buffer = NULL;
 	int size;
 	int ret = 0;
 
@@ -45,7 +47,7 @@ static int decode_write(AVCodecContext *avctx ,AVPacket *packet) {
 	}
 	while (1) {
 		if (!(frame = av_frame_alloc()) || !(sw_frame = av_frame_alloc())) {
-			frprintf(stderr ,"Can not alloc frame\n");
+			fprintf(stderr ,"Can not alloc frame\n");
 			ret = AVERROR(ENOMEM);
 			goto fail;
 		}
@@ -60,7 +62,7 @@ static int decode_write(AVCodecContext *avctx ,AVPacket *packet) {
 		}
 		if (frame->format == hw_pix_fmt) {
 			/** retrieve data from GPU to CPU **/
-			if ((ret = av_hwframe_tansfer_data(sw_frame ,frame ,0)) < 0) {
+			if ((ret = av_hwframe_transfer_data(sw_frame ,frame ,0)) < 0) {
 				fprintf(stderr ,"Error tansferring the data to system memory.\n");
 				goto fail;
 			}
@@ -96,7 +98,7 @@ static int decode_write(AVCodecContext *avctx ,AVPacket *packet) {
 	}
 }
 
-int main(int argc ,char **argv[]) {
+int main(int argc ,char *argv[]) {
 
 	AVFormatContext *input_ctx = NULL;
 	int video_stream ,ret;
@@ -108,16 +110,16 @@ int main(int argc ,char **argv[]) {
 	int i;
 
 	if (argc < 4) {
-		fprintf(stderr ,"Usage:%s <device type> <input file> <output file> \n" ,argv[0]);
+		fprintf(stderr ,"Usage: %s <device type> <input file> <output file> \n" ,argv[0]);
 		return -1;
 	}
 	type = av_hwdevice_find_type_by_name(argv[1]);
 	if (type == AV_HWDEVICE_TYPE_NONE) {
-		fprintf(stderr ,"Device type %s is not supported.\n") ,argv[1];
+		fprintf(stderr ,"Device type %s is not supported.\n" ,argv[1]);
 		fprintf(stderr ,"Available device types:\n");
-		while((type = av_hwdevice_iterate_type(type)) != AV_HWDEVICE_TYPE_NONE) {
+		while((type = av_hwdevice_iterate_types(type)) != AV_HWDEVICE_TYPE_NONE) {
 			fprintf(stderr ," %s" ,av_hwdevice_get_type_name(type));
-			fprintf("\n");
+			fprintf(stderr ,"\n");
 			return -1;
 		}
 	}
@@ -127,13 +129,13 @@ int main(int argc ,char **argv[]) {
 		fprintf(stderr ,"Cannot open input file '%s'\n" ,argv[2]);
 		return -1;
 	}
-	if (avfotmat_find_stream_infor(input_ctx ,NULL) < 0) {
+	if (avformat_find_stream_info(input_ctx ,NULL) < 0) {
 		fprintf(stderr ,"Cannot find input stream information.\n");
 		return -1;
 	}
 
 	/** find the video stream information **/
-	ret = av_find_best_stream(input_ctx ,AVMEDIA_TYPE_VIDEO ,-1 ,-1 &decoder ,0);
+	ret = av_find_best_stream(input_ctx ,AVMEDIA_TYPE_VIDEO ,-1 ,-1 ,&decoder ,0);
 	if (ret < 0) {
 		fprintf(stderr ,"Cannot find a video stream in the input file.\n");
 		return -1;
@@ -145,17 +147,17 @@ int main(int argc ,char **argv[]) {
 			fprintf(stderr ,"Decoder %s does not support device type %s.\n" ,decoder->name ,av_hwdevice_get_type_name(type));
 			return -1;
 		}
-		if (config->methods & AV_CODEC_HW_COFIG_METHOD_HW_DEVICE_CTX && cofig->device_type == type) {
+		if (config->methods & AV_CODEC_HW_CONFIG_METHOD_HW_DEVICE_CTX && config->device_type == type) {
 			hw_pix_fmt = config->pix_fmt;
 			break;
 		}
 	}
 
-	if (!(decoder = avcodec_alloc_context3(decoder))) {
+	if (!(decoder_ctx = avcodec_alloc_context3(decoder))) {
 		return AVERROR(ENOMEM);
 	}
-	video = input_cx->streams[video_stream];
-	if (avcodec_paramters_to_context(decoder_ctx ,video->codecpar) < 0) {
+	video = input_ctx->streams[video_stream];
+	if (avcodec_parameters_to_context(decoder_ctx ,video->codecpar) < 0) {
 		return -1;
 	}
 	decoder_ctx->get_format = get_hw_format;
@@ -191,7 +193,7 @@ int main(int argc ,char **argv[]) {
 	}
 	avcodec_free_context(&decoder_ctx);
 	avformat_close_input(&input_ctx);
-	av_buffer_unref(&hw_decoder_ctx);
+	av_buffer_unref(&hw_device_ctx);
 
 	return 0;
 } 
