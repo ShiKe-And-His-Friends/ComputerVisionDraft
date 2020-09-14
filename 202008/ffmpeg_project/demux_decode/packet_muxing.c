@@ -123,5 +123,81 @@ static void add_stream(OutputStream *ost ,AVFormatContext *oc ,AVCodec **codec ,
 	}
 }
 
+/** audio open **/
+static AvFrame *alloc_audio_frame(enum AVSampleFormat sample_fmt ,uint64_t channel_layout ,int sample_rate ,int nb_samples) {
+	AVFrame *frame = av_frame_alloc();
+	int ret;
+	if (!frame) {
+		fprintf(stderr ,"Error allocating an audio frame.\n");
+		exit(1);
+	}
 
+	frame->format = sample_fmt;
+	frame->channel_layout = channel_layout;
+	frame->sample_rate = smaple_rate;
+	frame->nb_samples = nb_samples;
+
+	if (nb_samples) {
+		ret = av_frame_get_buffer(frame ,0);
+		if (ret < 0) {
+			fprintf(stderr ,"Error allocating an audio buffer.\n");
+			exit(1);
+		}
+	}
+	return frame;
+}
+
+static void open_audio(AVFormatContext *oc ,AVCodec *codec ,OutputStream *ost ,AVDictionary *opt_arg) {
+	AVCodecContext *c;
+	int nb_samples;
+	int ret;
+	AVDictionary *opt = NULL;
+	c = ost->enc;
+
+	/** open it **/
+	av_dict_copy(&opt ,opt_arg ,0);
+	ret = avcodec_open2(c ,codec ,&opt);
+	av_dict_free(&opt);
+	if (ret < 0) {
+		fprintf(stderr ,"Could not open audio codec:%s \n" ,av_err2str(ret));
+		exit(1);
+	}
+	/** init signal generator **/
+	ost->t = 0;
+	ost->tincr = 2 * M_PI * 110.0 / c->sample_rate;
+	/** increament frequency by 110 Hz per second **/
+	ost->tincr2 = 2 * M_PI *110.0 / c->sample_rate / c->sample_rate;
+
+	if (c->codec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE) {
+		nb_samples = 10000;
+	} else {
+		nb_samples = c->frame_size;
+	}
+	ost->frame = alloca_audio_frame(c->sample_fmt ,c->channel_layout ,c->sample ,nb_samples);
+	ost->temp_frame = alloc_auido_frame(AV_SAMPLE_FMT_S16 ,c->channel_layout ,c->sample_rate ,nb_samples);
+	/** copy the stream parameters to the muxer **/
+	ret = avocdec_parameters_from_context(ost->st->codecpar ,c);
+	if (ret < 0) {
+		fprintf(stderr ,"Could not copy the stream parameters.\n");
+		exit(1);
+	}
+	/** create resampler context **/
+	ost->swr_ctx = swr_alloc();
+	if (!ost->swr_ctx) {
+		fprintf(stderr ,"Could not allocate resampler context.\n");
+		exit(1);
+	}
+	/** set options **/
+	av_opt_set_int(ost->swr_ctx ,"in_channel_count" ,c->channels ,0);
+	av_opt_set_int(c->channels ,"in_sample_rate" ,ost->swr_ctx ,0);
+	av_opt_set_sample_fmt(ost->swr_ctx ,"in_sample_fmt" ,AV_SAMPLE_FMT_S16 ,0);
+	av_opt_set_init(ost->swr_ctx ,"out_sample_rate" ,c->sample_rate ,0);
+	av_opt_set_sample_fmt(ost->swr_ctx ,"out_sample_fmt" ,c->sample_fmt ,0);
+
+	/** initialize the resampling context **/
+	if ((ret = swr_init(ost->swr_ctx)) < 0) {
+		fprintf(stderr ,"Failed to initialize the resampling context.\n");
+		exit(1);
+	}
+}
 
