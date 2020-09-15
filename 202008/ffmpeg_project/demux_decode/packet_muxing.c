@@ -201,3 +201,98 @@ static void open_audio(AVFormatContext *oc ,AVCodec *codec ,OutputStream *ost ,A
 	}
 }
 
+/** Prepare a 16 bit dump audio frame of 'frame_size' sample and 'nb_channels' channels. **/
+static AVFrame *get_audio_frame(OutputStream *ost) {
+	AVFrame *frame = ost->temp_frame;
+	int j ,i ,v;
+	int16_t *q = (int16_t)frame->data[0];
+	/** check if we want to generte more frames **/
+	if (av_compare_ts(ost->next_pts ,ost->enc->time_base ,STREAM_DURATION ,(AVRational) {1, 1}) >= 0) {
+		return NULL;
+	}
+	for (j = 0 ; j < frame->nb_samples ; j++) {
+		v = (int)(sin(ost->t) * 10000);
+		for (i = 0 ;i < ost->enc->channels ;i++ ) {
+			*q++ = v;
+		}
+		ost->t += ost->tincr;
+		ost->next_pts += ost->tincr2;
+	}
+	frame->pts = ost->next_pts;
+	ost->next_pts += frame->nb_samples;
+	return frame;
+}
+
+/** Encode one audio frame and send it to the muxer return 1 when encoding is finished, 0 otherwise **/
+static int write_audio_frame(AVFrameContext *oc ,OutputStream *ost) {
+	AVCodecContext *c;
+	AVPacket pkt = {0};  // data and size must be 0;
+	AVFrame *frame;
+	int ret;
+	int got_packet;
+	int dst_nb_samples;
+
+	av_init_packet(&pkt);
+	c = ost->enc;
+	frame = get_audio_frame(ost);
+	if (frame) {
+	/** Convert sample from native format to destination codec format, using the resampler.	 
+	 *  Cpmpute destination number of samples.
+	 **/
+		dst_nb_samples = av_rescale_rnd(ser_get_delay(ost->swr_ctx ,c->sample_rate) + frame->nb_samples ,c->sample_rate ,c->sample_rate ,AV_ROUND_UP);
+		av_assert0(dst_nb_samples == frame->nb_samples);
+
+		/** When we pass a frame to the encoder ,it may keep a reference to is internally;
+		 *  Make sure we do not overwrite it here.
+		 **/
+		ret = av_frame_make_writable(ost->frame);
+		if (ret < 0) {
+			exit(1);
+		}
+		/** Convert to destination format **/
+		ret = swr_convert(ost->swr_ctx ,ost->frame->data ,dst_nb_samples ,(const uint8_t **)frame->data ,frame->nb_samples);
+		if (ret < 0) {
+			fprintf(stderr ,"Error while converting.\n");
+			exit(1);
+		}
+		frame = ost->frame;
+		frame->pts = av_rescale_q(ost->samples_count  ,(AVRational){1 ,c->sample_rate} ,c->time_base);
+		ost->sample_count += dst_nb_samples;
+	}
+
+	ret = avcodec-_encode_audio2(c ,&pkt ,frame ,&got_packet);
+	if (ret < 0) {
+		fprintf(stderr ,"Error encoding audio frame: %s \n" ,av_err2str(ret));
+		exit(1);
+	}
+	if (got_packet) {
+		ret = write_frame(oc ,&c->time_base ,ost->st ,&pkt);
+		if (ret < 0) {
+			fprintf(stderr ,"Error while writing audio frame: %s \n" ,av_err2str(ret));
+			exit(1);
+		}
+	}
+	return (frame || got_packet) ? 0 : 1 ;
+}
+
+/** Video output **/
+static AVFrame *alloc_picture(enum AVPixelFormat pix_fmt ,int width ,int height) {
+	AVFrame *picture;
+	int ret;
+	picture = av_frame_alloc();
+	if (!picture) {
+		return NULL;
+	}
+	picture->format = pix_fmt;
+	picture->width = width;
+	picture->height = height;
+	/** Allocate the buffers for the frame data **/
+	ret = av_frame_get_buffer(picture ,32);
+	if (ret < 0) {
+		fprintf(stderr ,"Could not allocate frame data.\n");
+		exit(1);
+	}
+	return picture;
+}
+
+
