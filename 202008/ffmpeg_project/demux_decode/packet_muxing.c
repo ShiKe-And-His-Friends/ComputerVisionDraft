@@ -295,4 +295,41 @@ static AVFrame *alloc_picture(enum AVPixelFormat pix_fmt ,int width ,int height)
 	return picture;
 }
 
+static void open_video (AVFormatContext *oc ,AVCodec *codec ,OutputStream *ost ,AVDirctionary *opt_arg) {
+	int ret;
+	AVCodecContext *c = ost->enc;
+	AVDictionary *opt = NULL;
+	av_dict_copy(&opt ,opt_arg ,0);
+	/** open the codec **/
+	ret = avcodec_open2(c ,codec ,&opt);
+	av_dict_free(&opt);
+	if (ret < 0) {
+		fprintf(stderr ,"Could not open video codec: %s \n" ,av_err2str(ret));
+		exit(1);
+	}
 
+	/** allocate and init a re-usable frame **/
+	ost->frame = alloc_picture(c->pix_fmt ,c->width ,c->height);
+	if (!ost->frame) {
+		fprintf(stderr ,"Could not allocatae video frame.\n");
+		exit(1);
+	}
+	/** If the output format is not YUV420P ,then a temporary YUV420P picture is needed too.
+	 * It is then converted to the required.
+	 **/
+	ost->tmp_frame = NULL;
+	if (c->pix_fmt != AV_PIX_FMT_YUV420P) {
+		ost->tmp_frame = alloc_picture(AV_PIX_FMT_YUV420P ,c->width ,c->height);
+		if (!ost->tmp_frame) {
+			fprintf(stderr ,"Could not allocate temporary picture\n");
+			exit(1);
+		}
+	}
+	/** copy the stream parameters to the muxer **/
+	ret = avcodec_parameters_from_context(ost->st->codecpar ,c);
+	if (ret < 0) {
+		fprintf(stderr ,"Could not copy the stream parameters\n");
+		exit(1);
+	}
+
+}
