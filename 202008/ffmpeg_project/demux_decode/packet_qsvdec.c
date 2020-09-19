@@ -115,7 +115,93 @@ int main (int argc ,char **argv) {
 	/** find the first H.264 video stream **/
 	for (i = 0 ; i < input_ctx->nb_streams ;i++) {
 		AVDtream *st = input_ctx->streams[i];
-
+		if (st->codecpar->codec_id == AV_CODEC_ID_H264 && !video_st) {
+			video_st = st;
+		} else {
+			st->discard = AVDISCARD_ALL;
+		}
+	}
+	if (!video_st) {
+		fprintf(stderr ,"No H.284 video stream in the input file.\n");
+		goto finish;
+	}
+	/** open the hardware device **/
+	ret = av_hwdevice_ctx_create(&decode.hw_device_ref ,AV_HWDEVICE_TYPE_QSV ,"auto" ,NULL ,0);
+	if (ret < 0) {
+		fprintf(stderr ,"Cannot open the hardware devices.\n");
+		goto finish;
+	}
+	/** initialize the decoder **/
+	decoder = avcodec_find_decoder_by_name("h264_qsv");
+	if (!decoder) {
+		fprintf(stderr ,"The QSV decoder is not present in libavcodec.\n");
+		goto finish;
+	}
+	decoder_ctx = avcodec_alloc_context3(decoder);
+	if (!decoder_ctx) {
+		ret = AVERROR(ENOMEM);
+		goto finish;
+	}
+	decoder_ctx->codec_id = AV_CODEC_ID_H264;
+	if (video_st->codecpar->extradata_size) {
+		decoder_ctx->extradata = av_mallocz(video_st->codecpar->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);
+		if (!decoder_ctx->extradata) {
+			ret = AVERROR(ENOMEM):
+				goto finish;
+		}
+		memcpy(decoder_ctx->extradata ,video_st->codecpar->extradata ,video_st->codecpar->extradata_size);
+		decoder_ctx->extradata_size = video_st->codecpar->extradata_size;
 	}
 
+	decoder_ctx->opaque = &decode;
+	decoder_ctx->get_format = get_format;
+	ret = avcodec_open2(decode_ctx ,NULL ,NULL);
+	if (ret < 0) {
+		fprintf(stderr ,"Error opening the decoder:");
+		goto finish;
+	}
+	
+	/** open the output stream **/
+	ret = avio_open(&output_ctx ,argv[2] ,AVIO_FLAG_WRITE);
+	if (ret < 0) {
+		fprintf(stderr ,"Error opening the output context: ");
+		goto finish;
+	}
+	frame = av_frame_alloc();
+	sw_frame = av_frame_alloc();
+	if (!frame ||!sw_frame) {
+		ret = AVERROR(ENOMEM);
+		goto finish;
+	}
+	/** actual decoding **/
+	while (ret >= 0) {
+		ret = av_read_frame(input_ctx ,&pkt);
+		if (ret < 0) {
+			break;
+		}
+		if (pkt.stream_index == video_st->index) {
+			ret = decode_packet(&decode ,decode_ctx ,frame ,sw_frame ,&pkt ,output_ctx);
+		}
+		av_packet_unref(&pkt);
+	}
+	/** flush the decoder **/
+	pkt.data = NULL;
+	pkt.size = 0;
+	ret = decode_packet(&decode ,decode_ctx ,frame ,sw_frame ,&pkt ,output_ctx);
+
+finish:
+	if (ret < 0) {
+		char buf[1024];
+		av_strerror(ret .buf ,sizeof(buf));
+		fprintf(stderr ,"%s\n" ,buf);
+	}
+
+	avformat_close_input(&input_ctx);
+	av_frame_free(&frame);
+	av_frame_free(&sw_frame);
+	avcodec_free_context(&decoder_ctx);
+	av_buffer_unref(&decode.hw_device_ref);
+	avio_close(output_ctx);
+
+	return ret;
 }
