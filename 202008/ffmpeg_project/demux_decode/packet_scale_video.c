@@ -39,8 +39,8 @@ int main(int argc ,char **argv) {
 		fprintf(stderr ,"Usage: %s output_file output_size\n API example program to show how to scale an image with libswscale.\n This program generates a serirs of pictures, resacles them to the given output_size and saves them to an output file named output_file\n" ,argv[0]);
 		exit(1);
 	}
-	dst_filename = argv[2];
-	dst_size = argv[3];
+	dst_filename = argv[1];
+	dst_size = argv[2];
 	if (av_parse_video_size(&dst_w ,&dst_h ,dst_size) < 0) {
 		fprintf(stderr ,"Invalid size '%s', must be in the from WxH or a valid size abbreviation\n " ,dst_size);
 		exit(1);
