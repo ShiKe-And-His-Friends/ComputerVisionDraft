@@ -161,4 +161,232 @@ cleanup:
 	*output_format_context = NULL;
 	return error < 0 ? error :AVERROR_EXIT;
 }
+/**Initialize one data packet for reading or writing. @param packet Pacjket to be initialized **/
+static void init_packet(AVPacket *packet) {
+	av_init_packet(packet);
+	/** Set the packet data and size so that it is recognized as being empty. **/
+	packet->data = NULL;
+	packet->size = 0;
+}
+
+/** Initialize one audio frame to reading fron the input file. @param[out] frame Frame to be initialized @return Error code (0 if successful) **/
+static int init_input_frame(AVFrame **frame) {
+	if (!(*frame = av_frame_alloc())) {
+		fprintf(stderr ,"Could not allocate input frame.\n");
+		return AVERROR(ENOEME);
+	}
+	return 0;
+}
+
+/**Initailize the audio resampler based on the input and output codec settings. 
+ * If the input and output sample formats differs ,a conversion is required
+ * libswresample takes care of this ,but requires initialization.
+ * @param input_codec_context Codec context of the input file
+ * @param output_codec_context Codec context of the output file
+ * @param[out] resamole_context Resample context for the required conversion.
+ * @return Error code (0 if successful)
+ **/
+static int init_resampler(AVCodecContext *input_codec_context ,AVCodecContext *output_codec_context ,SwrContext **resample_context) {
+	int error;
+	/**
+	 * Create a resample context for the conversion.
+	 * Set the conversion parameters.
+	 * Dedault channel layouts based on the number of channels
+	 * are assumed for simplicity (they are sometimes not detected 
+	 * properly by the demuxer and/or decoder).
+	 **/
+	resample_context = swr_alloc_set_opts(NULL ,av_get_default_channel_layout(output_codec_context->channels) 
+		,output_codec_context->sample_fmt ,output_codec_context->sample_rate,
+		av_get_default_channel_layout(input_codec_context->channels) 
+		,input_codec_context->sample_fmt ,input_codec_context->sample_rate
+		,0 ,NULL);
+	if (!*resample_context) {
+		fprintf(stderr ,"Could not allocate resample context.\n");
+		return AVERROR(ENOMEM);
+	}
+	/**
+	 * Perform a sanity check so that the number of converted sample is not greater than that the number of samples to be converted.
+	 * If the sample rates differs ,this case has to be handled differently
+	 **/
+	av_assert0(output_codec_context->sample_rate == input_codec_context->sample_rate);
+	/** Open the resampler with the specified parameters. **/
+	if ((error = swr_init(*resample_context)) < 0) {
+		fptintf(stderr ,"Could not open resample context.\n");
+		swr_free(resample_context);
+		return error;
+	}
+	return 0;
+}
+
+/**
+ * Initialize a FIFO buffer for the audio samples to be encoded.
+ * @param[out] fifl Sample buffer
+ * @param output_codec_context Codec context of the output file
+ * @return Error code (0 if successful) 
+ **/
+static int init_fifo(AVAudioFifo **fifo ,AVCodecContext *output_codec_context) {
+	/** Create the FIFO buffer based on the specified ouput sample format **/
+	if (!(*fifo = av_audio_fifo_alloc(output_codec_context->sample_fmt,
+		output_codec_context->channels ,1))) {
+		fprintf(stderr ,"Could not allocarte FIFO\n");
+		return AVERROR(ENOMEM);
+	}
+	return 0;
+}
+
+/**
+ * Write the header of the ouput file cotainer.
+ * @param output_format_context Format context of the output file
+ * @return Error code (0 if successful) 
+ **/
+static int write_ouput_file_header(AVFormatContext *output_format_context) {
+	int error;
+	if ((error = avformat_write_header(output_format_context ,NULL)) < 0) {
+		fprintf(stderr ,"Could not write output file header (error '%s') \n" ,av_err2str(error));
+		return error;
+	}
+	return 0;
+}
+
+/**
+ * Decode one audio frame from the input file.
+ * @param frame Audio frame to be decoded
+ * @param input_format_contxt Format context of the input file
+ * @param input_codec_context Codec context of the input file
+ * @param[out] data_present 
+ **/
+static int decode_audio_frame(AVFrame *frame ,AVFormatContext *input_format_context 
+	,AVCodecContext *input_codec_context ,int *data_present ,int *finished) {
+	/** Packet used for temporary stroage.**/
+	AVPacket input_packet;
+	int error;
+	init_packet(&input_packet);
+	/** Read one audio frame from the input file into a temproary packet. **/
+	if ((error = av_read_frame(input_format_context ,&input_packet)) < 0) {
+		/** If we are at the end of the file, flush the decoder below. **/
+		if (errpr  == AVERROR_EOF) {
+			*finished = 1;
+		} else {
+			fptintf(stderr ,"Could not read frame (error '%s') \n" ,av_err2str(error));
+			return error;
+		}
+	}
+	/** Send the audio frame stored in the temporary packet to the decoder.
+	 * The input audio stream deocder is used to do this.
+	 **/
+	if ((error = avcodec_send_packet(input_codec_context ,&input_packet)) < 0) {
+		fprintf(stderr ,"Could not send packet for decoding (error '%s')\n" ,av_err2str(error));
+		return error;
+	}
+	/** Receive one frame from the decoder.**/
+	error = avcodec_receive_frame(input_codec_context ,frame);
+	/** If the decoder asks for more data to be able to decode a frame,
+	 * return indicating that no data is present.
+	 **/
+	if (error == AVERROR(EAGAIN)) {
+		error = 0;
+		goto cleanup;
+	/** If the end of the input file is reached, stop decoding. **/
+	} else if (error == AVERROR_EOF) {
+		*finished = 1;
+		error = 0;
+		goto cleanup;
+	} else if (error < 0) {
+		fprintf(stderr ,"Could not decode frame (error '%s')\n" ,av_err2str(error));
+		goto cleanup;
+	/** Default case : Return decoded data. **/
+	} else {
+		*data_present = 1;
+		goto cleanup;
+	}
+
+cleanup:
+	av_packet_unref(&input_packet);
+	return error;
+}
+
+/**
+ * Initialize a temporary storage for the specified number of audio samoles.
+ * The conversion requires temporary storage due to the different format.
+ * The number of audio samples to be allocated is specified in frame_sze.
+ * @param[out] converted_input_sample Array of converted samples.The dimensions are reference ,channel(for nulti-channel audio),sample.
+ * @param output_codec_context Codec context of the output file. Number of samples to be converted in each round
+ * @return Error code(0 if successful)
+ **/
+static int init_converted_samples(uint8_t ***converted_input_samples ,AVCodecContext *output_codec_context ,int frame_size) {
+	int error;
+	/**
+	 * Allocate memory for the samples of all channels in one consecutive 
+	 * block for convenience.
+	 **/
+	if ((error = av_sample_alloc(*converted_input_samples ,NULL ,output_codec_context->channels ,frame_size ,output_codec_context->sample_fmt ,0)) < 0) {
+		fprintf(stderr ,"Could not allocate converted input samples (error '%s')\n" ,ac_err2str(error));
+		av_freep(&(*converted_input_samples)[0]);
+		free(*converted_input_samples);
+		return error;
+	}
+	return 0;
+}
+
+/**
+ * Convert the input audio samples into the output sample format.
+ * The conversion happens on a per-frame basis ,the size of which is
+ * specified by frame_size.
+ * @param input_data Samples to be decoded.The dimensions are channel(for multi-channel audio),sample.
+ * @param[out] converted_data Converted samples.The dimensions are channel(for multi-channel audio),sample.
+ * @param frame_size Number of samples to be converted.
+ * @param resample_context Resample context for the conversion.
+ * @return Error code (0 if successful)
+ **/
+static int convert_samples(const uint8_t **input_data ,uint8_t **converted_data ,const int frame_size ,SwrContext *resample_context) {
+	int error;
+	/** Convert the sample using the resmaplesr. **/
+	if ((error = swr_convert(resample_context ,converted_data ,frame_size ,input_data ,frame_size)) < 0) {
+		fprintf(stderr ,"Could not convert input sample (error '%s')\n" ,av_err2str(error));
+		return error;
+	}
+	return 0;
+}
+
+/**
+ * Add converted input audio samples to the FIFO buffer for later processing.
+ * @param fifo Buffer to add the sample to 
+ * @param converted_input_samples Samples to be added. The dimensions are channel(for multi-channel audio),sample.
+ * @param frame_size Number of sample to be converted
+ * @return Error code(0 if successful)
+ **/
+static int add_samples_to_fifl(AVAudioFifo *fifo ,uint8_t **converted_input_samples ,const int frame_size) {
+	int error;
+	/** Make the FIFO as large as it needs to be to hold both,
+	 * the old and the new samples.
+	 **/
+	if ((error = av_audio_fifo_realloc(fifo ,av_audio_fifo_size(fifo) + frame_size)) < 0) {
+		fprintf(stderr ,"Could not reallocate FIFO\n");
+		return error;
+	}
+	/** Store the new samples in the FIFO buffer.**/
+	if (av_audio_fifo_write(fifo ,(void **)converted_input_samples ,frame_size) < frame_size) {
+		fprintf(stderr ,"Could not write data to FIFO.\n");
+		return AVERROR_EXIT;
+	}
+	return 0;
+}
+
+/** Read one audio frame from the inptut file ,deocde ,convert and store it in the FIFO buffer. 
+ * @param fifo Buffer used for temproary storage
+ * @param input_format_context Format context of the input file
+ * @param input_codec_context Codec context of the input file
+ * @param output_codec_context Resample context for the conversion
+ * @param[out] finished Indicateds whether the end of file has been reached and all data has been
+ *			deocded.If this flag is false, there is more data to be decoded,i.e.,this functionhas to be called again.
+ **/
+static int read_decode_convert_and_store(AVAudioFifo *fifoo ,AVFormatContext *input_format_context
+	,AVCodecCotext *input_codec_context ,AVCdoeccontext *output_codec_context
+	,SwrContext *resample_context ,int *finished) {
+	/** Temporary storage of the input samples of the frame read from the file. **/
+	AVFrame *input_frame = NULL;
+	/** Temporary storage for the converted input samples.**/
+	uint8_t **converted_input_sample = NULL;
+	int data_present = 0;
+}
 
