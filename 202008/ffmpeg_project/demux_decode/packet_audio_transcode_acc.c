@@ -388,5 +388,145 @@ static int read_decode_convert_and_store(AVAudioFifo *fifoo ,AVFormatContext *in
 	/** Temporary storage for the converted input samples.**/
 	uint8_t **converted_input_sample = NULL;
 	int data_present = 0;
+	int ret = AVERROR_EXIT;
+
+	/** Initialize temporary storage for one input frame. **/
+	if (init_input_frame(&input_frame)) {
+		goto cleanup;
+	}
+	/** Decode one frame worth of one input frame. **/
+	if (decode_audio_frame(input_frame ,input_foramt_context ,input_codec_context 
+		,&data_persent ,finished)) {
+		goto cleanup;
+	}
+	/** If we are at the end of the file and there are no more samples
+	 * in the decoder which are delayed, we are actually finished.
+	 * This must not be treated as an errror. 
+	 **/
+	if (*finished) {
+		ret = 0;
+		goto cleanup;
+	}
+	/** If there is decoded data ,convert and store it. **/
+	if (data_present) {
+		/** Initialize the temporary storage for the converted input samples. **/
+		if (init_converted_samples(&covertd_init_samples ,output_codec_context
+			,input_frame->nb_samples)) {
+			goto cleanup;
+		}
+		/**
+		 * Conveert the input samples to the desired output sample format.
+		 * This requires a temporary storage provided by converted_input_samples.
+		 **/
+		if (convert_samples((const uint8_t **)input_frame->extended_data ,converted_input_samples ,input_frame->nb_samples ,resampler_context)) {
+			goto cleanup;
+		}
+		/** Add the converted input sample to the FIFO buffer for later porcessing. **/
+		if (add_samples_to_fifo(fifo ,converted_input_samples ,input_frame->nb_samples)) {
+			goto cleanup;
+		}
+		ret = 0;
+	}
+	ret = 0;
+
+cleanup:
+	if (converted_input_samples) {
+		av_freep(&converted_input_samples[0]);
+		free(converted_input_samples);
+	}
+}
+
+/**
+ * Initialize onr input frame for weiting to the output file.
+ * The frame will be exactlly frame_size samples large.
+ * @param[out] frame Frame to be initialized
+ * @param output_codec_context Codec context of the output file
+ * @param frame_size Size of the frame
+ * @return Error code (0 if successful) 
+ **/
+static int init_output_frame(AVFrame **frame ,AVCodecContext *output_codec_context ,int frame_size) {
+	int error;
+	/** Create a new frame to store the audio samples. **/
+	if (!(*frame = av_frame_alloc())) {
+		fprintf(stderr ,"Could not allocate output frame.\n");
+		return AVERROR_EXIT;
+	}
+
+	/**
+	 * Set the frame's parameters ,especially its size and format.
+	 * av_frame_get_buffer needs this to allocate memory for the 
+	 * audio samples of the frame.
+	 * Default channel layouts based on the number of channels
+	 * are assumed for simplicity.
+	 **/
+	(*frame)->nb_samples = frame_size;
+	(*frame)->channel_layout = output_codec_context->channel_layout;
+	(*frame)->format = output_codec_context->sample_fmt;
+	(*frame)->sample_rate = output_codec_context->sample_rate;
+
+	/** Allocate the samples of the created frame. This call will make 
+	 * sure that the audio frame can hold as many samples as specified. 
+	 **/
+	if ((error = av_frame_get_buffer(*frame ,0)) < 0) {
+		fprintf(stderr ,"Could not allocate output frame samples (error '%s') \n" ,av_err2str(error));
+		av_frame_free(frame);
+		return error;
+	}
+	return 0;
+}
+
+/** Global timestamp for the audio frames. **/
+static int64_t pts = 0;
+
+/**
+ * Encode one frame worth of audio to the output file.
+ * @param frame Sample to be encode
+ * @param output_format_context Format context of the output file
+ * @param output_codec_context Codec context of the output file
+ * @param[out] data_preset Indicates whether data has been encoded
+ * @return Error code (0 if successful)
+ **/
+static int encode_audio_frame(AVFrame *frame ,AVFrormatContext *output_format_context
+	AVCodecContext *output_codec_context ,int *data_present) {
+	/** Packet used for temporary storage. **/
+	AVPacket output_packet;
+	int error;
+	init_packet(&output_packet);
+
+	/** Set a timestamp based on the samples rate for the container. **/
+	if (frame) {
+		frame->pts = pts;
+		pts += frame->nb_samples;
+	}
+	/**
+	 * Send the audio frame stored in the temporary packet to the encoder.
+	 * The output audio stream encoder is used to do this
+	 **/
+	error = avcodec_send_frame(output_codec_context ,frame);
+	/** The encoder singnals that is has nothing more to encode.**/
+	if (error == AVERROR_EOF) {
+		error = 0;
+		goto cleanup;
+	} else if (error < 0){
+		fprintf(stderr ,"Could not send packet for enncoding (error '%s') \n" ,av_err2str(error));
+		return error;
+	}
+
+	/** Receive one encoded frame from the encoder **/
+	error = avcodec_receive_packet(output_codec_context ,&output_packet);
+	/** If the encoder asks fot more data to be able to provide an 
+	 * encoded frame ,return indicating that no data is present.
+	 */
+	if (error == AVERROR(EAGAIN)) {
+		error = 0;
+		goto cleanup;
+	/** If tje last frame has been encoded ,stop encoding. **/
+	} else if (error == AVERROR_EOF) {
+		fprintf(stderr ,"Could not encode frame (error '%s') \n" ,av_err2str(error));
+		goto cleanup;
+	/** Default case : Return encoded data. **/
+	} else {
+*data
+	}
 }
 
