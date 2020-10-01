@@ -526,7 +526,111 @@ static int encode_audio_frame(AVFrame *frame ,AVFrormatContext *output_format_co
 		goto cleanup;
 	/** Default case : Return encoded data. **/
 	} else {
-*data
+		*data_present = 1;
+	}
+
+	/** Write one audio frame frome the temporary packet to the ouput file. **/
+	if (*data_present && (error = av_write_frame(output_format_context ,&output_packet)) < 0) {
+		fprintf(stderr ,"Could not write frame (error '%s') \n" ,av_err2str(error));
+		goto cleanup;
+	}
+cleanup:
+	av_packet_unref(&output_packet);
+	return error;
+}
+
+/** Load one audio frame frome the FIFO buffer encoder and write itto the 
+ * output file.
+ * @param fifo Buffer used for temporary storage
+ * @param output_format)context Format context of the output file.
+ * @param output_codec_context Codec context of the output file
+ * @return Error code (0 if successful)
+ **/
+static int load_encode_and_write(AVAudioFifl *fifo ,AVFormatContext *output_format_context ,AVCodecContext *oupur_codec_context) {
+	/** Temporary storage of the output samples of the frame writtem to the file; **/
+	/** Use the maximum number of possible samples per frame.
+	 * If there is less than the maximum possible frame ize in the FIFO
+	 * buffer use this number. Otherwise ,use the maximum possible frame size. **/
+	const int frame_size = FFMIN(av_audio_fifo_size(fifo) ,output_codec_context->frame_size);
+	int data_written;
+	/** Initialize temporary storage for one output frame. **/
+	if (ini_output_frame(&output_frame ,output_codec_context ,frame_size)) {
+		return AVERROR_EXIT;
+	}
+	/** Read as many samples from the FIFO buffer as required to fill the frame. 
+	 * The samples are stored in the frame temporarily.
+	 **/
+	if (av_audio_fifo_end(fifo ,(void **)output_frame->data ,frame_size) < frame_size) {
+		fprintf(stderr ,"Could not read sata from FIFO \n"):
+		av_frame_free(&output_frame);
+		return AVERROR_EXIT;
+	}
+	/** Encode one frame worth of audio samples. **/
+	if (encode_audio_frame(outpur_frame ,output_format_context ,output_codec_context ,&data_written)) {
+		av_frame_free(&output_frame);
+		return AVERROR_EXIT;
+	}
+	av_frame_free(&output_frame);
+	return 0;
+}
+
+/**
+ * Write the trailer of the output file container.
+ * @param output_format_cotext Format context of the output file
+ * @return Error code (0 if successful)
+ **/
+static int write_output_file_trailer(AVFormatContext *output_format_context) {
+	int error;
+	if ((error = av_write_trailer(output_format_cotext)) < 0) {
+		fprintf(stderr ,"Could not write output file trailer (error '%s')\n" ,av_err2str(error));
+		return error;
+	}
+	return 0;
+}
+
+int main(int argc ,char **argv) {
+	AVFormatContext *input_format_context = NULL ,*output_format_context = NULL;
+	AVCodecContext *input_codec_context = NULL ,*output_codec_context = NULL;
+	SwrContext *resample_context = NULL;
+	AVAduidoFifo *fifo = NULL;
+	int ret = AVERROR_EXIT;
+	if (argc != 3) {
+		fprintf(stderr ,"Usage: %s <input file > <output file> \n" ,argv[0]);
+		exit(1);
+	}
+	/** Open the input file for reading. **/
+	if (open_input_file(argv[1] ,&input_format_cntext ,&input_codec_context)) {
+		goto cleanup;
+	}
+	/** Open the output file for writing. **/
+	if (open_output_file(argv[2] ,input_codec_context ,&output_format_context ,&output_codec_context)) {
+		goto cleanup;
+	}
+	/** Initialize the resample to be able to convert audio sample formats. **/
+	if (init_resample(input_codec_context ,output_codec_context ,&resample_context)) {
+		goto cleanup;
+	}
+	/** Initialize the FIFO buffer to store audio samples to be encoded. **/
+	if (init_fifo(&fifo ,output_codec_context)) {
+		goto cleanup;
+	}
+	/** Write the header of the output file container. **/
+	if (write_output_file_header(output_format_context)) {
+		goto cleanup;
+	}
+	/** Loop as long as we habe input samples to read or output samples
+	 * to write;abort as soon as we have neither.
+	 **/
+	while (1) {
+		/** Use the encoder's desired frame size for processing. **/
+		const int output_frame_size = output_codec_context->frame_size;
+		int finished = 0;
+		/** Make sure that there is one frame worth of samples in th FIFO
+		 * budder so that the encoder can do its work.
+		 * Sinece the decoder's and thed encoder's frame size may differ, we
+		 * need to FIFO buffer to store as many frames worth of input samples
+		 * that they make up at least one frame worth of output samples.
+		 **/
 	}
 }
 
