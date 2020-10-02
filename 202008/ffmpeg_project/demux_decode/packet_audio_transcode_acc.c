@@ -393,7 +393,7 @@ static int add_samples_to_fifo(AVAudioFifo *fifo ,uint8_t **converted_input_samp
  *			deocded.If this flag is false, there is more data to be decoded,i.e.,this functionhas to be called again.
  **/
 static int read_decode_convert_and_store(AVAudioFifo *fifo ,AVFormatContext *input_format_context
-	,AVCodecContext *input_codec_context ,AVCodoecContext *output_codec_context
+	,AVCodecContext *input_codec_context ,AVCodecContext *output_codec_context
 	,SwrContext *resample_context ,int *finished) {
 	/** Temporary storage of the input samples of the frame read from the file. **/
 	AVFrame *input_frame = NULL;
@@ -562,7 +562,7 @@ cleanup:
  * @param output_codec_context Codec context of the output file
  * @return Error code (0 if successful)
  **/
-static int load_encode_and_write(AVAudioFifo *fifo ,AVFormatContext *output_format_context ,AVCodecContext *oupur_codec_context) {
+static int load_encode_and_write(AVAudioFifo *fifo ,AVFormatContext *output_format_context ,AVCodecContext *ouput_codec_context) {
 	/** Temporary storage of the output samples of the frame writtem to the file; **/
 	/** Use the maximum number of possible samples per frame.
 	 * If there is less than the maximum possible frame ize in the FIFO
@@ -570,19 +570,19 @@ static int load_encode_and_write(AVAudioFifo *fifo ,AVFormatContext *output_form
 	const int frame_size = FFMIN(av_audio_fifo_size(fifo) ,output_codec_context->frame_size);
 	int data_written;
 	/** Initialize temporary storage for one output frame. **/
-	if (ini_output_frame(&output_frame ,output_codec_context ,frame_size)) {
+	if (init_output_frame(&output_frame ,output_codec_context ,frame_size)) {
 		return AVERROR_EXIT;
 	}
 	/** Read as many samples from the FIFO buffer as required to fill the frame. 
 	 * The samples are stored in the frame temporarily.
 	 **/
-	if (av_audio_fifo_end(fifo ,(void **)output_frame->data ,frame_size) < frame_size) {
-		fprintf(stderr ,"Could not read sata from FIFO \n"):
+	if (av_audio_fifo_read(fifo ,(void **)output_frame->data ,frame_size) < frame_size) {
+		fprintf(stderr ,"Could not read sata from FIFO \n");
 		av_frame_free(&output_frame);
 		return AVERROR_EXIT;
 	}
 	/** Encode one frame worth of audio samples. **/
-	if (encode_audio_frame(outpur_frame ,output_format_context ,output_codec_context ,&data_written)) {
+	if (encode_audio_frame(output_frame ,output_format_context ,output_codec_context ,&data_written)) {
 		av_frame_free(&output_frame);
 		return AVERROR_EXIT;
 	}
@@ -597,7 +597,7 @@ static int load_encode_and_write(AVAudioFifo *fifo ,AVFormatContext *output_form
  **/
 static int write_output_file_trailer(AVFormatContext *output_format_context) {
 	int error;
-	if ((error = av_write_trailer(output_format_cotext)) < 0) {
+	if ((error = av_write_trailer(output_format_context)) < 0) {
 		fprintf(stderr ,"Could not write output file trailer (error '%s')\n" ,av_err2str(error));
 		return error;
 	}
