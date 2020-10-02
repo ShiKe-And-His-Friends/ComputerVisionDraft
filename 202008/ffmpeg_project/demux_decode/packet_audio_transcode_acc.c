@@ -197,7 +197,7 @@ static int init_resampler(AVCodecContext *input_codec_context ,AVCodecContext *o
 	 * are assumed for simplicity (they are sometimes not detected 
 	 * properly by the demuxer and/or decoder).
 	 **/
-	resample_context = swr_alloc_set_opts(NULL ,av_get_default_channel_layout(output_codec_context->channels) 
+	*resample_context = swr_alloc_set_opts(NULL ,av_get_default_channel_layout(output_codec_context->channels) 
 		,output_codec_context->sample_fmt ,output_codec_context->sample_rate,
 		av_get_default_channel_layout(input_codec_context->channels) 
 		,input_codec_context->sample_fmt ,input_codec_context->sample_rate
@@ -407,8 +407,8 @@ static int read_decode_convert_and_store(AVAudioFifo *fifo ,AVFormatContext *inp
 		goto cleanup;
 	}
 	/** Decode one frame worth of one input frame. **/
-	if (decode_audio_frame(input_frame ,input_foramt_context ,input_codec_context 
-		,&data_persent ,finished)) {
+	if (decode_audio_frame(input_frame ,input_format_context ,input_codec_context 
+		,&data_present ,finished)) {
 		goto cleanup;
 	}
 	/** If we are at the end of the file and there are no more samples
@@ -422,7 +422,7 @@ static int read_decode_convert_and_store(AVAudioFifo *fifo ,AVFormatContext *inp
 	/** If there is decoded data ,convert and store it. **/
 	if (data_present) {
 		/** Initialize the temporary storage for the converted input samples. **/
-		if (init_converted_samples(&covertd_init_samples ,output_codec_context
+		if (init_converted_samples(&converted_input_sample ,output_codec_context
 			,input_frame->nb_samples)) {
 			goto cleanup;
 		}
@@ -430,11 +430,11 @@ static int read_decode_convert_and_store(AVAudioFifo *fifo ,AVFormatContext *inp
 		 * Conveert the input samples to the desired output sample format.
 		 * This requires a temporary storage provided by converted_input_samples.
 		 **/
-		if (convert_samples((const uint8_t **)input_frame->extended_data ,converted_input_samples ,input_frame->nb_samples ,resampler_context)) {
+		if (convert_samples((const uint8_t **)input_frame->extended_data ,converted_input_sample ,input_frame->nb_samples ,resample_context)) {
 			goto cleanup;
 		}
 		/** Add the converted input sample to the FIFO buffer for later porcessing. **/
-		if (add_samples_to_fifo(fifo ,converted_input_samples ,input_frame->nb_samples)) {
+		if (add_samples_to_fifo(fifo ,converted_input_sample ,input_frame->nb_samples)) {
 			goto cleanup;
 		}
 		ret = 0;
@@ -442,9 +442,9 @@ static int read_decode_convert_and_store(AVAudioFifo *fifo ,AVFormatContext *inp
 	ret = 0;
 
 cleanup:
-	if (converted_input_samples) {
-		av_freep(&converted_input_samples[0]);
-		free(converted_input_samples);
+	if (converted_input_sample) {
+		av_freep(&converted_input_sample[0]);
+		free(converted_input_sample);
 	}
 	return ret;
 }
@@ -500,7 +500,7 @@ static int64_t pts = 0;
  * @return Error code (0 if successful)
  **/
 static int encode_audio_frame(AVFrame *frame ,AVFormatContext *output_format_context
-	AVCodecContext *output_codec_context ,int *data_present) {
+	,AVCodecContext *output_codec_context ,int *data_present) {
 	/** Packet used for temporary storage. **/
 	AVPacket output_packet;
 	int error;
@@ -562,8 +562,9 @@ cleanup:
  * @param output_codec_context Codec context of the output file
  * @return Error code (0 if successful)
  **/
-static int load_encode_and_write(AVAudioFifo *fifo ,AVFormatContext *output_format_context ,AVCodecContext *ouput_codec_context) {
+static int load_encode_and_write(AVAudioFifo *fifo ,AVFormatContext *output_format_context ,AVCodecContext *output_codec_context) {
 	/** Temporary storage of the output samples of the frame writtem to the file; **/
+	AVFrame *output_frame;
 	/** Use the maximum number of possible samples per frame.
 	 * If there is less than the maximum possible frame ize in the FIFO
 	 * buffer use this number. Otherwise ,use the maximum possible frame size. **/
@@ -608,14 +609,14 @@ int main(int argc ,char **argv) {
 	AVFormatContext *input_format_context = NULL ,*output_format_context = NULL;
 	AVCodecContext *input_codec_context = NULL ,*output_codec_context = NULL;
 	SwrContext *resample_context = NULL;
-	AVAduidoFifo *fifo = NULL;
+	AVAudioFifo *fifo = NULL;
 	int ret = AVERROR_EXIT;
 	if (argc != 3) {
 		fprintf(stderr ,"Usage: %s <input file > <output file> \n" ,argv[0]);
 		exit(1);
 	}
 	/** Open the input file for reading. **/
-	if (open_input_file(argv[1] ,&input_format_cntext ,&input_codec_context)) {
+	if (open_input_file(argv[1] ,&input_format_context ,&input_codec_context)) {
 		goto cleanup;
 	}
 	/** Open the output file for writing. **/
@@ -623,7 +624,7 @@ int main(int argc ,char **argv) {
 		goto cleanup;
 	}
 	/** Initialize the resample to be able to convert audio sample formats. **/
-	if (init_resample(input_codec_context ,output_codec_context ,&resample_context)) {
+	if (init_resampler(input_codec_context ,output_codec_context ,&resample_context)) {
 		goto cleanup;
 	}
 	/** Initialize the FIFO buffer to store audio samples to be encoded. **/
