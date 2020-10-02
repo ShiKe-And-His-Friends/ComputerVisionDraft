@@ -115,4 +115,77 @@ int main (int argc ,char *argv[]) {
 		fprintf(stderr ,"Cannot open video encoder codec. Error code:%s \n" ,av_err2str(err));
 		goto close;
 	}
+
+	while (1) {
+		if (!(sw_frame = av_frame_alloc())) {
+			err = AVERROR(ENOMEM);
+			goto close;
+		}
+		/** Read data into software frame,and transfer them into hw frame. **/
+		sw_frame->width = width;
+		sw_frame->height = height;
+		s_frame->format = AV_PIX_FMT_NV12;
+		if ((err = fread((uint8_t *)(sw_frame->data[0]),size ,1 ,fin)) < 0) {
+			break;
+		}
+		if ((err = fread((uint8_t *)(sw_frame->data[0]) ,size/2 ,1 ,fin)) <= 0) {
+			break;
+		}
+		if ((err = fread((uint8_t *)(sw_frame->data[1]) ,size/2 ,1 ,fin)) <= 0) {
+			break;
+		}
+		if (!(hw_frame = av_frame_alloc())) {
+			err = AVERROR(ENOMEM);
+			goto close;
+		}
+		if ((err = av_hwframe_get_buffer(avctx->hw_frame_ctx ,hw_frame ,0)) < 0) {
+			fprintf(stderr ,"Error code: %s.\n" ,av_err2str(err));
+			goto close;
+		}
+		if (!hw_frame->hw_frames_ctx) {
+			err = AVERROR(ENOMEM);
+			goto close;
+		}
+		if ((err = av_hwframe_transfer_data(hw_frame ,sw_frame ,0)) < 0) {
+			fprintf(stderr ,"Error code: %s .\n" ,av_err2str(err));
+			goto close;
+		}
+		if (!hw_frame->hw_frames_ctx) {
+			err = AVERROR(ENOMEM);
+			goto close;
+		}
+		if ((err = av_hwframe_transfer_data(hw_frame ,sw_frame ,0)) < 0) {
+			fprintf(stderr ,"Error while transferring frame data to surface. Error code: %s .\n" ,av_err2str(err));
+			goto close;
+		}
+		if ((err = (encode_write(avctx ,hw_frame ,fout))) < 0) {
+			fprintf(stderr ,"Failed to encode.\n");
+			goto close;
+		}
+		av_frame_free(&hw_frame);
+		av_frame_free(&sw_frame);
+	}
+	/** flush encoder. **/
+	err = encode_write(avctx ,NULL ,fout);
+	if (err = AVERROR_EOF) {
+		err = 0;
+	}
+
+close :
+	if (fin) {
+		fclose(fin);
+	}
+	if (fout) {
+		fclose(fout);
+	}
+	av_frame_free(&sw_frame);
+	av_frame_free(&hw_frame);
+	avcodec_free_context(&avctx);
+	av_buffer_unref(&hw_device_ctx);
+
+	return err;
 }
+
+//Generated on Tue Nov 6 2019 18:10:58 for FFmpeg by 1.8.6
+
+
