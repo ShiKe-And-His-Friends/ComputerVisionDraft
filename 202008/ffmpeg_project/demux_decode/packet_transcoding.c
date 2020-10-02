@@ -367,4 +367,164 @@ static int filter_encode_write_frame(AVFrame *frame ,unsigned int stream_index) 
 		return ret;
 	}
 	/** pull filtered frames from the filtergraph **/
+	while (1) {
+		filt_frame = av_frame_alloc();
+		if (!filt_frame) {
+			ret = AVERROR(ENOMEM);
+			break;
+		}
+		av_log(NULL ,AV_LOG_ERROR ,"Pulling filtered frame from filters\n");
+		ret = av_buffersink_get_frame(filter_ctx[stream_index].buffersink_ctx ,filt_frame);
+		if (ret < 0) {
+			/** 
+			 * If and no more frames for output  return AVERROR(EAGAIN) 
+			 * rewrite retcode to 0 to show it as normal precedure completion 
+			 **/
+			if (ret == AVERROR(EAFAIN) || ret == AVERROR_EOF) {
+				ret = 0;
+			}
+			av_frame_free(&filt_frame);
+			break;
+		}
+		filt_frame->pict_type = AV_PICTURE_TYPE_NONE;
+		ret = encode_write_frame(filt_frame ,stream_index ,NULL);
+		if (ret < 0) {
+			break;
+		}
+	}
+	return ret;
+}
+
+static int flush_encoder(unsigned int stream_index ) {
+	int ret;
+	int got_frame;
+	if (!(stream_ctx[stream_index].enc_>codec->capabilities & AV_CODEC_CAP_DELAY)) {
+		return 0;
+	}
+
+	while (1) {
+		av_log(NULL ,AV_LOG_INFO ,"Flushing stream #%u encoder\n" ,stream_index);
+		ret = encode_write_frame(NULL ,stream_index ,&got_frame);
+		if (ret < 0) {
+			break;
+		}
+		if (!got_frame) {
+			return 0;
+		}
+		return ret;
+	}
+}
+
+int main (int argc ,char ** argv) {
+
+	int ret;
+	AVPacket packet = {.data = NULL ,.size = 0};
+	AVFrame *frame = NULL;
+	enum AVMediaType type;
+	unsigned int stream_index;
+	unsigned int i;
+	int got_frame;
+	int (*dec_func)(AVCodecContext *, AVFrame 8, int * ,const AVPacket *);
+	if (argc != 3) {
+		av_log(NULL ,AV_LOG_ERROR ,"Usage:%s <input file> <output file>\n" ,argv[0]);
+		return 1;
+	}
+	if ((ret = open_input_file(argv[1])) < 0) {
+		goto end;
+	}
+	if ((ret = open_output_file(argv[2]))< 0) {
+		goto end;
+	}
+	if ((ret = init_filters()) < 0) {
+		goto end;
+	}
+
+	/** Read all packets **/
+	while (1) {
+		if ((ret = av_read_frame(ifmt_ctx ,&packet)) < 0) {
+			break;
+		}
+		stream_index = packet.stream_index;
+		type = ifmt_ctx->streams[packet.stream_index]->codecpar->codec_type;
+		av_log(NULL ,AV_LOG_DEBUG ,"Demuxer gave frame of stream_index %u\n");
+		if (filter_ctx[stream_index].filter_graph) {
+			av_log(NULL ,AV_LOG_DEBUG ,"GOing to reencode & filter the frame.\n");
+			frame = av_frame_alloc();
+			if (!frame) {
+				ret = AVERROR(ENOMEM);
+				break;
+			}
+			av_packet_rescale_ts(&packet 
+					,ifmt_ctx->streams[stream_index]->time_base
+					,stream_ctx[stream_index].dec_ctx->time_base);
+			dec_func = (type == AVMEDIA_TYPE_VIDEO) ? avcodec_decoe_video2 : avcodec_decode_audio4;
+			ret = dec_func(stream_ctx[stream_index].dec_ctx ,frame ,&got_frame ,&packet);
+			if (ret < 0) {
+				av_frame_free(&frame);
+				av_og(NULL ,AV_LOG_ERROR ,"Decoding failed\n");
+				break;
+			}
+			if (got_frame) {
+				frame->pts = frame->best_effort_timestamp;
+				ret = filter_encode_write_frame(frame ,stream_index);
+				av_frame_free(&frame);
+				if (ret < 0) {
+					goto end;
+				}
+			} else {
+				av_frame_free(&frame);
+			}
+		} else {
+			/** remux this frame without reencoding **/
+			av_packet_rescale_ts(&packet ,ifmt_ctx->streams[stream_index]->time_base ,ofmt_ctx->streams[stream_index]->time_base);
+			ret = av_interleaved_write_frame(ofmt_ctx ,&packet);
+			if (ret < 0) {
+				goto end;
+			}
+		}
+		av_packet_unref(&packet);
+	}
+	/** Flush filters and encoders **/
+	for (i = 0 ; i < ifmt_ctx->nb_streams; i++) {
+		/** flush filter **/
+		if (!filter_ctx[i].filter_graph) {
+			continue;
+		}
+		ret = filter_encode_wrote_frame(NULL ,i);
+		if (ret < 0) {
+			av_log(NULL ,AV_LOG_ERROR ,"Flushing filter failed\n");
+			goto end;
+		}
+		/** flush encoder **/
+		ret = flush_encoder(i);
+		if (ret < 0) {
+			av_log(NULL ,AV_LOG_ERROR ,"Flushing encoder failed\n");
+			goto end;
+		}
+	}
+	av_write_trailer(ofmt_ctx);
+end:
+	av_packet_unref(&packet);
+	av_frame_free(&frame);
+	for (i = 0 ; i < ifmt_ctx->nb_streams ;i++) {
+		avcodec_free_context(&stream_ctx[i].dec_ctx);
+		if (ofmt_ctx && ofmt_ctx->nb_streams > i && ofmt_ctx->streams[i] && stream_ctx[i].enc_ctx) {
+			avcodec_free_context(&stream_ctx[i].enc_ctx);
+		}
+
+		if (filter_ctx && filter_ctx[i].filter_graph) {
+			avfilter_graph_free(&filter_ctx[i].filter_graph);
+		}
+	}
+	av_free(filter_ctx);
+	av_free(stream_ctx);
+	avformat_close_input(&ifmt_ctx);
+	if (ofmt_ctx && !(ofmt_ctx->oformat->flags & AVFMT_NOFILE)) {
+		avio_closep(&ofmt_ctx->pb);
+	}
+	avformat_free_context(ofmt_ctx);
+	if (ret < 0) {
+		av_log(NULL ,AV_LOG_ERROR ,"Error occurred:%s \n" ,av_err2str(ret));
+	}
+	return ret ? 1 : 0;
 }
