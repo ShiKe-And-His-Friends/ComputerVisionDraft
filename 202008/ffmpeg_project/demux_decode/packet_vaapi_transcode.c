@@ -166,4 +166,65 @@ fail:
 	return 0;
 }
 
+int main (int argc ,char **argv) {
+	int ret = 0;
+	AVPacket dec_pkt;
+	AVCodec *enc_codec;
+	if (argc != 4) {
+		fprintf(stderr ,"Usage: %s <input file> <encode codec> <output file>\n The output format is guessed according to the file extension.\n" ,argv[0]);
+		return -1;
+	}
+	ret = av_hwdevice_ctx_create(&hw_device_ctx ,AV_HWDEVICE_TYPE_VAAPI ,NULL ,NULL ,0);
+	if (ret < 0) {
+		fprintf(stderr ,"Failed to create a VAAPI device code: %s \n" ,av_err2str(ret));
+		return -1;
+	}
+	if ((ret = open_input_file(argv[1])) < 0) {
+		goto end;
+	}
+	if (!(enc_codec = avcodec_find_encoder_by_name(argv[2]))) {
+		fprintf(stderr ,"Could not find encoder '%s' \n" ,argv[2]);
+		ret = -1;
+		goto end;
+	}
+	if ((ret = (avformat_alloc_output_context2(&ofmt_ctx ,NULL ,NULL ,3))) < 0) {
+	 fprintf(stderr ,"Failed to deduce output format from file extension .Error code: %s \n" ,av_err2str(ret));
+	 goto end;
+	}
+	ret = avio_open(&ofmt_ctx->pb ,argv[3] ,AVIO_FLAG_RITE);
+	if (ret < 0) {
+		fprintf(stderr ,"Cannot open output file. Error code:%s \n" ,av_err2str(ret));
+		goto end;
+	}
+	/** read all packets and on;y transcoding video **/
+	while (ret >= 0) {
+		if ((ret = av_read_frame(ifmt_ctx ,&dec_pkt)) < 0) {
+			break;
+		}
+		if (video_stream == dec_pkt.stream_index) {
+			ret = dec_enc(&dec_pkt ,enc_codec);
+		}
+		av_packet_unref(&dec_pkt);
+	}
+	/** flush decoder **/
+	dec_pkt.data = NULL;
+	dec_pkt.size = 0;
+	ret = dec_enc(&dec_pkt ,enc_codec);
+	av_packet_unref(&dec_pkt);
 
+	/** flush encoder **/
+	ret = encode_write(NULL);
+
+	/** write the trailer for output stream **/
+	av_write_trailer(ofmt_ctx);
+
+end:
+	avformat_close_input(&ifmt_ctx);
+	avformat_close_input(&ofmt_ctx);
+	avcodec_free_context(&decoder_ctx);
+	avcodec_free_context(&encoder_ctx);
+	av_buffer_unref(&hw_device_ctx);
+	return ret;
+}
+
+//Generated on Tue Nov 6 2018 18:10:58 for FFmpeg by 1.8.6
