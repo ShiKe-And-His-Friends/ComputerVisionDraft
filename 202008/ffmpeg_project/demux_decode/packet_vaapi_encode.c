@@ -13,7 +13,7 @@ static int set_hwframe_ctx (AVCodecContext *ctx ,AVBufferRef *hw_device_ctx) {
 	AVBufferRef *hw_frames_ref;
 	AVHWFramesContext *frames_ctx = NULL;
 	int err = 0;
-	if (!(hw_frames_ref = avhwframe_ctx_alloc(hw_device_ctx))) {
+	if (!(hw_frames_ref = av_hwframe_ctx_alloc(hw_device_ctx))) {
 		fprintf(stderr, "Failed to create VAAPI frame context.\n");
 		return -1;
 	}
@@ -74,7 +74,7 @@ int main (int argc ,char *argv[]) {
 		return -1;
 	}
 	width = atoi(argv[1]);
-	height = atoi(rgv[2]);
+	height = atoi(argv[2]);
 	size = width * height;
 	if (!(fin =fopen(argv[3] ,"r"))) {
 		fprintf(stderr, "Fail to open input : %s \n" ,strerror(errno));
@@ -124,7 +124,7 @@ int main (int argc ,char *argv[]) {
 		/** Read data into software frame,and transfer them into hw frame. **/
 		sw_frame->width = width;
 		sw_frame->height = height;
-		s_frame->format = AV_PIX_FMT_NV12;
+		sw_frame->format = AV_PIX_FMT_NV12;
 		if ((err = fread((uint8_t *)(sw_frame->data[0]),size ,1 ,fin)) < 0) {
 			break;
 		}
@@ -138,7 +138,7 @@ int main (int argc ,char *argv[]) {
 			err = AVERROR(ENOMEM);
 			goto close;
 		}
-		if ((err = av_hwframe_get_buffer(avctx->hw_frame_ctx ,hw_frame ,0)) < 0) {
+		if ((err = av_hwframe_get_buffer(avctx->hw_frames_ctx ,hw_frame ,0)) < 0) {
 			fprintf(stderr ,"Error code: %s.\n" ,av_err2str(err));
 			goto close;
 		}
