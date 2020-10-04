@@ -1,6 +1,8 @@
-build
 CMakeFiles
 CMakeCache.txt
 corridor.jpg
 cmake_install.cmake
 Makefile
+build
+!/build/CMakeLists.txt
+!CMakeLists.txt
