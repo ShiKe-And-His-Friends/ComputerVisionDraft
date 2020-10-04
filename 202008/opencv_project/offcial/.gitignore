@@ -4,5 +4,5 @@ corridor.jpg
 cmake_install.cmake
 Makefile
 build
-!/build/CMakeLists.txt
-!CMakeLists.txt
+! build/CMakeLists.txt
+! CMakeLists.txt
