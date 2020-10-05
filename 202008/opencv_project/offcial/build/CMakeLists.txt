@@ -22,7 +22,7 @@ message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 # Declare the executable target built from your sources
-add_executable(camshiftdemo ../camshiftdemo.cpp)
+add_executable(connected_compontents ../connected_compontents.cpp)
 
 # Link your application with OpenCV libraries
-target_link_libraries(camshiftdemo PRIVATE ${OpenCV_LIBS})
+target_link_libraries(connected_compontents  PRIVATE ${OpenCV_LIBS})
