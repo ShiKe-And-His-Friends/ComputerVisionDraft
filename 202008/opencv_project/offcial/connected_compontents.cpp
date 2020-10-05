@@ -14,7 +14,7 @@ Mat img;
 int threshval = 100;
 
 static void on_trackbar (int ,void*) {
-	Mat bw = threshval <128 ? (img < threshval) : (img > threshval)>;
+	Mat bw = threshval <128 ? (img < threshval) : (img > threshval);
 	Mat labelImage(img.size() ,CV_32S);
 	int nLabels = connectedComponents(bw ,labelImage ,8);
 	std::vector<Vec3b> colors(nLabels);
@@ -41,7 +41,7 @@ int main (int argc ,const char** argv) {
 	cout << "\nThis image is converted to grayscale and displayed ,anther iamge has a trackbar\n"
 		"that controls thresholding and thereby the extracted contours which are drawn in color\n";
 	String inputImage = parser.get<string>(0);
-	img = imread(smaple::findFile(inputImage) ,IMREAD_GRAYSCALE);
+	img = imread(samples::findFile(inputImage) ,IMREAD_GRAYSCALE);
 	if (img.empty()) {
 		cout << "Could not read input image file:" << inputImage <<endl;
 		return EXIT_FAILURE;
