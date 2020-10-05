@@ -42,8 +42,8 @@ static vector<Point> simpleContour(const Mat& currentQuery ,int n=300) {
 }
 
 int main (int argc ,char** argv) {
-	String path = "data/shape_sample/"
-	cv::CommandLineParser parser(argc ,argv ,"{help h ||}{@input|1|}");
+	String path = "/home/sk95120/Downloads/opencv_contrib-4.4.0/modules/shape/samples/data";
+	cv::CommandLineParser parser(argc ,argv ,"{help h||}{@input|1|}");
 	if (parser.has("help")) {
 		help();
 		return 0;
@@ -61,8 +61,8 @@ int main (int argc ,char** argv) {
 	cv::Ptr <cv::ShapeContextDistanceExtractor> mysc = cv::createShapeContextDistanceExtractor();
 	Size sz2Sh(300 ,300);
 	stringstream queryName;
-	queryNam<<path<<indexQuery<<".png";
-	Mat query = imread(queryNam.str() ,IMREAD_GRAYSCALE);
+	queryName<<path<<indexQuery<<".png";
+	Mat query = imread(queryName.str() ,IMREAD_GRAYSCALE);
 	Mat queryToShow;
 	resize(query ,queryToShow ,sz2Sh ,0 ,0 ,INTER_LINEAR_EXACT);
 	imshow("QUERY" ,queryToShow);
@@ -76,23 +76,23 @@ int main (int argc ,char** argv) {
 		}
 		waitKey(30);
 		stringstream iiname;
-		iiname<<path<<ii<<".png"
-			cout<<"name: "<<iiname.str()<<endl;
+		iiname<<path<<ii<<".png";
+		cout<<"name: "<<iiname.str()<<endl;
 		Mat iiIm = imread(iiname.str() ,0);
 		Mat iiToShow;
 		resize(iiIm ,iiToShow ,sz2Sh ,0 ,0 ,INTER_LINEAR_EXACT);
 		imshow("TEST" ,iiToShow);
-		moveWindow("TEST" ,sz2Sh.width + 50.0);
+		moveWindow("TEST" ,sz2Sh.width + 50 ,0);
 		vector<Point> contii = simpleContour(iiIm);
 		float dis = mysc->computeDistance(contQuery ,contii);
 		if (dis < bestDis) {
 			bestDis = dis;
 			bestMatch = ii;
 		}
-		std::cout << " distabce between " <<queryNam.str() << " and "<<iiname.str()<<" is: "<<dis<<std::endl;
+		std::cout << " distabce between " <<queryName.str() << " and "<<iiname.str()<<" is: "<<dis<<std::endl;
 	}
-	destoryWindow("TEST");
-	syringstream bestname;
+	destroyWindow("TEST");
+	stringstream bestname;
 	bestname<<path<<bestMatch<<".png";
 	Mat iiIm = imread(bestname.str() ,0);
 	Mat bestToShow;
