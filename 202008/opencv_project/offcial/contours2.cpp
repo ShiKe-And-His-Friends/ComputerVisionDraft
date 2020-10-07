@@ -35,6 +35,52 @@ static void on_trackbar(int ,void*) {
 }
 
 int main(int argc ,char** argv) {
-	
+	cv::CommandLineParser parser(argc ,argv ,"{help h||}");
+	if (parser.has("help")) {
+		help(argv);
+		return 0;
+	}
+	Mat img = Mat::zeros(w ,w ,CV_8UC1);
+	// Draw 6 faces
+	for (int i = 0 ; i < 6 ; i++) {
+		int dx = (i%2) * 250 -30;
+		int dy = (i/2) * 150;
+		const Scalar white = Scalar(255);
+		const Scalar black = Scalar(0);
+		if (i == 0) {
+			for (int j = 0 ;j <= 10 ; j++) {
+				double angle = (j + 5) * CV_PI /21;
+				line(img ,Point(cvRound(dx + 100 + j * 10 - 80 * cos(angle)) ) 
+					,cvRound(dy + 100 - 90 * sin(angle)) ,Point(cvRound(dx + 100 + j * 10 -20 * cos(angle)) ,cvRound(dy + 100 - 30 * sin(angle))) ,white ,1 ,8 ,0);
+			}
+		}
+		ellipse(img Point(dx + 150 ,dy + 100) ,Size(100 ,70) ,0 ,0 ,360 ,black ,-1 ,8 ,0 );
+		ellipse( img, Point(dx+115, dy+70), Size(30,20), 0, 0, 360, black, -1, 8, 0 );
+	        ellipse( img, Point(dx+185, dy+70), Size(30,20), 0, 0, 360, black, -1, 8, 0 );
+       		 ellipse( img, Point(dx+115, dy+70), Size(15,15), 0, 0, 360, white, -1, 8, 0 );
+	        ellipse( img, Point(dx+185, dy+70), Size(15,15), 0, 0, 360, white, -1, 8, 0 );
+	        ellipse( img, Point(dx+115, dy+70), Size(5,5), 0, 0, 360, black, -1, 8, 0 );
+	        ellipse( img, Point(dx+185, dy+70), Size(5,5), 0, 0, 360, black, -1, 8, 0 );
+	        ellipse( img, Point(dx+150, dy+100), Size(10,5), 0, 0, 360, black, -1, 8, 0 );
+	        ellipse( img, Point(dx+150, dy+150), Size(40,10), 0, 0, 360, black, -1, 8, 0 );
+	        ellipse( img, Point(dx+27, dy+100), Size(20,35), 0, 0, 360, white, -1, 8, 0 );
+	        ellipse( img, Point(dx+273, dy+100), Size(20,35), 0, 0, 360, white, -1, 8, 0 );
+	}
+	//show the faces
+	namedWindow("iamge" ,1);
+	imshow("image" ,img);
+	// Extract the contours so that
+	vector<vector<Point>> contours0;
+	findCountour(img ,contours0 ,hierachy ,RETR_TREE ,CHAIN_APPROX_SIMPLE);
+
+	contours.resize(contours0.size());
+	for (size_t k = 0 ; k < contours0.size() ; k++ ) {
+		approxPolyDP(Mat(constours0[k]) ,contours[k] ,3 ,true);
+	}
+	namedWindow("contours" ,1);
+	createTracker("levels+3" ,"contours" ,&levels ,7 ,on_trackbar);
+	on_trackbar(0 ,0);
+	waitKey();
+
 	return 0;
 }
