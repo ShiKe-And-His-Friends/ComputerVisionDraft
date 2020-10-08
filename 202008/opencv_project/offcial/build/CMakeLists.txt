@@ -22,7 +22,7 @@ message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 # Declare the executable target built from your sources
-add_executable(contours2 ../contours2.cpp)
+add_executable(contours2_1 ../contours2_1.cpp)
 
 # Link your application with OpenCV libraries
-target_link_libraries(contours2  PRIVATE ${OpenCV_LIBS})
+target_link_libraries(contours2_1  PRIVATE ${OpenCV_LIBS})
