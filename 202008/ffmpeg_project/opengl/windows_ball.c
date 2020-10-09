@@ -29,7 +29,7 @@ int main (int argc ,char ** argv) {
 	//Set Windows width and height
 	glutInitWindowSize(300 ,300);
 	//Set Windows position
-	glutInitWindowsSize(100 ,100);
+	glutInitWindowPosition(100 ,100);
 	//Set widnows title bar
 	glutCreateWindow(argv[0]);
 	//Call OpenGL initializtion funtion
