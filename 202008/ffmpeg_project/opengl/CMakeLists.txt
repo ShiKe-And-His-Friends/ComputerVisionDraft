@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 14)
-project(GL_PROJECT)
+project(gl_project)
 find_package(glfw3 REQUIRED)
 file(GLOB project_file
 	glad.c

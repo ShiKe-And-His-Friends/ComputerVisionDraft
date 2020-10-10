@@ -15,21 +15,21 @@ int main()
 {
 	// Initialize envirement.
 	glfwInit();
-	glfwWindowInit(GLFW_CONTEXT_VERSION_MAJOR ,3);
-	glfwWindowInit(GLFW_CONTEXT_VERSION_MINOR ,3);
-	glfwWindowInit(GLFW_OPENGL_PROFILE ,GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR ,3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR ,3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE ,GLFW_OPENGL_CORE_PROFILE);
 	
 	// Initialize windows.
 	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH ,SCR_HEIGHT ,"GLFW 3.3.2" ,NULL ,NULL);
 	if (window == NULL) {
-		std::count << "Failed to create GLFW window" << std::endl;
+		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
 	// Notify current window bind current thread.
 	glfwMakeContextCurrent(window);
 	// Set Callback function of widnow that nofity function when size change.
-	glfwSetFramwbufferSizeCallback(window ,framebuffer_size_callback);
+	glfwSetFramebufferSizeCallback(window ,framebuffer_size_callback);
 	// Initialize GLAD mamage opengl pointer.
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD" << std::endl;
@@ -41,7 +41,7 @@ int main()
 		processInput(window);
 		// Drawing command.
 		glClearColor(0.2f ,0.3f ,0.3f ,1.0f);
-		glClear(GK_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT);
 		// Check callback event ,exchange buffer
 		glfwSwapBuffers(window);
 		glfwPollEvents();
