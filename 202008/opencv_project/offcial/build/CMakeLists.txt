@@ -22,7 +22,7 @@ message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 # Declare the executable target built from your sources
-add_executable(convexhull ../convexhull.cpp)
+add_executable(count_mat ../count_mat.cpp)
 
 # Link your application with OpenCV libraries
-target_link_libraries(convexhull  PRIVATE ${OpenCV_LIBS})
+target_link_libraries(count_mat  PRIVATE ${OpenCV_LIBS})
