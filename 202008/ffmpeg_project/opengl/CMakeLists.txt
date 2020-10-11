@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 14)
-project(gl_project_windows_triangle.cpp)
+project(gl_project_windows_triangle)
 find_package(glfw3 REQUIRED)
 file(GLOB project_file
 	glad.c

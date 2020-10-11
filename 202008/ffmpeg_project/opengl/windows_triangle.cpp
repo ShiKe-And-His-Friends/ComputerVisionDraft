@@ -9,7 +9,9 @@ void processInput (GLFWwindow *window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-const char *vertexShaderSource = "#version 331 core\n";
+using namespace std;
+
+const char *vertexShaderSource = "#version 331 core\n"
 	"layout (location = 0) in vec3 aPos;\n"
 	"void main () \n"
 	"{ \n"
@@ -45,13 +47,13 @@ int main () {
 
 	// Load GLAD pointer.
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		cout << "ailed to initialize GLAD\n" <<end;
+		cout << "ailed to initialize GLAD\n" <<endl;
 		return -1;
 	}
 
 	// Build and compile shader program
-	int vertextShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertextShader ,1 ,&vertexShaderSource ,NULL);
+	int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader ,1 ,&vertexShaderSource ,NULL);
 	glCompileShader(vertexShader);
 	// Check for shader compile error.
 	int success;
@@ -67,7 +69,7 @@ int main () {
 	glCompileShader(fragmentShader);
 	// Check for shader compile error.
 	glGetShaderiv(fragmentShader ,GL_COMPILE_STATUS ,&success);
-	if (!succes) {
+	if (!success) {
 		glGetShaderInfoLog(fragmentShader ,512 ,NULL ,infoLog);
 		cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog <<endl;
 	}
@@ -78,8 +80,8 @@ int main () {
 	glAttachShader(shaderProgram ,fragmentShader);
 	glLinkProgram(shaderProgram);
 	// Check for link program error.
-	glGetProgramiv(shaderProgram ,GL_LINK_STATUS ,&succes);
-	if (!succes) {
+	glGetProgramiv(shaderProgram ,GL_LINK_STATUS ,&success);
+	if (!success) {
 		glGetProgramInfoLog(shaderProgram ,512 ,NULL ,infoLog);
 		cout << "ERROR::SHADER::PROGRAME::LINKING_FAILED\n" << infoLog <<endl;
 	}
@@ -91,20 +93,20 @@ int main () {
 		-0.5f ,-0.5f ,0.0f ,  	// left
 		0.5f ,-0.5f ,0.0f ,  	// right
 		0.0f ,0.5f ,0.0f 	// top
-	}
+	};
 
 	unsigned int VBO ,VAO;
 	glGenVertexArrays(1 ,&VAO);
 	glGenBuffers(1 ,&VBO);
 	// Bind the vertex array pbject first ,then bind and set vertex buffer(s) ,and then configure\n
 	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER ,VB0);
+	glBindBuffer(GL_ARRAY_BUFFER ,VBO);
 	glBufferData(GL_ARRAY_BUFFER ,sizeof(vertices) ,vertices ,GL_STATIC_DRAW);
 	glVertexAttribPointer(0 ,3 ,GL_FLOAT ,GL_FALSE ,3 * sizeof(float) ,(void*)0);
 	glEnableVertexAttribArray(0);
 
 	// Note that this is allowed ,the call to glVertexAttribPointer registed VBP as the vertex attribute.
-	alBindBuffer(GL_ARRAY_BUFFER ,0);
+	glBindBuffer(GL_ARRAY_BUFFER ,0);
 
 	/**
 	 * You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO ,but it rarely happens.
@@ -125,8 +127,8 @@ int main () {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		// Draw our first triangle
-		glUsePrograme(shaderProgram);
-		glBindVertextArray(VAO);
+		glUseProgram(shaderProgram);
+		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES ,0 ,3);
 		//glBindVertexArray(0);
 		
@@ -144,3 +146,12 @@ int main () {
 	return 0;
 }
 
+void processInput (GLFWwindow* window) {
+	if (glfwGetKey(window ,GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+		glfwSetWindowShouldClose(window ,true);
+	}
+}
+
+void framebuffer_size_callback (GLFWwindow* window ,int width ,int height) {
+	glViewport(0 ,0 ,width ,height);
+}
