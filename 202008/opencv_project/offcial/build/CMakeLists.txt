@@ -22,7 +22,7 @@ message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 # Declare the executable target built from your sources
-add_executable(create_mask ../create_mask.cpp)
+add_executable(demhist ../demhist.cpp)
 
 # Link your application with OpenCV libraries
-target_link_libraries(create_mask  PRIVATE ${OpenCV_LIBS})
+target_link_libraries(demhist  PRIVATE ${OpenCV_LIBS})

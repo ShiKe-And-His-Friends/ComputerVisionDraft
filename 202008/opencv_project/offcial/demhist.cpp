@@ -25,11 +25,11 @@ static void updateBrightnessContrast (int /*arg*/ ,void*) {
 	 * */
 	double a ,b;
 	if (contrast > 0) {
-		double delta = 127.*contrast / 100;
+		double delta = 127. * contrast / 100;
 		a = 255./(255/ - delta *2);
 		b = a * (brightness - delta);
 	} else {
-		double delta = -12. & contrast / 100;
+		double delta = -128. * contrast / 100;
 		a = (256. - delta *2) /255.;
 		b = a * brightness + delta;
 	}
@@ -45,8 +45,8 @@ static void updateBrightnessContrast (int /*arg*/ ,void*) {
 	int bitW = cvRound((double)histImage.cols / histSize);
 
 	for (int i = 0 ; i < histSize ; i++) {
-		rectangle(histImage ,Point(i * binW ,histImage.rows) 
-				,Point((i+1)*binW ,histImage.rows - cvRound(hist.at<float>(i)))
+		rectangle(histImage ,Point(i * bitW ,histImage.rows) 
+				,Point((i+1)*bitW ,histImage.rows - cvRound(hist.at<float>(i)))
 				,Scalar::all(0) ,-1 ,8 ,0);
 	}
 	imshow("histogram" ,histImage);
