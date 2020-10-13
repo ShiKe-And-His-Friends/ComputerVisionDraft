@@ -16,8 +16,8 @@ Mat image;
 /** Brightness/contrast callback function **/
 static void updateBrightnessContrast (int /*arg*/ ,void*) {
 	int histSize = 64;
-	int brightness = _brightness - 100;
-	int contrast = _contrast - 100;
+	int brightness = _brightness - 150;
+	int contrast = _contrast - 150;
 
 	/**
 	 * The algorithm is by Werner D. Streidt
@@ -32,6 +32,12 @@ static void updateBrightnessContrast (int /*arg*/ ,void*) {
 		double delta = -128. * contrast / 100;
 		a = (256. - delta *2) /255.;
 		b = a * brightness + delta;
+	}
+	if (a > 255 || a < 0) {
+		a = 125;
+	}
+	if (b > 255 || b < 0) {
+		b = 125;
 	}
 
 	Mat dst ,hist;
