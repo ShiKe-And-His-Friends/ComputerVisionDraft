@@ -19,16 +19,16 @@ Mat gray;
 // Threshold trackbar callback
 static void onTrackbar (int ,void*) {
 	static const Scalar colors[] = {
-		Scalar(0 ,0 ,0);
-		Scalar(255 ,0 ,0);
-		Scalar(255 ,128 ,0);
-		Scalar(255 ,255 ,0);
-		Scalar(0 ,255 ,0);
-		Scalar(0 ,128 ,255);
-		Scalar(0 ,255 ,255);
-		Scalar(0 ,0 ,255);
-		Scalar(255 ,0 ,255);
-	}
+		Scalar(0 ,0 ,0),
+		Scalar(255 ,0 ,0),
+		Scalar(255 ,128 ,0),
+		Scalar(255 ,255 ,0),
+		Scalar(0 ,255 ,0),
+		Scalar(0 ,128 ,255),
+		Scalar(0 ,255 ,255),
+		Scalar(0 ,0 ,255),
+		Scalar(255 ,0 ,255),
+	};
 
 	int maskSize = voronoiType >= 0 ? DIST_MASK_5 : maskSize0;
 	int distType = voronoiType >= 0 ? DIST_L2 : distType0;
@@ -49,7 +49,7 @@ static void onTrackbar (int ,void*) {
 		dist32s *= -1;
 		dist32s += Scalar::all(255);
 		dist32s.convertTo(dist8u2 ,CV_8U);
-		Mat planes[] = {dist8U1 ,dist8U2 ,dist8u2};
+		Mat planes[] = {dist8u1 ,dist8u2 ,dist8u2};
 		merge(planes ,3 ,dist8u);
 	} else {
 		dist8u.create(labels.size() ,CV_8UC3);
@@ -101,16 +101,16 @@ int main (int argc ,char** argv) {
 		return 0;
 	}
 	string filename = parser.get<string>(0);
-	gray = imread(sample::findFile(filename) ,0);
+	gray = imread(samples::findFile(filename) ,0);
 	if (gray.empty()) {
-		ptintf("Cannot read image file: %s \n" ,filename.c_str());
+		printf("Cannot read image file: %s \n" ,filename.c_str());
 		help();
 		return -1;
 	}
 
 	namedWindow("Distance Map" ,1);
 	createTrackbar("Braightness Threshold" ,"Distance Map" 
-			,%edgeThresh ,255 ,onTrackbar ,0);
+			,&edgeThresh ,255 ,onTrackbar ,0);
 	for (;;) {
 		// Call to update the view
 		onTrackbar(0 ,0);
