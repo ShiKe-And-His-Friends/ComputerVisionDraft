@@ -1,5 +1,5 @@
-#include "opencv2/core/uility.hpp"
-#include "opencv2/imgporc.hpp"
+#include "opencv2/core/utility.hpp"
+#include "opencv2/imgproc.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 
@@ -46,7 +46,7 @@ const char* keys = {
 	"{help h ||}{@image | fruits.jpg | input image name}"
 };
 
-int main (int agrc ,const char** argv) {
+int main (int argc ,const char** argv) {
 	help();
 	CommandLineParser parser(argc ,argv ,keys);
 	string filename = parser.get<string>(0);
