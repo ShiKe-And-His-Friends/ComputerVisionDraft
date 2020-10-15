@@ -22,7 +22,7 @@ message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 # Declare the executable target built from your sources
-add_executable(distrans ../distrans.cpp)
+add_executable(edge ../edge.cpp)
 
 # Link your application with OpenCV libraries
-target_link_libraries(distrans  PRIVATE ${OpenCV_LIBS})
+target_link_libraries(edge  PRIVATE ${OpenCV_LIBS})
