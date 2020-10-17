@@ -28,3 +28,38 @@ static void help (const char** argv) {
 		"\tUsing OpenCv version " << CV_VERSION << "\n" << endl;
 }
 
+void detectAndDraw (Mat& img ,CascadeClassifier& cascade ,CascadeClassifier& nestedCascade ,double scale ,bool tryfilp);
+
+string cascadeName;
+string nestedCascadeName;
+
+int main (int argc ,const char** argv) {
+	VideoCapture capture;
+	Mat frame .iamge;
+	string inputName;
+	bool tryflip;
+	CascadeClassifier cascade ,nestedCascade;
+	double scale;
+
+	cv::CommandLineParser parser(argc ,argv ,"{help h ||}"
+		"{cascade|data/haaecascades/haarcascade_eye_frontalface_alt.xml|}"
+		"{nested-cascade|data/haarcascades/haarcascade_eye_tree_eyeglasses.xml|}"
+		"{scale|1|}{try-flip||}{@filename||}");
+	if (parser.has("help")) {
+		help();
+		return 0;
+	}
+	cascadeName = parser.get<string>("cascade");
+	nestedCascadeName = parser.get<string>("nested-cascade");
+	scale = parser.get<double>("scale");
+	if (scale < 1) {
+		scale = 1;
+	}
+	tryflip = parser.has("try-flip");
+	inputName = parser.get<string>("@filename");
+	if (!parser.check()) {
+		parser.printErrors();
+		return 0;
+	}
+	if (!nestedCascade.load(sample::findFileOrKeep())) {}
+}
