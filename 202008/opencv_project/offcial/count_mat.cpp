@@ -13,7 +13,7 @@ static void help() {
 		<< "This program shows the serial the capabilities of cv::Mat\n"
 		<< "That is ,cv::Mat M(...); cout << M; Now works.\n"
 		<< "Output can be formatted to OpenCv ,matlab ,python ,nump ,cvs and C styles Usage:\n"
-		<< "./cvout_sample\n"
+		<< "./cout_sample\n"
 		<< "\n-----------------------------\n"
 		<< endl;
 }
