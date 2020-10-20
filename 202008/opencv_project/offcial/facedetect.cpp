@@ -61,5 +61,87 @@ int main (int argc ,const char** argv) {
 		parser.printErrors();
 		return 0;
 	}
-	if (!nestedCascade.load(sample::findFileOrKeep())) {}
+	if (!nestedCascade.load(samples::findFileOrKeep(nestedCascadeName))) {
+		cerr << "WARNING: Could not load classifier cascade for nested object" << endl;
+	}
+	if (!cascade,load(samples::findFile(cascadeName))) {
+		cerr << "Error: Could not load classifier cascade" << endl;
+		help();
+		return -1;
+	}
+	if (inputName.empty() || (isdigit(inputName[0]) && inputName.size() == 1)) {
+		int camera = inputName.empty() ? 0 : inputName[0] - '0';
+		if (!capture.open(camera)) {
+			cout << "Capture from camera #" << camera << " didn't work" << endl;
+			return 1;
+		}
+	} else if (!inputName.empty()) {
+		image = imread(samples::findFileOrKeep(inputName) ,IMREAD_COLOR);
+		if (image.empty()) {
+			if (!capture.open(samples::findFileOrKeep(inputName))) {
+				cout << "Could not read " << inputName << endl;
+				return 1;
+			}
+		}
+	} else {
+		image = imread(samples::findFile("lena.jpg") ,IMREAD_COLOR);
+		if (image.empty()) {
+			cout << "Couldn't read lena.jpg" << endl;
+			return 1;
+		}
+	}
+	if (capture.isOpened) {
+		cout << "Video capturing has been strated ..." << endl;
+		for (;;) {
+			capture >> frame;
+			if (frame.empty()) {
+				break;
+			}
+			Mat frame1 = frame.clone();
+			detectAndDraw(frame1 ,cascade ,nestedCascade ,scale ,tryflip);
+			char c = (char)waitKey(10);
+			if (c == 27 || c == 'q' || c == 'Q') {
+				break;
+			}
+		}
+	} else {
+		cout << "Detecting face(s) in " << inputName << endl;
+		if (!image.empty()) {
+			detectAndDraw(image ,cascade ,nestedCascade ,scale ,tryflip);
+			waitKey(0);
+		} else if (!inputName.empty()) {
+			/** 
+			 * Assume it is a text file containing the
+			 * list of the image filenames to be processed - one per line
+			 * */
+			File* f = fopen(inputName.c_str() ,"rt");
+			if (f) {
+				char buf[1000 + 1];
+				while (fgets(buf ,1000 ,f)){
+					int len = (int)strlen(buf);
+					while (len > 0 && isspace(buf[len - 1])) {
+						len --;
+					}
+					buf[len] = '\0';
+					cout << "file " << buf << endl;
+					image = imread(buf ,1);
+					if (!image.empty()) {
+						detectAndDraw(iamge ,cascade ,nestedCascade ,scale ,tryflip);
+						char c = (char)waitKey(0);
+						if (c == 27 || c == 'q' || c == 'Q') {
+							break;
+						}
+					} else {
+						cerr << "Aw snap, couldn't read image " << buf << endl; 
+					}
+				}
+				fclose(f);
+			}
+		}
+	}
+	return 0;
+}
+
+void detectAndDraw (Mat& img ,CascadeClassifier& cascade ,CascadeClassifier& nestedCascade ,double scale ,bool tryflip) {
+
 }
