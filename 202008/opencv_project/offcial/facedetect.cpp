@@ -1,5 +1,5 @@
 /**
- * Sample screenshot.
+ * Sample face detected.
  * */
 #include "opencv2/objdetect.hpp"
 #include "opencv2/highgui.hpp"
