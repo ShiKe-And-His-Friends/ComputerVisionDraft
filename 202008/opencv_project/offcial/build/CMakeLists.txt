@@ -25,4 +25,4 @@ message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 add_executable(face_detect ../facedetect.cpp)
 
 # Link your application with OpenCV libraries
-target_link_libraries(facedetect  PRIVATE ${OpenCV_LIBS})
+target_link_libraries(face_detect  PRIVATE ${OpenCV_LIBS})

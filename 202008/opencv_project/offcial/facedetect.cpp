@@ -35,7 +35,7 @@ string nestedCascadeName;
 
 int main (int argc ,const char** argv) {
 	VideoCapture capture;
-	Mat frame .iamge;
+	Mat frame ,image;
 	string inputName;
 	bool tryflip;
 	CascadeClassifier cascade ,nestedCascade;
@@ -46,7 +46,7 @@ int main (int argc ,const char** argv) {
 		"{nested-cascade|data/haarcascades/haarcascade_eye_tree_eyeglasses.xml|}"
 		"{scale|1|}{try-flip||}{@filename||}");
 	if (parser.has("help")) {
-		help();
+		help(argv);
 		return 0;
 	}
 	cascadeName = parser.get<string>("cascade");
@@ -64,9 +64,9 @@ int main (int argc ,const char** argv) {
 	if (!nestedCascade.load(samples::findFileOrKeep(nestedCascadeName))) {
 		cerr << "WARNING: Could not load classifier cascade for nested object" << endl;
 	}
-	if (!cascade,load(samples::findFile(cascadeName))) {
+	if (!cascade.load(samples::findFile(cascadeName))) {
 		cerr << "Error: Could not load classifier cascade" << endl;
-		help();
+		help(argv);
 		return -1;
 	}
 	if (inputName.empty() || (isdigit(inputName[0]) && inputName.size() == 1)) {
@@ -90,7 +90,7 @@ int main (int argc ,const char** argv) {
 			return 1;
 		}
 	}
-	if (capture.isOpened) {
+	if (capture.isOpened()) {
 		cout << "Video capturing has been strated ..." << endl;
 		for (;;) {
 			capture >> frame;
@@ -114,7 +114,7 @@ int main (int argc ,const char** argv) {
 			 * Assume it is a text file containing the
 			 * list of the image filenames to be processed - one per line
 			 * */
-			File* f = fopen(inputName.c_str() ,"rt");
+			FILE* f = fopen(inputName.c_str() ,"rt");
 			if (f) {
 				char buf[1000 + 1];
 				while (fgets(buf ,1000 ,f)){
@@ -126,7 +126,7 @@ int main (int argc ,const char** argv) {
 					cout << "file " << buf << endl;
 					image = imread(buf ,1);
 					if (!image.empty()) {
-						detectAndDraw(iamge ,cascade ,nestedCascade ,scale ,tryflip);
+						detectAndDraw(image ,cascade ,nestedCascade ,scale ,tryflip);
 						char c = (char)waitKey(0);
 						if (c == 27 || c == 'q' || c == 'Q') {
 							break;
@@ -144,7 +144,7 @@ int main (int argc ,const char** argv) {
 
 void detectAndDraw (Mat& img ,CascadeClassifier& cascade ,CascadeClassifier& nestedCascade ,double scale ,bool tryflip) {
 	double t = 0;
-	vector<Rect> face ,face2;
+	vector<Rect> faces ,faces2;
 	const static Scalar colors[] = {
 		Scalar(255 ,0 ,0),
 		Scalar(255 ,128 ,0),
@@ -152,11 +152,11 @@ void detectAndDraw (Mat& img ,CascadeClassifier& cascade ,CascadeClassifier& nes
 		Scalar(0 ,255 ,0),
 		Scalar(0 ,128 ,255),
 		Scalar(0 ,0 ,255),
-		Scalar(255 ,0 ,255);
+		Scalar(255 ,0 ,255)
 	};
 	Mat gray ,smallImg;
 	cvtColor(img ,gray ,COLOR_BGR2GRAY);
-	double fx = 1 /scale;
+	double fx = 1 / scale;
 	resize(gray ,smallImg ,Size() ,fx ,fx ,INTER_LINEAR_EXACT);
 	equalizeHist(smallImg ,smallImg);
 	t = (double)getTickCount();
@@ -168,13 +168,13 @@ void detectAndDraw (Mat& img ,CascadeClassifier& cascade ,CascadeClassifier& nes
 		 ,Size(30 ,30) );
 	if (tryflip) {
 		flip(smallImg ,smallImg ,1);
-		cascade.detectMultiScale( smallImg ,face2
+		cascade.detectMultiScale( smallImg ,faces2
 			,1.1 ,2 ,0
 			//| CASCADE_FIND_BIGGEST_OBJECT
 			//| CASCADE_DO_ROUGH_SEARCH
 			| CASCADE_SCALE_IMAGE
 			,Size(30 ,30));
-		for (vector<Rect>::const_iterator r = face2.begin() ; r != face2.end() ; r++ ) {
+		for (vector<Rect>::const_iterator r = faces2.begin() ; r != faces2.end() ; r++ ) {
 			faces.push_back(Rect(smallImg.cols - r->x - r->width ,r->y ,r->width ,r->height));
 		}
 	}
@@ -192,11 +192,10 @@ void detectAndDraw (Mat& img ,CascadeClassifier& cascade ,CascadeClassifier& nes
 			center.x = cvRound((r.x + r.width * 0.5) * scale);
 			center.y = cvRound((r.y + r.height * 0.5) * scale);
 			radius = cvRound((r.width + r.height) * 0.25 * scale);
-			circle(img ,center ,radius ,colors ,3 ,8 ,0);
+			circle(img ,center ,radius ,color ,3 ,8 ,0);
 		} else {
 			rectangle(img ,Point(cvRound(r.x * scale) ,cvRound(r.y * scale)) 
-				,Point(cvRound((r.x + r.width - 1) * scale))
-				,cvRound((r.y + r.height - 1) * scale)
+				,Point(cvRound((r.x + r.width - 1) * scale) ,cvRound((r.y + r.height - 1) * scale))
 				,color ,3 ,8 ,0);
 		}
 		if (nestedCascade.empty()) {
