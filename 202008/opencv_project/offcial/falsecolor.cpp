@@ -86,6 +86,13 @@ int main (int argc ,char** argv) {
 	p.iColormap = 0;
 	imshow("Gray image" ,img);
 	namedWindows(winName);
-
+	createTrackbar("colormap" ,winName ,&p.iColormap ,1 ,TrackColorMap ,(void*)&p);
+	setTrackbar("colormap" ,winName ,COLORMAP_AUTUMN);
+	setTrackbar("colormap" ,winName ,COLORMAP_TURBO + 1);
+	setTrackbar("colormap" ,winName ,-1);
+	TrackColorMap(0 ,(void*)&p);
+	cout << "Press a key to exit" << endl;
+	wairkey(0);
+	return 0;
 }
 
