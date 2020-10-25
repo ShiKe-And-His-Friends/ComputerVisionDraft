@@ -1,6 +1,7 @@
-#include "opencv2/imgpro.hpp"
-#include "opencv2/imgcodes.hpp"
+#include "opencv2/imgproc.hpp"
+#include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
+#include <iostream>
 
 using namespace cv;
 using namespace std;
@@ -10,7 +11,7 @@ enum MyShape{MYCIRCLE=0 ,MYRECTANGLE ,MYELLIPSE};
 struct ParamColorsMap {
 	int iColormap;
 	Mat img;
-}
+};
 
 String winName = "False color";
 static const String ColorMaps[] = {"Autumn" ,"Bone" ,"Jet" ,"Winter" ,"Rainbow" ,"Ocean" ,"Summer" ,"Spirng" ,"Color" ,"HSV" ,"Pink" ,"Parula" ,"Magma" ,"Inferno" ,"Plasma" ,"Viridis" ,"Cividis" ,"Twilight" ,"Twilight Shifted" ,"Turbo" ,"User defined(randow)"};
@@ -31,11 +32,11 @@ static void TrackColorMap (int x ,void *r) {
 }
 
 static Mat DrawMyImage (int thickness ,int nbShape) {
-	Mat img = Mat::zeros(500 ,256*thinckness + 100 ,CV_8UC1);
+	Mat img = Mat::zeros(500 ,256*thickness + 100 ,CV_8UC1);
 	int offsetx = 50 ,offsety = 25;
 	int lineLength = 50;
 	for (int i = 0 ; i < 256 ; i++) {
-		line(img ,Point(thinckness * i + offsetx ,offsety) ,Point(thinckness * i + offsetx ,offsety + lineLength) ,Scalar(i) ,thinckness);
+		line(img ,Point(thickness * i + offsetx ,offsety) ,Point(thickness * i + offsetx ,offsety + lineLength) ,Scalar(i) ,thickness);
 	}
 	RNG r;
 	Point center;
@@ -65,7 +66,7 @@ static Mat DrawMyImage (int thickness ,int nbShape) {
 				width = r.uniform(1 ,min(offsetx ,offsety));
 				height = r.uniform(1 ,min(offsetx ,offsety));
 				angle = r.uniform(0 ,180);
-				ellipse(img ,center ,Size(width /2 ,height / 2 ) ,angle ,0 ,360 ,Scalar(1) -1);
+				ellipse(img ,center ,Size(width /2 ,height / 2 ) ,angle ,0 ,360 ,Scalar(1) ,-1);
 				break;
 		}
 	}
@@ -85,14 +86,14 @@ int main (int argc ,char** argv) {
 	p.img = img;
 	p.iColormap = 0;
 	imshow("Gray image" ,img);
-	namedWindows(winName);
+	namedWindow(winName);
 	createTrackbar("colormap" ,winName ,&p.iColormap ,1 ,TrackColorMap ,(void*)&p);
-	setTrackbar("colormap" ,winName ,COLORMAP_AUTUMN);
-	setTrackbar("colormap" ,winName ,COLORMAP_TURBO + 1);
-	setTrackbar("colormap" ,winName ,-1);
+	setTrackbarMin("colormap" ,winName ,COLORMAP_AUTUMN);
+	setTrackbarMax("colormap" ,winName ,COLORMAP_TURBO + 1);
+	setTrackbarPos("colormap" ,winName ,-1);
 	TrackColorMap(0 ,(void*)&p);
 	cout << "Press a key to exit" << endl;
-	wairkey(0);
+	waitKey(0);
 	return 0;
 }
 
