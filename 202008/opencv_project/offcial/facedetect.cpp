@@ -42,8 +42,8 @@ int main (int argc ,const char** argv) {
 	double scale;
 
 	cv::CommandLineParser parser(argc ,argv ,"{help h ||}"
-		"{cascade|data/haaecascades/haarcascade_eye_frontalface_alt.xml|}"
-		"{nested-cascade|data/haarcascades/haarcascade_eye_tree_eyeglasses.xml|}"
+		"{cascade|/home/sk95120/.local/share/Trash/files/opencv-4.2.0/data/haarcascades/haarcascade_frontalface_alt.xml|}"
+		"{nested-cascade|/home/sk95120/.local/share/Trash/files/opencv-4.2.0/data/haarcascades/haarcascade_eye_tree_eyeglasses.xml|}"
 		"{scale|1|}{try-flip||}{@filename||}");
 	if (parser.has("help")) {
 		help(argv);
@@ -151,6 +151,7 @@ void detectAndDraw (Mat& img ,CascadeClassifier& cascade ,CascadeClassifier& nes
 		Scalar(255 ,255 ,0),
 		Scalar(0 ,255 ,0),
 		Scalar(0 ,128 ,255),
+		Scalar(0 ,255 ,255),
 		Scalar(0 ,0 ,255),
 		Scalar(255 ,0 ,255)
 	};
