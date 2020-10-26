@@ -28,7 +28,7 @@ static void help () {
 Mat image0 ,image ,gray ,mask;
 int fillMode = 1;
 int loDiff = 20 ,upDiff = 20;
-int connectivty = 4;
+int connectivity = 4;
 int isColor = true;
 bool useMask = false;
 int newMaskVal = 255;
@@ -40,7 +40,7 @@ static void onMouse (int event ,int x ,int y ,int ,void*) {
 	Point seed = Point(x ,y);
 	int lo = fillMode == 0 ? 0 : loDiff ;
 	int up = fillMode == 0 ? 0 : upDiff ;
-	int flags = connectivty + (newMaskVal << 8) + (fillMode == 1 ? FLOODFILL_FIXED_RANGE : 0);
+	int flags = connectivity + (newMaskVal << 8) + (fillMode == 1 ? FLOODFILL_FIXED_RANGE : 0);
 	int b = (unsigned)theRNG() & 255;
 	int g = (unsigned)theRNG() & 255;
 	int r = (unsigned)theRNG() & 255;
@@ -50,12 +50,12 @@ static void onMouse (int event ,int x ,int y ,int ,void*) {
 	int area;
 	if (useMask) {
 		threshold(mask ,mask ,1 ,128 ,THRESH_BINARY);
-		area = floodFill(dst ,mask ,seed ,newVal ,&ccomp ,Scalar(lo ,lo ,lo) ,,Scalar(up ,up ,up) ,flags);
+		area = floodFill(dist ,mask ,seed ,newVal ,&ccomp ,Scalar(lo ,lo ,lo) ,Scalar(up ,up ,up) ,flags);
 		imshow("mask" ,mask);
 	} else {
-		area = floodFill(dst ,seed ,newVal ,&ccomp ,Scalar(1o ,1o ,1o) ,Scalar(up ,up ,up) ,flags);
+		area = floodFill(dist ,seed ,newVal ,&ccomp ,Scalar(lo ,lo ,lo) ,Scalar(up ,up ,up) ,flags);
 	}
-	imshow("image" ,dst);
+	imshow("image" ,dist);
 	cout << area << " pixel were repainted\n";
 }
 
@@ -66,7 +66,7 @@ int main (int argc ,char** argv) {
 		return 0;
 	}
 	string filename = parser.get<string>("@image");
-	iamge0 = imread(samples::findFile(filename) ,1);
+	image0 = imread(samples::findFile(filename) ,1);
 	if (image0.empty()) {
 		cout << "Image empty\n";
 		parser.printMessage();
@@ -74,7 +74,8 @@ int main (int argc ,char** argv) {
 	}
 	help();
 	image0.copyTo(image);
-	cvtColor(image0 ,gray ,image0.cols + 2 ,CV_8UC1);
+	cvtColor(image0 ,gray ,COLOR_BGR2GRAY);
+	mask.create(image0.rows + 2 ,image0.cols + 2 ,CV_8UC1);
 	namedWindow("image" ,0);
 	createTrackbar("lo_diff" ,"image" ,&loDiff ,255 ,0);
 	createTrackbar("up_diff" ,"image" ,&upDiff ,255 ,0);
@@ -93,7 +94,7 @@ int main (int argc ,char** argv) {
 				if (isColor) {
 					cout << "Grayscale mode is set\n";
 					cvtColor(image0 ,gray ,COLOR_BGR2GRAY);
-					mask = Scalar:;all(0);
+					mask = Scalar::all(0);
 					isColor = false;
 				} else {
 					cout << "Color mode us set.\n";
@@ -117,7 +118,7 @@ int main (int argc ,char** argv) {
 
 			case 'r':
 				cout << "Original image is restored\n";
-				image0.coptTo(image);
+				image0.copyTo(image);
 				cvtColor(image ,gray ,COLOR_BGR2GRAY);
 				mask = Scalar::all(0);
 				break;
@@ -128,7 +129,7 @@ int main (int argc ,char** argv) {
 				break;
 
 			case 'f':
-				cout << "fixed Range floodfill mode is set\n"
+				cout << "fixed Range floodfill mode is set\n";
 				fillMode = 1;
 				break;
 
