@@ -1,6 +1,6 @@
-## Example codes of the Computer Vision Area
+## Example Codes Of The Computer Vision Area
   
-### Linked the official websit
+### The official websit Link
 FFmpeg http://ffmpeg.org/
 
 OpenCv https://docs.opencv.org/
@@ -8,7 +8,7 @@ OpenCv https://docs.opencv.org/
 OpenGL http://www.opengl.cn/
 
 
-### Commands Lines:
+### The Commands Lines:
 
 示例1，OpenCv的项目组建：
 ```C
