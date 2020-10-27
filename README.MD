@@ -36,7 +36,7 @@ ret = avcodec_send_packet(dec_ctx, pkt);
 
 &nbsp;&nbsp;For a long time, I confused that how meida data processing. I read book and search solvtion and see public codes.
 
-&nbsp;&nbsp;FFmpeg is a basic media project. OpsenCv is a basic project that process picture. OpenGL is a basic hardware rendering language. I speed my night time and "free time" to practices above codes.
+&nbsp;&nbsp;FFmpeg is a basic media project. OpenCv is a basic project that process picture. OpenGL is a basic hardware rendering language. I speed my night time and "free time" what practices above codes.
 
 
 [MakeDown阅读](www.mdeditor.com) .
