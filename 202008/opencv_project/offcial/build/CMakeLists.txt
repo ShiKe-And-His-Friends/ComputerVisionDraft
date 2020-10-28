@@ -22,7 +22,7 @@ message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 # Declare the executable target built from your sources
-add_executable(ffilldemo ../ffilldemo.cpp)
+add_executable(filestorage ../filestorage.cpp)
 
 # Link your application with OpenCV libraries
-target_link_libraries(ffilldemo  PRIVATE ${OpenCV_LIBS})
+target_link_libraries(filestorage  PRIVATE ${OpenCV_LIBS})

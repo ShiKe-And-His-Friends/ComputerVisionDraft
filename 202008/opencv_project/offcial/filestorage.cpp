@@ -20,7 +20,7 @@ static void help (char** av) {
 }
 
 struct MyData {
-	myDate():
+	MyData():
 		A(1) ,X(0) ,id()
 	{ }
 
@@ -71,7 +71,7 @@ int main (int agc ,char** agv) {
 	}
 	string filename = parser.get<string>("@input");
 	if (filename.empty()) {
-		help(av);
+		help(agv);
 		return 1;
 	}
 
@@ -118,7 +118,7 @@ int main (int agc ,char** agv) {
 		fs["R"] >> R;
 		fs["T"] >> T;
 		cout << "R = " << R << "\n";
-		cout << "T = " << T << "\n";
+		cout << "T = " << T << endl;
 		MyData m;
 		fs["mdata"] >> m;
 		cout << "read data\n";
@@ -152,7 +152,7 @@ int main (int agc ,char** agv) {
 		cout << "Write data to string.\n";
 		FileStorage fs(filename ,FileStorage::WRITE | FileStorage::MEMORY | FileStorage::FORMAT_YAML);
 
-		cout << "writing MyData strucy\n";
+		cout << "writing MyData struct\n";
 		MyData m(1);
 		fs << "mdata" << m;
 		cout << m << endl;
