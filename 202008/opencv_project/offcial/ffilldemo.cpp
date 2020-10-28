@@ -28,7 +28,7 @@ static void help () {
 Mat image0 ,image ,gray ,mask;
 int fillMode = 1;
 int loDiff = 20 ,upDiff = 20;
-int connectivity = 4;
+int connectivty = 4;
 int isColor = true;
 bool useMask = false;
 int newMaskVal = 255;
@@ -40,7 +40,7 @@ static void onMouse (int event ,int x ,int y ,int ,void*) {
 	Point seed = Point(x ,y);
 	int lo = fillMode == 0 ? 0 : loDiff ;
 	int up = fillMode == 0 ? 0 : upDiff ;
-	int flags = connectivity + (newMaskVal << 8) + (fillMode == 1 ? FLOODFILL_FIXED_RANGE : 0);
+	int flags = connectivty + (newMaskVal << 8) + (fillMode == 1 ? FLOODFILL_FIXED_RANGE : 0);
 	int b = (unsigned)theRNG() & 255;
 	int g = (unsigned)theRNG() & 255;
 	int r = (unsigned)theRNG() & 255;
@@ -74,8 +74,7 @@ int main (int argc ,char** argv) {
 	}
 	help();
 	image0.copyTo(image);
-	cvtColor(image0 ,gray ,COLOR_BGR2GRAY);
-	mask.create(image0.rows + 2 ,image0.cols + 2 ,CV_8UC1);
+	cvtColor(image0 ,gray ,image0.cols + 2 ,CV_8UC1);
 	namedWindow("image" ,0);
 	createTrackbar("lo_diff" ,"image" ,&loDiff ,255 ,0);
 	createTrackbar("up_diff" ,"image" ,&upDiff ,255 ,0);

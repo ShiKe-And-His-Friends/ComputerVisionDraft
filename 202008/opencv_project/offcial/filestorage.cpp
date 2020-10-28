@@ -33,7 +33,7 @@ struct MyData {
 	string id;
 	void write (FileStorage& fs) const //Write serialization for this clas
 	{
-		fs << "{" << "A" << A << " X" << X << " id " << id << "}";
+		fs << "{" << "A" << A << "X" << X << "id" << id << "}";
 	}
 
 	void read (const FileNode& node)  //Read serilization for this class 
@@ -56,7 +56,7 @@ static void read (const FileNode& node ,MyData& x ,const MyData& default_value =
 	}
 }
 
-static ostream& operator<< (ostream& out ,const MyData& m) {
+static ostream& operator<<(ostream& out ,const MyData& m) {
 	out << "{ id = " << m.id << ", ";
 	out << "X = " << m.X << ", ";
 	out << "A = " << m.A << "}";
@@ -138,7 +138,7 @@ int main (int agc ,char** agv) {
 			"mdata:\n"
 			"    A:97\n"
 			"    X:3.1415926535897931e+00\n"
-			"	id:mydata1234\n";  // TAB
+			"    id:mydata1234\n";  // TAB
 		MyData m;
 		FileStorage fs(dataString ,FileStorage::READ | FileStorage::MEMORY);
 		cout << "attempting to read mdata_b from string.\n"; //Show default behavior for empty matrix
