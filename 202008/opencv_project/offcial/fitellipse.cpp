@@ -157,3 +157,16 @@ class canves {
 
 };
 
+static void help () {
+	cout << 
+		"\nThis program is demostration for ellipswe fitting. The program find\n"
+		"contours and approximates it by ellipses. Three mothods are kused to find the \n"
+		"elliptical fits : fitEllipse,fitEllipsesAMS and fitEllipseDirect .\n"
+		"Call:\n"
+		"./fitellipse [image_name -- Default ellipses.jpg]\n" << endl;
+}
+
+int sliederPos = 70;
+
+Mat image;
+
