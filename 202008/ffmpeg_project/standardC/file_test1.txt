@@ -1,0 +1,6 @@
+This is Demo in file.h w+ __PATTERN__
+HAHA
+fprintf end
+This is Demo in file.h w+ __PARTTERN__
+HAHA
+fputs
