@@ -36,7 +36,7 @@ int main () {
 	}
 	printf("thread 1 end.\n");
 
-	tmp2 = pthread_join(thread2 ,&retval);
+	tmp2 = pthread_join(thread1 ,&retval);
 	printf("thread 2 return value(retval) is %d\n" ,(int)retval);
 	printf("thread 2 return result is %d\n" ,tmp2);
 	if (tmp2) {
