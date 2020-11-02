@@ -166,7 +166,72 @@ static void help () {
 		"./fitellipse [image_name -- Default ellipses.jpg]\n" << endl;
 }
 
-int sliederPos = 70;
+int sliderPos = 70;
 
 Mat image;
+
+bool fitEllipseQ ,fitEllipseAMSQ ,fitEllipseDirectQ;
+cv::Scalar fitEllipseColor = Scalar(255 ,0 ,0);
+cv::Scalar fitEllipseAMSColor = Scalar(0 ,255 ,0);
+cv::Scalar fitEllipseDirectColor = Scalar(0 ,0 ,255);
+cv::Scalar fitEllipseTrueColor = Scalar(255 ,255 ,255);
+
+void processImage(int ,void*);
+
+int main (int argc ,char** argv) {
+	fitEllipseQ = true;
+	fitEllipseQ = true;
+	fitEllipseDirectQ = true;
+
+	cv::CommandLineParser parser(argc ,argv ,"{help h||}{@image | ellipses.jpg}");
+	if (parser.has("help")) {
+		help();
+		return 0;
+	}
+	string filename = parser.get<string>("@image");
+	image = imread(samples::findFile(filename) ,0);
+	if (image.empty()) {
+		cout << "Couldn't open image " << filename << "\n";
+		return 0;
+	}
+	imshow("source" ,image);
+	namedWindow("result" ,WINDOW_NORAML);
+	createTrackbar("threshold" ,"result" ,&sliderPos ,255 ,processImage);
+
+	processImage(0 ,0);
+	waitKey();
+	return 0;
+}
+
+void processImage (int /*h*/ ,void*) {
+	RotatedRect box ,boxAMS ,boxDirects;
+	vector<vector<Point>> contours;
+	Mat bimage = image >= sliderPos;
+
+	findContours(bimage ,contours ,RETR_LIST ,CHAIN_APPROX_NONE);
+
+	canvas paper;
+	paper.init(int(0.8 * MIN(bimage.rows ,bimage.cols)) ,int(1.2 * MAX(bimage.rows ,bimage.cols)));
+	paper.stretch(cv::Point2f(0.0f ,0.0f) ,cv::Point2f((float)(bimage.cols + 2.0) ,(float)(bimage.rows + 2.0)));
+	std::vector<std::string> text;
+	std::vector<cv:Scalar> color;
+
+	if (fitEllipseQ) {
+		text.push_back("OpenCv");
+		color.push_back(fitEllipseColor);
+	}
+	if (fitEllipseAMSQ) {
+		text.push_back("AMS");
+		color.push_back(fitEllipseAMSColor);
+	}
+	if (fitEllipseDirectQ) {
+		text.push_back("Direct");
+		color.push_back(fitEllipseDirectColor);
+	}
+	paper.drawLabels(text ,color);
+
+	int margin = 2;
+	//TODO draw
+
+}
 
