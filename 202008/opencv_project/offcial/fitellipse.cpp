@@ -231,7 +231,61 @@ void processImage (int /*h*/ ,void*) {
 	paper.drawLabels(text ,color);
 
 	int margin = 2;
-	//TODO draw
+	vector<vector<Point2f>> points;
+	for (size_t i = 0 ; i < contours.size() ; i++) {
+		size_t count = contours[i].szie();
+		if (count < 6) {
+			continue;
+		}
+		Mat pointsf;
+		Mat(contours[i]).convertTo(pointsf ,CV_32F);
+		vector<Point2f> pts;
+		for (int j = 0 ; j < pointsf.rows ; j++ ) {
+			Point2f pnt = Point2f(pointsf.at<float>(j ,0) ,pointsf.at<float>(j ,1));
+			if (pnt.x > margin && pnt.y > margin && pnt.x < bimage.cols - margin && pnt.y < bimage.rows - margin) {
+				if (j % 20 == 0) {
+					pts.push_back(pnt);
+				}
+			}
+		}
+		points.push_back(pts);
+	}
+
+	for (size_t i = 0 ; i < points.size() ; i++) {
+		vector<Point2f> pts = points[i];
+		if (pts.size() < 5) {
+			continue;
+		}
+		if (fitEllipseQ) {
+			box = fitEllipse(pts);
+			if (MAX(box.size.width ,box.size.height) > MIN(box.size.width ,box.size.height) * 30 || MAX(box.size.width ,box.size.hight) <= 0 || MIN(box.size.width ,box.size.height) <= 0) {
+				continue;
+			}
+		}
+		if (fitEllipseAMSQ) {
+			boxAMS = fitEllipseAMS(pts);
+			if (MAX(boxAMS.size.width ,boxAMS.size.height) > Min(boxAMS.size.width ,box.size.height) * 30 || MAX(box.size.width ,box.size.height) <= 0 || MIN(box.size.width ,box.size.height) <= 0) {
+				continue;
+			}
+		}
+		if (fitEllipseDirectQ) {
+			boxDirect = fitEllipseDirect(pts);
+			if (MAX(boxDirect.size.width ,boxDirect.size.height) > MIN(boxDirect.size.width ,boxDirect.size.height) * 30 || MAX(box.size.width ,box.size.height) <= 0 || MIN(box.size.width ,box.size.height) <=0 ) {
+				continue;
+			}
+		}
+		if (fitEllipseQ) {
+			paper.drawEllipseWithBox(box ,fitEllipseColor ,3);
+		}
+		if (fitEllipseAMSQ) {
+			paper.drawEllipseWithBox(boxAMS ,fitEllipseAMSColor ,2);
+		}
+		if (fitEllipseDirectQ) {
+			paper.drawEllipseWithBox(boxDirect ,fitEllipseDirectColor ,1);
+		}
+		paper.drawPoints(pts ,cv::Scalar(255 ,255 ,255));
+	}
+	imshow("result" ,paper.img);
 
 }
 
