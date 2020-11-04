@@ -1,6 +1,6 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/imgcodecs.hpp"
-#include "opencv2/heighgui.hpp"
+#include "opencv2/highgui.hpp"
 
 #include <iostream>
 
@@ -35,10 +35,10 @@ class canves {
 			if (corner.y < max.y) {
 				corner.y = (int)(max.y + 1.0);
 			}
-			if (origin.x < min.x) {
+			if (origin.x > min.x) {
 				origin.x = (int)(min.x);
 			}
-			if (origin.y < min.y) {
+			if (origin.y > min.y) {
 				origin.y = (int)(min.y);
 			}
 		} else {
@@ -55,7 +55,7 @@ class canves {
 		}
 		int r = (int)(scale * ((corner.y + 1.0) - origin.y));
 		if (r < minDims) {
-			scale = scale * (double)minDims / (double)c;
+			scale = scale * (double)minDims / (double)r;
 		} else {
 			if (r > maxDims) {
 				scale = scale * (double)maxDims /(double)r;
@@ -78,7 +78,7 @@ class canves {
 				max.y = pnt.y;
 			}
 			if (min.x > pnt.x) {
-				minx = pnt.x;
+				min.x = pnt.x;
 			}
 			if (min.y > pnt.y) {
 				min.y = pnt.y;
@@ -145,12 +145,12 @@ class canves {
 			ing = cv::Mat::zeros(rows ,cols ,CV_8UC3);
 		}
 		int vPos = 0;
-		for (size_t i = 0 ;i < text.size() ;i++) {
+		for (size_t i = 0 ; i < text.size() ;i++) {
 			cv::Scalar color = colors[i];
 			std::string txt = text[i];
 			Size textsize = getTextSize(txt ,FONT_HERSHEY_COMPLEX ,1 ,1 ,0);
 			vPos += (int)(1.3 * textsize.height);
-			Point org((imh.cols - textsize.width) ,vPos);
+			Point org((img.cols - textsize.width) ,vPos);
 			cv::putText(img ,txt ,org ,FONT_HERSHEY_COMPLEX ,1 ,color ,1 ,LINE_8);
 		}
 	}
@@ -180,7 +180,7 @@ void processImage(int ,void*);
 
 int main (int argc ,char** argv) {
 	fitEllipseQ = true;
-	fitEllipseQ = true;
+	fitEllipseAMSQ = true;
 	fitEllipseDirectQ = true;
 
 	cv::CommandLineParser parser(argc ,argv ,"{help h||}{@image | ellipses.jpg}");
@@ -204,7 +204,7 @@ int main (int argc ,char** argv) {
 }
 
 void processImage (int /*h*/ ,void*) {
-	RotatedRect box ,boxAMS ,boxDirects;
+	RotatedRect box ,boxAMS ,boxDirect;
 	vector<vector<Point>> contours;
 	Mat bimage = image >= sliderPos;
 
