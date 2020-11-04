@@ -8,6 +8,7 @@ using namespace cv;
 using namespace std;
 
 class canves {
+public:
 	bool setupQ;
 	cv::Point origin;
 	cv::Point corner;
@@ -110,7 +111,7 @@ class canves {
 		}
 	}
 
-	void drawEllipseWithBox (cv::RotatedRect box ,cv::Scalar color ,int lineThickness) {
+	void drawEllipseWithBox (cv::RotatedRect box ,cv::Scalar colors ,int lineThickness) {
 		if (img.empty()) {
 			stretch(box);
 			img = cv::Mat::zeros(rows ,cols ,CV_8UC3);
@@ -119,7 +120,7 @@ class canves {
 		box.size.width = (float)(scale * box.size.width);
 		box.size.height = (float)(scale * box.size.height);
 
-		ellipse(img ,box ,color ,lineThickness ,LINE_AA);
+		ellipse(img ,box ,colors,lineThickness ,LINE_AA);
 		Point2f vtx[4];
 		box.points(vtx);
 		for (int j = 0; j < 4 ; j++) {
@@ -133,16 +134,16 @@ class canves {
 			img = cv::Mat::zeros(rows ,cols ,CV_8UC3);
 		}
 		for (size_t i = 0 ; i < pts.size() ;i++) {
-			Point2f pnt = scale * cv::Point2f(pnt[i].x - origin.x ,pts[i].y - origin.y );
-			img.at<cv::Vec3b>(int(pnt,y) ,int(pnt.x))[0] = (uchar)color[0];
+			Point2f pnt = scale * cv::Point2f(pts[i].x - origin.x ,pts[i].y - origin.y );
+			img.at<cv::Vec3b>(int(pnt.y) ,int(pnt.x))[0] = (uchar)color[0];
 			img.at<cv::Vec3b>(int(pnt.y) ,int(pnt.x))[1] = (uchar)color[1];
 			img.at<cv::Vec3b>(int(pnt.y) ,int(pnt.x))[2] = (uchar)color[2];
 		}
 	}
 
-	void drawLabels (std::vector<std::string> text ,std:vector<cv::Scalar> colors) {
+	void drawLabels (std::vector<std::string> text ,std::vector<cv::Scalar> colors) {
 		if (img.empty()) {
-			ing = cv::Mat::zeros(rows ,cols ,CV_8UC3);
+			img = cv::Mat::zeros(rows ,cols ,CV_8UC3);
 		}
 		int vPos = 0;
 		for (size_t i = 0 ; i < text.size() ;i++) {
@@ -195,7 +196,7 @@ int main (int argc ,char** argv) {
 		return 0;
 	}
 	imshow("source" ,image);
-	namedWindow("result" ,WINDOW_NORAML);
+	namedWindow("result" ,WINDOW_NORMAL);
 	createTrackbar("threshold" ,"result" ,&sliderPos ,255 ,processImage);
 
 	processImage(0 ,0);
@@ -210,11 +211,11 @@ void processImage (int /*h*/ ,void*) {
 
 	findContours(bimage ,contours ,RETR_LIST ,CHAIN_APPROX_NONE);
 
-	canvas paper;
+	canves paper;
 	paper.init(int(0.8 * MIN(bimage.rows ,bimage.cols)) ,int(1.2 * MAX(bimage.rows ,bimage.cols)));
 	paper.stretch(cv::Point2f(0.0f ,0.0f) ,cv::Point2f((float)(bimage.cols + 2.0) ,(float)(bimage.rows + 2.0)));
 	std::vector<std::string> text;
-	std::vector<cv:Scalar> color;
+	std::vector<cv::Scalar> color;
 
 	if (fitEllipseQ) {
 		text.push_back("OpenCv");
@@ -233,7 +234,7 @@ void processImage (int /*h*/ ,void*) {
 	int margin = 2;
 	vector<vector<Point2f>> points;
 	for (size_t i = 0 ; i < contours.size() ; i++) {
-		size_t count = contours[i].szie();
+		size_t count = contours[i].size();
 		if (count < 6) {
 			continue;
 		}
@@ -258,13 +259,13 @@ void processImage (int /*h*/ ,void*) {
 		}
 		if (fitEllipseQ) {
 			box = fitEllipse(pts);
-			if (MAX(box.size.width ,box.size.height) > MIN(box.size.width ,box.size.height) * 30 || MAX(box.size.width ,box.size.hight) <= 0 || MIN(box.size.width ,box.size.height) <= 0) {
+			if (MAX(box.size.width ,box.size.height) > MIN(box.size.width ,box.size.height) * 30 || MAX(box.size.width ,box.size.height) <= 0 || MIN(box.size.width ,box.size.height) <= 0) {
 				continue;
 			}
 		}
 		if (fitEllipseAMSQ) {
 			boxAMS = fitEllipseAMS(pts);
-			if (MAX(boxAMS.size.width ,boxAMS.size.height) > Min(boxAMS.size.width ,box.size.height) * 30 || MAX(box.size.width ,box.size.height) <= 0 || MIN(box.size.width ,box.size.height) <= 0) {
+			if (MAX(boxAMS.size.width ,boxAMS.size.height) > MIN(boxAMS.size.width ,box.size.height) * 30 || MAX(box.size.width ,box.size.height) <= 0 || MIN(box.size.width ,box.size.height) <= 0) {
 				continue;
 			}
 		}
