@@ -212,3 +212,55 @@ static void on_mouse(int event ,int x ,int y ,int flags ,void* param) {
 	gcapp.mouseClick(event ,x ,y ,flags ,param);
 	
 }
+
+
+int main(int argc ,char** argv) {
+	cv::CommandLineParser parser(argc ,argv ,"{@input | messi5.jpg}");
+	help();
+	string filename = parser.get<string>("@input");
+	if (filename.empty()) {
+		cout << "\nDurn ,empty filename" << endl;
+		return 1;
+	}
+	Mat image = imread(samples::findFile(filename) ,IMREAD_COLOR);
+	if (image.empty()) {
+		cout << "\n Durn ,could n't read image filename " << filename << endl;
+		return 1;
+	}
+	const string winName = "image";
+	namedWindow(winName ,WINDOW_AUTOSIZE);
+	setMouseCallback(winName ,on_mouse ,0);
+	gcapp.setImageAndWinName(image ,winName);
+	gcapp.showImage();
+	for (;;) {
+		char c = (char)waitKey(0);
+		switch(c) {
+			case '\xlb':
+				cout << "Exiting..." << endl;
+				goto exit_main;
+				
+			case 'r':
+				cout << endl;
+				gcapp.reset();
+				gcapp.showImage();
+				break;
+				
+			case 'n':
+				int iterCount = gcapp.getIterCount();
+				cout << "<" << iterCount << "...";
+				int nextIterCount = gcapp.nextIter();
+				if (nextIterCount > iterCount) {
+					gcapp.showImage();
+					cout << iterCount << ">" << endl;
+				} else {
+					cout << "rect must be determined" << endl;
+				}
+				break;
+		}
+	}
+	
+exit_main:
+	destroyWindow(winName);
+	return 0;
+}
+
