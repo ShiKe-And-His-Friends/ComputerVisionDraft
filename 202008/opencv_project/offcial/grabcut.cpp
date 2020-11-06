@@ -46,4 +46,59 @@ static void getBinMask (const Mat& comMask ,Mat& binMask) {
 	binMask = comMask & 1;
 }
 
+class GCApplication {
+public:
+	enum {
+		NOT_SET = 0 ,
+		IN_PROCESS = 1 ,
+		SET = 2 
+	};
+
+	static const int radius = 2;
+	static const int thickness = 1;
+
+	void reset();
+	void setImageAndWinName(const Mat& _iamge ,const string& _winName);
+	void showImage() const;
+	void mouseClick(int event ,int x ,int y ,int flags ,void* param);
+	int nextIter();
+	
+	int getIterCount() const {
+		return iterCount;
+	}
+
+private:
+	void setRectInMask();
+	void setLblsInMask(int flags ,Point p ,bool isPr);
+
+	const string* winName;
+	const Mat* image;
+	Mat mask;
+	Mat bgdModel, fgdModel;
+
+	uchar rectState, lblsState, prLblesState;
+	bool isInitialized;
+
+	Rect rect;
+	vector<Point> fgbPxls, bgdPxls, prFgdPxels, prBgPxls;
+	int iterCount;
+};
+
+void GCApplication::reset() {
+	if (!mask.empty()) {
+		mask.setTo(Scalar::all(GC_BGD));
+	}
+	bgdPxls.clear();
+	fgbPxls.clear();
+	prBgdPxls.clear();
+	prFgdpxls.clear();
+
+	isInitialized = false;
+	rectState = NOT_SET;
+	bkbsState = NOT_SET;
+	prLblsState = NOT_SET;
+	iterCount = 0;
+}
+
+
 
