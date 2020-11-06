@@ -9,9 +9,9 @@ using namespace cv;
 
 static void help () {
 	cout << "\nThis program demonstrates GrabCut segmentation -- select an object in a region\n"
-		"and then grabcut will attempt to segment it out.\n"
+		"and then grabCut will attempt to segment it out.\n"
 		"Call:\n"
-		"./grabcut <image_name>\n"
+		"./grabCut <image_name>\n"
 		"\nSelect a rectangular area around the object you want to segment\n"<<
 		"\nHot keys:\n"
 		"\tESC - quit the program\n"
@@ -100,5 +100,115 @@ void GCApplication::reset() {
 	iterCount = 0;
 }
 
+void GCApplication::setLblsInMask(int flags ,Point p ,bool isPr) {
+	
+	vector<Point> *bpxls ,*fpxls;
+	uchar bvalue ,fvalue;
+	if (!isPr) {
+		bpxls = &bgdPxls;
+		fpxls = &fgdPxls;
+		bvalue = GC_BGD;
+		fvalue = GC_PR_FGD;
+	}
+	if (flags & BGD_KEY) {
+		bpxls->push_back(p);
+		circle(mask ,p ,radius ,bvalue ,thickness);
+	}
+	if (flags & FGD_KEY) {
+		fpxls->push_back(p);
+		circle(mask ,p ,radius ,fvalue ,thickness);
+	}
+}
 
+void GCApplication::mouseClick(int event ,int x ,int y ,int flags ,void*) {
+	//TODO add bad args check
+	switch (event) {
+		case EVENT_LBUTTONDOWN:
+			bool isb = (flags & BGD_KEY) != 0;
+			bool isf = (flags & FGD_KEY) != 0;
+			if (rectState == NOT_SET && !isb && !isf) {
+				rectState = IN_PROCESS;
+				rect = Rect(x ,y ,1 ,1);
+			}
+			if ((isb || isf) && rectState == SET) {
+				lblsState == IN_PROCESS;
+			}
+			break;
+			
+		case EVENT_RBUTTONDOWN:
+			// set GC_PR_BGD labels
+			bool isb = (flags & BGD_KEY) != 0;
+			bool isf = (flags & FGD_KEY) != 0;
+			if ((isb || isf) && rectState == SET) {
+				prLblesState = IN_PROCESS;
+			}
+			break;
+			
+		case EVENT_LBUTTONUP:
+			if (rectState == IN_PROCESS) {
+				rect = Rect(Point(rect.x ,rect.y) ,Point(x ,y));
+				rectState = SET;
+				setRectInMask();
+				CV_Assert(bgdPxls.empty() && fgdPxls.empty() && prBgPxls.empty() && prBgPxls.empty());
+				showImage();
+			}
+			if (lblsState == IN_PROCESS) {
+				setLblsInMask(flags ,Point(x ,y) ,false);
+				lblsState = SET;
+				showImage();
+			}
+			break;
+			
+		case EVENT_RBUTTONUP:
+			if (prLblesState == IN_PROCESS) {
+				setLblsInMask(flags ,Point(x ,y) ,true);
+				prLblesState = SET;
+				showImage();
+			}
+			break;
+			
+		case EVENT_MOUSEMOVE:
+			if (rectState == IN_PROCESS) {
+				rect = Rect(Point(rect.x ,rect.y) ,Point(x ,y));
+				CV_Assert(bgdPxls.empty() && fgdPxls.empty() && prBgdPxls.empty() && prFgdPxels.empty());
+				showImage();
+			} else if (lblsState == IN_PROCESS) {
+				setLblsInMask(flags ,Point(x ,y) ,false);
+				showImage();
+			} else if (prLblesState == IN_PROCESS) {
+				setLblsInMask(flags ,Point(x ,y) ,true);
+				showImage();
+			}
+			break;
+	}
+}
 
+int GCApplication::nextIter() {
+	if (isInitialized) {
+		grabCut(*image ,mask ,recr ,bgdModel ,fgdModel ,1);
+	} else {
+		if (rectState != SET) {
+			return iterCount;
+		}
+		if (lblsState == SET || prLblesState == SET) {
+			grabCut(*image ,mask ,rect ,bgdModel ,fgdModel ,1 ,GC_INIT_WITH_MASK);
+		} else {
+			grabCut(*image ,mask ,rect ,bgdModel ,fgdModel ,1 ,GC_INIT_WITH_RECT);
+		}
+		isInitialized = true;
+	}
+	iterCount ++;
+	bgdPxls.clear();
+	fgdPxls.clear();
+	prBgPxls.clear();
+	prFgdPxels.clear();
+	
+	return iterCount;
+}
+
+GCApplication gcapp;
+
+static void on_mouse(int event ,int x ,int y ,int flags ,void* param) {
+	gcapp.mouseClick(event ,x ,y ,flags ,param);
+	
+}
