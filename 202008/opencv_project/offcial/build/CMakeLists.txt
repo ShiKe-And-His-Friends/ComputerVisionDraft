@@ -22,7 +22,7 @@ message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 # Declare the executable target built from your sources
-add_executable(fitellipse ../fitellipse.cpp)
+add_executable(grabcut ../grabcut.cpp)
 
 # Link your application with OpenCV libraries
-target_link_libraries(fitellipse  PRIVATE ${OpenCV_LIBS})
+target_link_libraries(grabcut  PRIVATE ${OpenCV_LIBS})
