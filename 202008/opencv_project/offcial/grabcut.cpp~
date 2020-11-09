@@ -80,7 +80,7 @@ private:
 	bool isInitialized;
 
 	Rect rect;
-	vector<Point> fgbPxls, bgdPxls, prFgdPxls, prBgdPxls;
+	vector<Point> fgdPxls, bgdPxls, prFgdPxls, prBgdPxls;
 	int iterCount;
 };
 
@@ -89,7 +89,7 @@ void GCApplication::reset() {
 		mask.setTo(Scalar::all(GC_BGD));
 	}
 	bgdPxls.clear();
-	fgbPxls.clear();
+	fgdPxls.clear();
 	prBgdPxls.clear();
 	prFgdPxls.clear();
 
@@ -100,14 +100,71 @@ void GCApplication::reset() {
 	iterCount = 0;
 }
 
+void GCApplication:setImageAndWinName(const Mat& _image ,const string& _winName) {
+	if (_image.empty() || _winName.empty()) {
+		return;
+	}
+	image = &_image;
+	winName = &_winName;
+	mask.create(image->size() ,CV_8UC1);
+	reset();
+}
+
+void GCApplication::showImage() const {
+	if (image->empty() || winName->empty()) {
+		return;
+	}
+	Mat res;
+	Mat binMask;
+	if (!isInitialized) {
+		image->copyTo(res);
+	} else {
+		getBinMask(mask ,binMask);
+		image->copyTo(res ,binMask);
+	}
+	vector<Point>::const_iterator it;
+	for (it = bgdPxls.begin() ; it != bgdPxls.end() ; it++ ) {
+		circle(res ,*it ,radius ,BLUE ,thickness);
+	}
+	for (it = fgdPxls.begin() ; it != fgdPxls.end() ; it++ ) {
+		circle(res ,*it ,radius ,RED ,thickness);
+	}
+	for (it = prBgdPxls.begin() ; it != prBgdPxls.end() ; it++ ) {
+		circle(res ,*it ,radius ,LIGHTBLUE ,thickness);
+	}
+	for (it = prFgdPxls.begin() ;it != prFgdPxls.end(); it++ ) {
+		circle(res ,*it ,radius ,PINK ,thickness);
+	}
+	if (rectState == IN_PROCESS || rectState == SET) {
+		rectangle(res ,Point(rect.x ,rect.y) ,Point(rect.x + rect.width ,rect.y + rect.height) ,GREEN ,2);
+	}
+	imshow(*winName ,res);
+}
+
+void GCApplication::setRectInMask() {
+	CV_Assert(!mask.empty());
+	mask.setTo(GC_BGD);
+	rect.x = max(0 ,rect.x);
+	rect.y = max(0 ,rect.y);
+	rect.width = min(rect.width ,image->cols - rect.x);
+	rect.height = min(rect.height ,image->rows - rect.y);
+	(mask(rect)).setTo(Scalar(GC_PR_FGD));
+}
+
+
 void GCApplication::setLblsInMask(int flags ,Point p ,bool isPr) {
 	
 	vector<Point> *bpxls ,*fpxls;
 	uchar bvalue ,fvalue;
 	if (!isPr) {
 		bpxls = &bgdPxls;
-		fpxls = &fgbPxls;
+		fpxls = &fgdPxls;
 		bvalue = GC_BGD;
+		fvalue = GC_PR_FGD;
+	} else {
+		bpxls = &prBgdPxls;
+		fpxls = &prFgdPxls;
+		bvalue = GC_PR_BGD;
 		fvalue = GC_PR_FGD;
 	}
 	if (flags & BGD_KEY) {
@@ -154,7 +211,7 @@ void GCApplication::mouseClick(int event ,int x ,int y ,int flags ,void*) {
 					rect = Rect(Point(rect.x ,rect.y) ,Point(x ,y));
 					rectState = SET;
 					setRectInMask();
-					CV_Assert(bgdPxls.empty() && fgbPxls.empty() && prBgdPxls.empty() && prBgdPxls.empty());
+					CV_Assert(bgdPxls.empty() && fgdPxls.empty() && prBgdPxls.empty() && prBgdPxls.empty());
 					showImage();
 				}
 				if (lblsState == IN_PROCESS) {
@@ -176,7 +233,7 @@ void GCApplication::mouseClick(int event ,int x ,int y ,int flags ,void*) {
 		case EVENT_MOUSEMOVE:
 			if (rectState == IN_PROCESS) {
 				rect = Rect(Point(rect.x ,rect.y) ,Point(x ,y));
-				CV_Assert(bgdPxls.empty() && fgbPxls.empty() && prBgdPxls.empty() && prFgdPxls.empty());
+				CV_Assert(bgdPxls.empty() && fgdPxls.empty() && prBgdPxls.empty() && prFgdPxls.empty());
 				showImage();
 			} else if (lblsState == IN_PROCESS) {
 				setLblsInMask(flags ,Point(x ,y) ,false);
@@ -205,7 +262,7 @@ int GCApplication::nextIter() {
 	}
 	iterCount ++;
 	bgdPxls.clear();
-	fgbPxls.clear();
+	fgdPxls.clear();
 	prBgdPxls.clear();
 	prFgdPxls.clear();
 	
