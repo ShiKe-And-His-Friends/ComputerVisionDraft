@@ -11,5 +11,7 @@
 #include <opencv2/objdetect.hpp>
 #include <opencv2/imgroc.hpp>
 
-
+inline void App::hogWorkBegin() {
+	hog_work_begin = getTickCount();
+}
 
