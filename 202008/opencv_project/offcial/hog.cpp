@@ -15,3 +15,9 @@ inline void App::hogWorkBegin() {
 	hog_work_begin = getTickCount();
 }
 
+inline void App::hogWorkEnd() {
+	int64 delta = getTickCount() - hog_work_begin;
+	double freq = getTickFrequency();
+	hog_work_fps = freq / delta;
+}
+
