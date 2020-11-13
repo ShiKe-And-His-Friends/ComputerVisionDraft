@@ -55,7 +55,7 @@ public:
 	};
 
 	static const int radius = 2;
-	static const int thickness = 1;
+	static const int thickness = -1;
 
 	void reset();
 	void setImageAndWinName(const Mat& _iamge ,const string& _winName);
@@ -278,7 +278,7 @@ static void on_mouse(int event ,int x ,int y ,int flags ,void* param) {
 
 
 int main(int argc ,char** argv) {
-	cv::CommandLineParser parser(argc ,argv ,"{@input | messi5.jpg}");
+	cv::CommandLineParser parser(argc ,argv ,"{@input | messi5.jpg |}");
 	help();
 	string filename = parser.get<string>("@input");
 	if (filename.empty()) {
