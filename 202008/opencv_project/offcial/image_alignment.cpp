@@ -42,4 +42,39 @@ const std::string keys =
 	"{@templateImage	| 				| template image filename (optionnal)}"
 	"{@inputWarp		|				| input warp (maxtrix) filename (optional)}"
 	"{n numofIte		| 50 			| ECC's iterations}"
-	"{}"
+	"{e epsilon			| 0.0001		| ECC's convergence epsilon}"
+	"{o outputWarp		| outWarp.ecc 	| ouput warp (maxtrix) filename}"
+	"{m motionType		| affine		| type of motion (translation, euclidean ,affine ,hemography)}"
+	"{v verbose			| 1				| display initial and final images}"
+	"{w warpedImfile	| warpedECC.png	| warped input image}"
+	"{h help			| print help message}";
+	
+static void help (void) {
+	cout << "\nThis file demonstrates the use of the ECC image alignment algorthm. Whrn one image"
+		" us given ,the template image is artifically formed by a random warp. When both images"
+		" are given ,the initialization of the warp by command line parsing is possible."
+		" If inputWarp is missing, the identity transformation initializes the algorithm. \n" << endl;
+		
+	cout << "\nUsage example (one image):\n /image_alignment youtInput.png youtTemplate.png"
+		" -m=euclidean -e=1e-6 -N=70 -v=1 \n" <<endl;
+		
+	cout <<"\nUsage example (two images with initialization): \n /image_alignment youtInput.png yourTemplate.png"
+		" yorInitialWarp.ecc -o=outWarp.ecc -m=homography -e=1e-6 -M=70 -v=1 -w=yourFinalImage.png \n" <<endl;
+}
+
+static int readWarp(string iFilename ,Mat& warp ,int motionType) {
+	// it reads for file a specific number of raw values;
+	// 9 values for homography ,6 otherwise
+	CV_Assert(warp.type() == CV_32FC1);
+	int numOfElements;
+	if (motionType == MOTION_HOMOGRAPHY) {
+		numOfElements = 9;
+	} else {
+		numOfElements = 6;
+	}
+	
+	int i;
+	int ret_values;
+	ifstream myfile(iFilename.c_str());
+	if
+}
