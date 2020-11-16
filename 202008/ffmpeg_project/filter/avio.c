@@ -89,3 +89,39 @@ end:
 	}
 	return 0;
 }
+
+/**
+	1. struct
+	1.1 
+	typedef strucr AVFormatContext {} AVFormatContext;
+	1.2
+	typedef struct AVIOContext {} AVIoContext;
+	1.3 (self define)
+	struct buffer_data{uint8_t *ptr ;size_t size;};
+	static int read_packet(...);
+	
+	2. function
+	2.1 int av_file_map(const char* filename ,uint8_t** bufptr ,size_t *size ,int long_offset ,void* log_ctx);
+	2.2 AVFormatContext* avformat_alloc_context(void);
+	2.3* void* av_malloc(size_t size);
+	2.4 AVIoContext* avio_alloc_context(
+		unsigned char* buffer,
+		int buffer_size,
+		int write_flag,
+		void* opaque,
+		int (*read_packet)(void* opaque ,uint8_t* buf ,int buf_size),
+		int (*write_packet)(void *opaque ,uint8_* buf ,int buf_size),
+		int64_t (*seek)(void* opaque ,int64_t offset ,int whence)
+		);
+	2.5 int avformat_open_input(AVFormatContext** ps ,const char* url ,ff_const59 AVInputFormat *fmt ,AVDictionary** options);
+	2.6 int avformat_find_stream_info(AVFormatContext *ic ,AVDictionary** options);
+	2.7* void av_dump_format(AVFormatContext *ic ,int index ,const char* url ,int is_ouput);
+	2.8 (realease resource)
+		2.8.1 void avformat_close_input(AVFormatContext** s);
+		2.8.2 void av_freep(void* ptr);
+		2.8.3 av_file_unmap(uin8_t* bufptr ,size_t size);
+		
+	3. organize
+	3.1 fmt_ctx->pb = avio_ctx;
+	3.2 static int read_packet(...);
+**/
