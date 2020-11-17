@@ -113,5 +113,102 @@ static int saveWarp(string fileName ,const Mat& warp , int motionType) {
 
 static void draw_warped_roi(Mat& image ,const int width ,const int height ,Mat& W) {
 	Point2f top_left ,top_right ,bottom_left ,bottom_right;
-	
+	Mat H = Mat(3 ,1 ,CV_32F);
+	Mat U = Mat(3 ,1 ,CV_32F);
+	Mat warp_mat = Mat::eye(3 ,3 ,CV_32F);
+
+	for (int y = 0 ; y < W.rows ; y++ ) {
+		for (int x = 0 ; x < W.cols ; x++ ) {
+			warp_mat.at<float>(y ,x) = W.at<float>(y ,x);
+		}
+	}
+	// warp the corners pf rectangle
+
+	// top-left
+	HOMO_VECTOR(H ,1 ,1);
+	gemm(warp_mat ,H ,1 ,0 ,0 ,U);
+	GET_HOMO_VALUES(U ,top_left.x ,top_left.y);
+
+	// top-right
+	HOMO_VECTOR(H ,width ,1);
+	gemm(warp_mat ,H ,1 ,0 ,0 ,U);
+	GET_HOMO_VALUES(U ,top_right.x ,top_right.y);
+
+	// bottom-left
+	HOMO_VECTOR(H ,1 ,height);
+	gemm(warp_mat ,H ,1 ,0 ,0 ,U);
+	GET_HOMO_VALUES(U ,bottom-left.x ,bottom-left.y);
+
+	//bottom-right
+	HOMO_VECTOR(H ,width ,height);
+	gemm(warp_mat ,H ,1 ,0 ,0 ,U);
+	GET_HOMO_VALUES(U ,bottom_right.x ,bottom_right.y);
+
+	//draw the warped perimeter
+	line(image ,top_left ,top_right ,Scalar(255));
+	line(image ,top_right ,bottom_right ,Scalar(255));
+	line(image ,bottom_right ,bottom_left ,Scalar(255));
+	line(image ,bottom_left ,top_left ,Scalar(255));
+}
+
+int main(const int argc ,char* argv[]) {
+	CommandLineParser parser(argc ,argv ,keys);
+	parser.about("ECC demo");
+
+	parser.printMessage();
+	help();
+
+	string imgFile = parser.get<string>(0);
+	string tempImaFile = parser.get<string>(1);
+	string inWarpFile = parser.get<string>(2);
+
+	int number_of_iterations = parser.get<int>("n");
+	double termination_eps = parser.get<double>("e");
+	string warpType = parser.get<string>("m");
+	int verbose = parser.get<int>("v");
+	string finalWarp = parser.get<string>("o");
+	string warpImFile = parser.get<string>("w");
+
+	if (!parser.check()) {
+		parser.printErrors();
+		return -1;
+	}
+	if (!(warpType == "translation" || warpType == "euclidean" 
+			|| warpType == "affine" || warpType == "homography" )) {
+		cerr << "Invalid motion transformation " << endl;
+		return -1 ;
+	}
+
+	int mode_temp;
+	if (warpType == "translation") {
+		mode_temp = MOTION_TRANSLATION;
+	} else if (warpType == "euclidean") {
+		mode_temp = MOTION_EDCLIDEAN;
+	} else if (warpType == "affine") {
+		mode_temp = MOTION_AFFINE;
+	} else {
+		mode_temp = MOTION_HOMOGRAPHY;
+	}
+
+	Mat inputImage = imread(samples::findFile(imageFile) ,INREAD_GRAYSCALE);
+	if (inputImage.empty()) {
+		cerr << "Unable to load the input Image" << endl;
+		return -1;
+	}
+
+	Mat targer_image;
+	Mat template_image;
+
+	if (tempImaFile != "") {
+		inputImage.copyTo(targer_image);
+		template_image = imread(samples::findFile(tempImaFile) ,IMREAD_GRAYSCALE);
+		if (template_image.empty()) {
+			cerr << "Unable to load the template image" << endl;
+			return -1;
+		}
+	} else {
+		// apply random warp to inpit image
+		
+	}
+
 }
