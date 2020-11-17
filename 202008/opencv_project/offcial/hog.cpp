@@ -193,10 +193,115 @@ void App::run () {
 				rectangle(img_to_show ,found[i] ,Scalar(0 ,255 ,0) ,3);
 			}
 			putText(img_to_show ,ocl::useOpenCL() ? "Mode OpenCL" : "Mode: CPU" ,Point(5 ,25) ,FONT_HERSHET_SIMPLEX ,1. ,Scalar(255 ,100 ,0) ,2);
-			putText(img_to_show ,);
+			putText(img_to_show ,"FPS (HOG only): " + hogWorkFps() ,Point(5 ,65) FONT_HERSHET_SIMPLEX ,1. ,Scalar(255 ,100 ,0) ,2);
+			putText(img_to_show ,"FPS (total): " + workFps() ,Point(5 ,105) ,FONT_HERSHET_SIMPLEX ,1. ,Scalar(255 ,100 ,0) ,2);
+			imshow("opencv_hog" ,img_to_show);
+			if (vdo_source != "" || camera_id != -1) {
+				vc >> frame;
+			}
+			workEnd();
+			if (output != "" && write_once) {
+				// write video
+				if (img_source != "") {
+					write_once = false;
+					imwrite(output ,img_to_show);
+				} else {
+					if (!video_writer.isOpened()) {
+						video_writer.open(output ,VideoWriter::fourcc('x' ,'v' ,'i' ,'d') ,24
+							,img_to_show.size() ,true);
+						if (!video_writer.isOpened()) {
+							throwstd::runtime_error("can't create video writer");
+						}
+					}
+					if (make_gray) {
+						cvtColor(img_to_show ,img ,COLOR_BGR2GRAY);
+					} else {
+						cvtColor(img_to_show ,img ,COLOR_BGR2GRAY);
+					}
+					video_writer << img;
+				}
+			}
+			handleKey((char)waitKey(3));
 		}
 	}
 	
+}
+
+void App::handleKey(char key) {
+
+	switch(key) {
+		case 27:
+			running = false;
+			break;
+
+		case 'm':
+		case 'M':
+			ocl::setUserOpenCL(!cv::ocl::useOpenCL());
+			cout << "Switched to " << (ocl::useOpenCL() ? "OpenCL enable" : "CPU") << " mode\n";
+			break;
+
+		case 'g':
+		case 'G':
+			make_gray = !make_gray;
+			cout << "convert image to gray: " << (make_gray ? "YES" : "NO") << endl;
+			break;
+
+		case '1':
+			scale *= 1.05;
+			cout << "Scale: " << scale << endl;
+			break;
+
+		case 'q':
+		case 'Q':
+			scale /= 1.05;
+			cout << "Scale: " << scalar << endl;
+			break;
+
+		case '2':
+			nlevels ++;
+			cout << "Levels number: " << nlevels << endl;
+			break;
+
+		case 'w':
+		case 'W':
+			nlevels = maxz(nlevels - 1 ,1);
+			cout << "Levels number: " << nlevels << endl;
+			break;
+
+		case '3':
+			gr_threshold ++;
+			cout << "Group threshold: " << gr_threshold << endl;
+			break;
+
+		case 'e':
+		case 'E':
+			gr_threshold = max(0 ,gr_threshold - 1);
+			cout << "Group threshold: " << gr_threshold << endl;
+			break;
+
+		case '4':
+			hint_threshold += 0.25;
+			cout << "Hit threshold: " << hint_threshold << endl;
+			break;
+
+		case 'r':
+		case 'R':
+			hint_threshold = max(0.0 ,hint_threshold -0.25);
+			cout << "Hit threshold: " << hint_threshold << endl;
+			break;
+
+		case 'c':
+		case 'C':
+			gamma_corr = !gamma_corr;
+			cout << "Gamma correction: " << gamma_corr << endl;
+			break;
+
+		case 'o':
+		case 'O':
+			write_once = !write_once;
+			break;
+
+	}
 }
 
 inline void App::hogWorkBegin() {
@@ -208,4 +313,11 @@ inline void App::hogWorkEnd() {
 	double freq = getTickFrequency();
 	hog_work_fps = freq / delta;
 }
+
+inline string App::hogWorkFps() const {
+	stringstream ss;
+	ss << hog_work_fps;
+	return ss.str();
+}
+
 
