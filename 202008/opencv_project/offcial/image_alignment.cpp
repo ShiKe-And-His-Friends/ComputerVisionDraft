@@ -76,5 +76,42 @@ static int readWarp(string iFilename ,Mat& warp ,int motionType) {
 	int i;
 	int ret_values;
 	ifstream myfile(iFilename.c_str());
-	if
+	if (myfile.is_open()) {
+		float* matPtr = warp.ptr<float>(0);
+		for ( i = 0 ; i < numOfElements ; i++) {
+			myfile >> matPtr[i];
+		}
+		ret_values = 1;
+	} else {
+		cout << "Unable to open file " << iFilename.c_str() << endl;
+		ret_values = 0;
+	}
+	return ret_value;
+}
+
+static int saveWarp(string fileName ,const Mat& warp , int motionType) {
+	// it saves the raw matrix elements in a file
+	CV_Assert(warp.type() == CV_32FC1);
+	const float* matPtr = warp.ptr<float>(0);
+	int ret_value;
+	ofstream outfile(fileName.c_str());
+	if (!outfile) {
+		cerr << "error in saving "
+			<< "Couldn't open file '" << fileName.c_str() << "'!" << endl;''
+		ret_values = 0;
+	} else {
+		// save the warp's elements
+		outfile << matPtr[0] << " " << matPtr[1] << " " << matPtr[2] << endl;
+		outfile << matPtr[3] << " " << matPtr[4] << " " << matPtr[5] << endl;
+		if (motionType == MOTION_HOMOGRAPHY) {
+			outfile << matPtr[6] << " " << matPtr[7] << " " << matPtr[8] << endl;
+		}
+		ret_values = 1;
+	}
+	return ret_values;
+}
+
+static void draw_warped_roi(Mat& image ,const int width ,const int height ,Mat& W) {
+	Point2f top_left ,top_right ,bottom_left ,bottom_right;
+	
 }
