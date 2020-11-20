@@ -146,4 +146,31 @@ int main(int argc ,char **argv){
 	return 0;
 }
 
-
+/**
+	1. struct
+	1.1 typedef strut AVCodec { } AVCodec;
+	1.2 typedef struct AVCodecContext {} AVCodecContext;
+	1.3 typedef struct AVCodecParserContext {} AVCodecContext;
+	1.4 typedef struct AVPacket {} AVPacket;
+	1.5 typedef struct AVFrame {} AVFrame;
+	1.6 enum AVCodecID {};
+	1.7* enum AVSampleFormat {};
+	
+	2. function
+	2.1 AVPacket *av_packet_alloc(void);
+	2.2 AVCodec *avcodec_find_decoder(enum AVCodecID id);
+	2.3 AVCodecParser *av_parser_init(int codec_id);
+	2.4 AVCodecContext *avcodec_alloc_context3(const AVCodec *codec);
+	2.5 int avcodec_open2(AVCodecContext *avctx ,const AVCodec *codec ,AVDictionary **options);
+	2.6 AVFrame *av_frame_alloc(void);
+	2.7 int av_parser_parser2(AVCodecParserContext *s ,AVCodecContext *avctx 
+				,uint8_t **pountbuf ,int *poutbuf_size
+				,const uint8_t *buf ,int buf_size
+				,int64_t pts ,int64_t dts
+				,int64_t pos);
+	2.8 (selfdefine) static void decode(AVCodecContext avc_ctx ,AVPacket pkt ,AVFrame frame ,FILE *outfile);
+	2.9 int avcodec_send_packet(AVCodecContext *avctx ,const AVPacket *avpacket);
+	2.10 int avcodec_receive_frame(AVCodecContext *avctx ,AVFrame *frame);
+	2.11 int av_get_byte_per_sample(enum AVSampleFormat sample_fmt);
+	
+**/
