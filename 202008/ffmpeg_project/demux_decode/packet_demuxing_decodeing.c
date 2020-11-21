@@ -338,3 +338,40 @@ end:
     return ret < 0;
 }
 
+/**
+	1. struct
+	1.1 typedef struct AVStream {} AVStream;
+	1.2 enum AVMediaType {};
+	1.3 struct AVDictionary {};
+	1.4 enum AVCodecID {};
+	1.5 typedef struct AVCodecParameters {} AVCodecParameters;
+	1.6 (self define) static uint8_t *video_dst_data[4] = {NULL};
+	1.7 enum AVSampleFormat {};
+	
+	2. function
+	2.1 (self define) static int open_codec_context(int *stream_idx ,AVCodecContext **dec_ctx ,AVFormatContext *fmt_ctx ,enum AVMediaType type);
+	2.2 int av_find_best_stream(AVFormatContext *ic ,enum AVMediaType type ,int wanted_stream_nb ,int related_stream ,AVCodec **decoder_ret ,int flag);
+	2.3 const char *av_get_media_type_string(enum AVMediaType media_type);
+	2.4 AVCodec *avcodec_find_decoder(enum AVCodecID id);
+	2.5 int avcodec_parameters_to_context(AVCodecContext *codec ,const AVCodecParameters *par);
+	2.6 int av_dict_set(AVDictionary **pm ,const char *key ,const char *value ,int flag);
+	2.7 int av_image_alloc(uint8_t *pointers[4] ,int linessizes[4] ,int w ,int h ,enum AVPixelFormat pix_fmt ,int align);
+	2.8 void av_dump_format(AVFormatContext *ic ,int index ,const char *url ,int is_output);
+	2.9 void av_init_packet(AVPacket *pkt);
+	2.10 int av_read_frame(AVFormatContext *s ,AVPacket *pkt);
+	2.11 (self define) static int decode_packet(int *got_frame ,int cached);
+	2.12 int avcodec_decode_video2(AVCodecContext *avctx ,AVFrame *picture ,int *got_picture_ptr ,const AVPacket *avpkt);
+	2.13 const chat *av_get_pix_fmt_name(enum AVPixelFormat pix_fmt);
+	2.14 void av_image_copy(uint8_t *dst_data[4] ,int dst_linesizes[4] ,const uint8_t *src_data[4] ,const int src_linesizes[4] ,enum AVPixelFormat pix_fmt ,int width ,int height);
+	2.15 int avcodec_decode_audio4(AVCodecContext *avctx ,AVFrame *frame ,int *got_frame_ptr ,const AVPacket *avpkt);
+	2.16 int av_get_bytes_per_sample(enum AVSampleFormat sample_fmt);
+	2.17 void av_frame_unref(AVFrame *frame);
+	2.18 int av_sample_fmt_is_planar(enum AVSampleFormat sample_fmt);
+	2.19 const char *av_get_sample_fmt_name(enum AVSampleFormat sample_fmt);
+	2.20 enum AVSampleFormat av_get_packed_sample_fmt(enum AVSampleFormat sample_fmt);
+	2.21 (self define) static int get_format_from_sample_fmt(const char **fmt ,enum AVSampleFormat sample_fmt);
+	2.22 void avcodec_free_context(AVCodecContext **avctx);
+	2.23 void avformat_close_input(AVFormatContext **s);
+	
+**/
+
