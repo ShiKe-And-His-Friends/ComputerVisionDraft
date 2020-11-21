@@ -115,7 +115,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    parser = av_parser_init(codec->id);
+    parser = av_parser_initav_parser_init(codec->id);
     if (!parser) {
         fprintf(stderr, "parser not found\n");
         exit(1);
@@ -184,3 +184,12 @@ int main(int argc, char **argv)
 
     return 0;
 }
+
+/**
+	1. struct
+	* (same as audio decode)
+	
+	2. function
+	* (same as audio decode)
+	
+**/
