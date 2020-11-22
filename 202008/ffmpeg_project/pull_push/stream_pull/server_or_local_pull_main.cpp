@@ -7,9 +7,6 @@
 
 int main(int argc ,char ** argv)  
 {  
-    av_register_all();  
-    avformat_network_init();  
-  
     InitInput(INPUTURL,&icodec,&ifmt);  
     InitOutput();  
     printf("--------程序运行开始----------\n");  
