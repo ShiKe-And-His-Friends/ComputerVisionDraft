@@ -184,3 +184,21 @@ int main(int argc ,char **argv) {
 
 	return 0;
 }
+
+/**
+	1. struct
+	1.1 
+	
+	2. function
+	2.1 AVCodec *avcodec_find_encoder(enum AVCodecID id);
+	2.2 (self define) static int check_sample_fmt(const AVCodec *codec ,enum AVSampleFormat sample_fmt);
+	2.3 (self define) static int select_sample_rate(const AVCodec *codec);
+	2.4 (self define) static int select_channel_layout(const AVCodec *codec);
+	
+	2.3 int av_frame_get_buffer(AVFrame *frame ,int algin);
+	2.4 int av_frame_make_writeable(AVFrame *frame);
+	2.5 (self define)static void encode(AVCodecContext *enc_ctx ,AVFrame *frame ,AVPacket *pkt ,FILE *outfile);
+	2.6 int avcodec_receive_packet*(AVCodec *avctx ,AVPacket *avpkt);
+	2.7 void av_packet_unref(AVPacket *pkt);
+	
+**/

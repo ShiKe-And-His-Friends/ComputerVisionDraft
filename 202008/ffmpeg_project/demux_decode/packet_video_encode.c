@@ -153,3 +153,13 @@ int main(int argc ,char **argv) {
 
 	return 0;
 }
+
+/**
+	1. struct
+	1.1 typedef struct AVRational {} AVRational;
+	
+	2. function
+	2.1 AVCodec *avcodec_find_encoder_by_name(const char *name);
+	2.2 static void encode(AVCodecContext *enc_ctx ,AVFrame *frame ,AVPacket *pkt ,FILE *outfile);
+	
+**/
