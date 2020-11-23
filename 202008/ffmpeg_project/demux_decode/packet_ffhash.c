@@ -129,3 +129,17 @@ int main(int argc, char **argv)
     return ret;
 }
 
+/**
+	1. struct
+	1.1 typedef struct AVHashContext {} AVHashContext;
+	
+	2. function
+	2.1 const char *av_hash_names(int i);
+	2.2 const char *av_hash_get_name(const struct AVHashContext *ctx);
+	2.3 int av_strstart(const char *str ,const char *pfx ,const char **ptr);
+	2.4 int av_hash_alloc(struct AVHashContext **ctx ,const char *name);
+	2.5 int av_hash_init(struct AVHashContext *ctx);
+	2.6 void av_hash_update(struct AVHashContext *ctx ,const uint8_t *src ,int len);
+	
+**/
+
