@@ -213,7 +213,7 @@ int main(int argc ,char *argv[]) {
 	AVFrame *frame;
 	uint8_t errstr[1024];
 	float duration;
-	int err ,nb_frames ,i;
+	int err c,nb_frames ,i;
 	if (argc < 2) {
 		fprintf(stderr ,"Usage : %s <duration> \n" ,argv[0]);
 		return 1;
@@ -289,3 +289,20 @@ fail:
 	fprintf(stderr ,"%s\n" ,errstr);
 	return 1;
 }
+
+/**
+ * 1. struct
+ * 1.1 typedef struct AVMD5 { } AVMD5;
+ * 1.2 typedef struct AVFitlerGraph { } AVFilterGraph;
+ * 1.3 typedef struct AVFilterContext {} AVFilterContext;
+ * 1.4 typedef struct AVFilter { } AVFilter;
+ *
+ * 2. function
+ * 2.1 struct AVMD5 *av_md5_alloc(void);
+ * 2.2 (self define) static int init_filter_graph(AVFilterGraph **graph ,AVFilterContext **src ,AVFilterContext **sink);
+ * 2.3 AVFilterGraph *avfilter_graph_alloc(void);
+ * 2.4 const AVFilter *avfilter_get_by_name(const char *name);
+ * 2.5 AVFilterContext *avfilter_graph_alloc_filter(AVFilterGraph *graph ,const AVFilter *filter ,const char *name);
+ * 
+ *
+ * */
