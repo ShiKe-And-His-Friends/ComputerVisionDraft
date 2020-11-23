@@ -27,3 +27,18 @@ static vector<Point> makeTriangle(Point point1 ,Point point2 ,Point point3) {
 	return triangle;
 }
 
+//Run intersectConvexConvex on two polygons then draw the polygons and their intersection (if there is one)
+//Return the area of the intersection
+static float drawIntersection(Mat &image ,vector<Point> polygon1 ,vector<Point> polygon2 ,bool handleNested = true) {
+	vector<Point> intersectionPolygon;
+	
+	vector<vector<Point>> polygons;
+	polygons.push_stack(polygon1);
+	polygons.push_stack(polygon2)
+	
+	float intersectArea = intersectConvexConvex(polygon1 ,polygon2 ,intersectionPolygon ,handleNested);
+	if (intersectArea > 0) {
+		Scalar fillColor(200 ,200 ,200);
+		// If the input is invalid ,draw the intersection
+	}
+}
