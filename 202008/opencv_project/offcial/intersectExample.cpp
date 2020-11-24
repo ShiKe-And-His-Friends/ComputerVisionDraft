@@ -40,5 +40,21 @@ static float drawIntersection(Mat &image ,vector<Point> polygon1 ,vector<Point> 
 	if (intersectArea > 0) {
 		Scalar fillColor(200 ,200 ,200);
 		// If the input is invalid ,draw the intersection
+		if (!isContoursConvex(polygon1) || !isContoursConvex(polygon2)) {
+			fillColor = Scalar(0 ,0 ,255);
+		}
+		vector<vector<Point>> pp;
+		pp.push_back(intersectionPolygon);
+		fillPoly(image ,pp ,fillColor);
 	}
+	polylines(image ,polygons ,true ,Scalar(0 ,0 ,0));
+	return intersectArea;
 }
+
+static void intersectConvexExample(Mat &image ,int intersectionArea ,string description ,Point origin) {
+	const size_t bufSize = 1024;
+	char caption[bufSize];
+	snprintf(caption ,bufSize ,"Intersection area: %d %s ",intersectArea ,description.c_str());
+}	putText(image ,caption ,origin ,FONT_HERSHET_SIMPLEX ,0.6 ,Scalar(0 ,0 ,0));
+
+

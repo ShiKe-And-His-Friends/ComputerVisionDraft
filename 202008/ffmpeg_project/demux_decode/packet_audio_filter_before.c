@@ -303,6 +303,9 @@ fail:
  * 2.3 AVFilterGraph *avfilter_graph_alloc(void);
  * 2.4 const AVFilter *avfilter_get_by_name(const char *name);
  * 2.5 AVFilterContext *avfilter_graph_alloc_filter(AVFilterGraph *graph ,const AVFilter *filter ,const char *name);
- * 
- *
+ * 2.6 void av_get_channel_layout_string(char *buf ,int buf_size ,int nb_channels ,uint64_t channel_layout);
+ * 2.7 int av_opt_set(void *obj ,const char *name ,const char *val ,int search_flags);
+ * 2.8 int av_opt_set_q(void *obj, const char *name ,AVRational val ,int search_flags);
+ * 2.9 int avfilter_init_str(AVFilterContext *ctx ,const char *args);
+ * 2.10 int avfilter_link(AVFilterContext *src ,unsigned srcpad ,AVFilterContext *dst ,unsigned dstpad);
  * */
