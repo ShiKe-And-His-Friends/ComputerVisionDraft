@@ -207,3 +207,16 @@ end:
 	exit(0);
 }
 
+/**
+ * 1. struct
+ * 1.1 typedef struct AVFilterInOut { }AVFilterInOut;
+ * 1.2 #define av_opt_set_int_list(obj ,name ,val ,term ,flags)
+ *
+ * 2. function
+ * 2.1 (self define) static int open_input_file(const char *filename);
+ * 2.2 (self define) static int init_filters(const char **filters_descr);
+ * 2.3 AVFilterInOut *avfilter_inout_alloc(void);
+ * 2.4 int avfilter_graph_create_filter(AVFilterContext **filt_ctx ,const AVFilter *filt ,const char *name ,const char *args ,void *opaque ,AVFilterGraph *graph_ctx);
+ * 2.5 char *av_strdup(const char *s);
+ * 2.6 int avfilter_graph_parse_ptr(AVfilterGraph *graph ,const char *filters ,AVFilterInOut **inputs ,AVFilterInOut **outputs ,void *log_ctx);
+ * */
