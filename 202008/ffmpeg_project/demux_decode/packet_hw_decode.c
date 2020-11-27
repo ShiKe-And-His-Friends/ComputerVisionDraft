@@ -198,3 +198,18 @@ int main(int argc ,char *argv[]) {
 	return 0;
 } 
 
+/**
+ * 1. struct
+ * 1.1 enum AVHWDeviceType { };
+ * 1.2 typedef struct AVCodecHWConfig { }AVCodecHWConfig;
+ *
+ * 2. function
+ * 2.1 enum AVHWDeviceType av_hwdevice_find_type_by_name(const char *name);
+ * 2.2 enum AVHWDeviceType av_hwdevice_iterate_types(enum AVHWDeviceType prev);
+ * 2.3 const AVCodecHWConfig *avcodec_get_hw_config(const AVCodec *codec ,int index); 
+ * 2.4 (self define) static int hw_decoder_init(AVCodecContext *ctx ,const enum AVHWDeviceType type);
+ * 2.5 int av_hwdevice_ctx_create(AVBufferRef **device_ctx ,enum AVHWDeviceType type ,const char *device ,AVDictionary *opts ,int flags);
+ * 2.6 static int decode_write(AVCodecContext *avctx ,AVPacket *packet);
+ * 2.7 int av_image_copy_to_buffer(uint8_t *dst ,int dst_size ,const uint8_t * const src_data[4] ,const int src_linesize[4] ,enum AVPixelFormat pix_fmt ,int width ,int height ,int algin);
+ *
+ * */
