@@ -133,3 +133,19 @@ end:
 	return 0;
 }
 
+/**
+ * 1. struct
+ * 1.1 typedef struct AVHashContext {} AVHashContext;
+ * 1.2 typedef struct AVIOInterruptCB { }AVIOInterruptCB;
+ * 
+ * 2. function
+ * 2.1 void av_log_set_level(int level);
+ * 2.2 int avformat_network_init(void);
+ * 2.3 int avio_open2(AVIOContext **s ,const char *url ,int flags ,const AVIOInterruputCB *int_cb ,AVDictionary **options);
+ * 2.4 int avio_accept(AVIOContext *s ,AVIOContext **c);
+ * 2.5 int avio_close(AVIOContext *s);
+ * 2.6 (self define) static void process_client(AVIOContext *client ,const char *in_url);
+ * 2.7 int avio_handsharke(AVIOContext *c);
+ * 2.8 int avio_read(AVIOContext *s ,unsigned char *buf ,int size);
+ * 2.9 void avio_write(AVIOContext *s ,const unsigned char *buf ,int size);
+**/

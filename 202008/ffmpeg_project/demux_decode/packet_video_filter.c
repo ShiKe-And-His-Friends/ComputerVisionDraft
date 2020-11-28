@@ -228,3 +228,12 @@ end:
 	}
 	exit(0);
 }
+/**
+ * 1. struct
+ *   same as the audio filter
+ *
+ * 2. function
+ *   same as the audio filter
+ * 2.2 (self define) static void display_frame(const AVFrame *frame ,AVRational time_base);
+ *
+ * */

@@ -40,5 +40,99 @@ static float drawIntersection(Mat &image ,vector<Point> polygon1 ,vector<Point> 
 	if (intersectArea > 0) {
 		Scalar fillColor(200 ,200 ,200);
 		// If the input is invalid ,draw the intersection
+		if (!isContoursConvex(polygon1) || !isContoursConvex(polygon2)) {
+			fillColor = Scalar(0 ,0 ,255);
+		}
+		vector<vector<Point>> pp;
+		pp.push_back(intersectionPolygon);
+		fillPoly(image ,pp ,fillColor);
 	}
+	polylines(image ,polygons ,true ,Scalar(0 ,0 ,0));
+	return intersectArea;
 }
+
+static void drawDescription(Mat &image ,int intersectionArea ,string description ,Point origin) {
+	const size_t bufSize = 1024;
+	char caption[bufSize];
+	snprintf(caption ,bufSize ,"Intersection area: %d %s ",intersectArea ,description.c_str());
+	putText(image ,caption ,origin ,FONT_HERSHET_SIMPLEX ,0.6 ,Scalar(0 ,0 ,0));
+}
+
+static void intersectConvexExample(){
+	Mat image(610 ,550 ,CV_8UC3 ,Scalar(255 ,255 ,255));
+	float intersectionArea;
+	intersectArea = drawIntersection(image 
+					,makeRectangle(Point(10 ,10) ,Point(50 ,50)) 
+					,makeRectangle(Point(20 ,20) ,Point(60 ,60)));
+	drawDesctionArea(image ,(int)intersectionArea ,""  ,Point(70 ,40));
+	
+	intersectionArea = drawIntersection(image 
+					,makeRectangle(Point(10 ,70) ,Point(35 ,95))
+					,makeRectangle(Point(35 ,95) ,Point(60 ,120)));
+	drawDescription(image ,(int)intersectArea ,"" ,Point(70 ,100));
+	
+	intersectArea = drawIntersection(image 
+					,makeRectangle(Point(10 ,130) ,Point(60 ,180))
+					,makeRectangle(Point(20 ,140) ,Point(50 ,170))
+					,true);
+	drawDescription(image ,(int)intersectArea ," (handleNested true)" ,Point(70 ,160));
+	
+	intersectArea = drawIntersection(image 
+					,makeRectangle(Point(10 ,190) ,Point(60 ,240))
+					,makeRectangle(Point(20 ,200) ,Point(50 ,230))
+					,false);
+	drawDescription(image ,(int)intersectArea ," (handleNested false)",Point(70 ,220));
+	
+	intersectArea = drawIntersection(images
+					,makeRectangle(Point(10 ,250) ,Point(60 ,300))
+					,makeRectangle(Point(20 ,250) ,Point(50 ,290))
+					,true);
+	drawDescription(image ,(int)intersectArea ," (handleNested true)" ,Point(70 ,280));
+	
+	// There rectangles share an edge so handleNested can be false and an intersection is still found
+	intersectArea = drawIntersection(image
+					,makeRectangle(Point(10 ,310) ,Point(60 ,360))
+					,makeRectangle(Point(20 ,310) ,Point(50 ,410))
+					,false);
+	drawDescription(image ,(int)intersectArea ," (handleNested false)" ,Point(70 ,340));
+	intersectArea = drawIntersection(image
+					,makeRectangle(Point(10 ,370) ,Point(60 ,240))
+					,makeRectangle(Point(20 ,371) ,Point(50 ,410))
+					,false);
+	drawDescription(image ,(int)intersectArea ," (handleNested false)" ,Point(70 ,400));
+	
+	//A vertex of the triangle lies on an edge of the rectangle so handleNested can be false an an intersection is still found
+	intersectionArea = drawIntersection(image 
+					,makeRectangle(Point(10 ,430) ,Point(60 ,480))
+					,makeTriangle(Point(35 ,430) ,Point(20 ,470) ,Point(50 ,470))
+					,false);
+	drawDescription(image ,(int)intersectArea ," (handleNested false)" ,Point(70 ,460));
+	
+	//Show intersection of overlapping rectangle and triangle
+	intersectArea = drawIntersection(image 
+					,makeRectangle(Point(10 ,490) ,Point(40 ,540))
+					,makeTriangle(Point(25 ,500) ,Point(25 ,530) ,Point(60 ,515))
+					,false);
+	drawDescription(image ,(int)intersectArea ,"" ,Point(70 ,520));
+	
+	//This concave polygon is invalid input to intersectConvexConvex so it returns an invalid intersection
+	vector<Point> notConvex;
+	notConvex.push_back(Point(25 ,560));
+	notConvex.push_back(Point(25 ,590));
+	notConvex.push_back(Point(45 ,580));
+	notConvex.push_back(Point(60 ,600));
+	notConvex.push_back(Point(60 ,550));
+	notConvex.push_back(Point(45 ,570));
+	intersectArea = drawIntersection(image 
+					,makeRectangle(Point(10 ,550))
+					,notConvex
+					,false);
+	drawDescription(image ,(int)intersectArea , " (invalid input: not convex)" ,Point(70 ,580));
+	imshow("Intersection" ,image);
+	waitKwy(0);
+}
+
+int main() {
+	intersectConvexExample();
+}
+

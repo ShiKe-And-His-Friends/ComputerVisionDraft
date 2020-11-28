@@ -213,7 +213,7 @@ int main(int argc ,char *argv[]) {
 	AVFrame *frame;
 	uint8_t errstr[1024];
 	float duration;
-	int err c,nb_frames ,i;
+	int err ,nb_frames ,i;
 	if (argc < 2) {
 		fprintf(stderr ,"Usage : %s <duration> \n" ,argv[0]);
 		return 1;
@@ -296,6 +296,7 @@ fail:
  * 1.2 typedef struct AVFitlerGraph { } AVFilterGraph;
  * 1.3 typedef struct AVFilterContext {} AVFilterContext;
  * 1.4 typedef struct AVFilter { } AVFilter;
+ * 1.5 typedef struct AVBufferRef { }AVBufferRef;
  *
  * 2. function
  * 2.1 struct AVMD5 *av_md5_alloc(void);
@@ -303,6 +304,19 @@ fail:
  * 2.3 AVFilterGraph *avfilter_graph_alloc(void);
  * 2.4 const AVFilter *avfilter_get_by_name(const char *name);
  * 2.5 AVFilterContext *avfilter_graph_alloc_filter(AVFilterGraph *graph ,const AVFilter *filter ,const char *name);
- * 
+ * 2.6 void av_get_channel_layout_string(char *buf ,int buf_size ,int nb_channels ,uint64_t channel_layout);
+ * 2.7 int av_opt_set(void *obj ,const char *name ,const char *val ,int search_flags);
+ * 2.8 int av_opt_set_q(void *obj, const char *name ,AVRational val ,int search_flags);
+ * 2.9 int avfilter_init_str(AVFilterContext *ctx ,const char *args);
+ * 2.10 int avfilter_link(AVFilterContext *src ,unsigned srcpad ,AVFilterContext *dst ,unsigned dstpad);
+ * 2.11 int avfilter_graph_config(AVFilterGraph *graphctx ,void *log_ctx);
+ * 2.12 (self define) static int get_input(AVFrame *frame ,int frame_num);
+ * 2.13 int av_buffersrc_add_frame(AVFilterContext *ctx ,AVFrame *frame);
+ * 2.14 void av_buffer_unref(AVBufferRef **buf);
+ * 2.15 int av_buffersink_get_frame(AVFilterContext *ctx ,AVFrame *frame);
+ * 2.16 (self define) static int process_output(struct AVMD5 *md5 ,AVFrame *frame);
+ * 2.17 int av_get_channel_layout_nb_channels(uint64_t channel_layout);
+ * 2.18 void av_md5_sum(uint8_t *dst ,const uint8_t *src ,const int len);
+ * 2.19 void avfilter_graph_free(AVFilterGraph **graph);
  *
  * */
