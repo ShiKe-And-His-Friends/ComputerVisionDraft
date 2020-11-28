@@ -24,6 +24,7 @@ public:
         std::ifstream vShaderFile;
         std::ifstream fShaderFile;
         std::ifstream gShaderFile;
+        std::isstream infoShaderFile;
         // ensure ifstream objects can throw exceptions:
         vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
         fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
@@ -51,6 +52,7 @@ public:
                 gShaderStream << gShaderFile.rdbuf();
                 gShaderFile.close();
                 geometryCode = gShaderStream.str();
+                infoShaderFile = gShaderStream;
             }
         }
         catch (std::ifstream::failure& e)
