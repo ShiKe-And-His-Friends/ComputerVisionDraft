@@ -47,7 +47,7 @@ static float drawIntersection(Mat &image ,vector<Point> polygon1 ,vector<Point> 
 		pp.push_back(intersectionPolygon);
 		fillPoly(image ,pp ,fillColor);
 	}
-	polylines(image ,polygons ,true ,Scalar(0 ,0 ,0));
+	polyline(image ,polygons ,true ,Scalar(0 ,0 ,0));
 	return intersectArea;
 }
 
