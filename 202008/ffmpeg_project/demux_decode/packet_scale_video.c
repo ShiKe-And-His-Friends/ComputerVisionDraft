@@ -86,4 +86,15 @@ end:
 
 	return ret < 0;
 }
-
+/**
+ * 1. struct
+ * 1.1 (self define) typedef struct OutputStream { }OutputStream;
+ * 
+ * 2. function
+ * 2.1 int av_parse_video_size(int *width_ptr ,int *height_ptr ,const char *str);
+ * 2.2 struct SwsContext *sws_getContext(int srcW ,int srcH ,enum AVPixelFormat srcFormat ,int dstW ,int dstH ,enum AVPixelFormat dstFormat ,int flags ,SwsFilter *srcFilter ,SwsFilter *dstFilter ,const double *param);
+ * 2.3 int av_image_alloc(uint8_t *pointers[4] ,int linesize[4] ,int w ,int h ,enum AVPixelFormat pix_fmt ,int align);
+ * 2.4 int sws_scalesws_scale(struct SwsContext *c ,const uint8_t *const srcSlice[] ,const int srcStride[] , int srcSliceY ,int srcSliceH ,uint8_t *const dst[] ,const int dstStride[]);
+ * 2.5 void sws_freeContext(struct SwsContext *swsContext);
+ *
+**/
