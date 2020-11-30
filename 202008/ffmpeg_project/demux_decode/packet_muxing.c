@@ -521,3 +521,28 @@ int main(int argc ,char **argv) {
 
 	return 0;
 }
+/**
+ * 1. struct
+ * 1.1 (self define) typedef struct OutputStream { }OutputStream;
+ * 
+ * 2. function
+ * 2.1 int av_dict_set(AVDictionary **pm ,const char *key ,const char *value ,int flags);
+ * 2.2 int avformat_alloc_output_context2(AVFormatContext **ctx ,ff_const59 AVOutputFormat *oformat ,const char *format_name ,const char *filename);
+ * 2.3 (self define) static void add_stream(OutputStream *ost ,AVFormatContext *oc ,AVCodec **codec ,enum AVCodecID codec_id);
+ * 2.4 AVStream *avformat_new_stream(AVFormatContext *s ,const AVCodec *c);
+ * 2.5 (self define)static void open_video(AVFormatContext *oc ,AVCodec *codec ,OutputStream *ost ,AVDictionary *opt_arg);
+ * 2.6 static AVFrame *alloc_picture(enum AVPixelFormat pix_fmt ,int width ,int height);
+ * 2.7 (self define) static open_audio(AVFormatContext *oc ,AVCodec *codec ,OutputStream *ost ,AVDictionary *opt_arg);
+ * 2.8 av_cold struct SwrContext *sw_alloc(void);
+ * 2.9 int avio_open(AVIOContext **s ,const char *url ,int flags);
+ * 2.10 int avformat_write_header(AVFormatContext *s ,AVDictionary **options);
+ * 2.11 int av_compare_ts(int64_t ts_a ,AVRational tb_a ,int64_t ts_b ,AVRational tb_b);
+ * 2.12 (self define)static int write_video_frame(AVFormatContext *oc ,OutputStream *ost);
+ * 2.13 static void write_frame(AVFormatContext *fmt_ctx ,const AVRational *time_base ,AVStream *st ,AVPacket *pkt);
+ * 2.14 void av_packet_rescale_ts(AVPacket *pkt ,AVRational tb_src ,AVRational tb_dst);
+ * 2.15 (self define) static void log_packet(const AVFormatContext *fmt_ctx ,const AVPacket *pkt);
+ * 2.16 int av_interleaved_write_frame(AVFormatContext *s ,AVPacket *pkt);
+ * 2.17 int av_write_trailer(AVFormatContext *s);
+ * 2.18 (self define) static void close_stream(AVFormatContext *oc ,OutputStream *ost);
+ * 2.19 void sws_freeContext(struct SwsContext *swsContext);
+**/
