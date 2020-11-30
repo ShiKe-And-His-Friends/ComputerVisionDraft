@@ -524,6 +524,7 @@ int main(int argc ,char **argv) {
 /**
  * 1. struct
  * 1.1 (self define) typedef struct OutputStream { }OutputStream;
+ * 1.2 #define av_assert0(cond) ... abort();
  * 
  * 2. function
  * 2.1 int av_dict_set(AVDictionary **pm ,const char *key ,const char *value ,int flags);
@@ -539,10 +540,15 @@ int main(int argc ,char **argv) {
  * 2.11 int av_compare_ts(int64_t ts_a ,AVRational tb_a ,int64_t ts_b ,AVRational tb_b);
  * 2.12 (self define)static int write_video_frame(AVFormatContext *oc ,OutputStream *ost);
  * 2.13 static void write_frame(AVFormatContext *fmt_ctx ,const AVRational *time_base ,AVStream *st ,AVPacket *pkt);
- * 2.14 void av_packet_rescale_ts(AVPacket *pkt ,AVRational tb_src ,AVRational tb_dst);
- * 2.15 (self define) static void log_packet(const AVFormatContext *fmt_ctx ,const AVPacket *pkt);
- * 2.16 int av_interleaved_write_frame(AVFormatContext *s ,AVPacket *pkt);
- * 2.17 int av_write_trailer(AVFormatContext *s);
- * 2.18 (self define) static void close_stream(AVFormatContext *oc ,OutputStream *ost);
- * 2.19 void sws_freeContext(struct SwsContext *swsContext);
+ * 2.14 int64_t av_rescale_rnd(int64_t a ,int64_t b ,int64_t c ,enum AVRounding rnd) av_const;
+ * 2.15 int av_frame_make_writable(AVFrame *frame);
+ * 2.16 int swr_convert(struct SwrContext * s,uint8_t **out ,int out_count ,const uint8_t **in ,int in_count);
+ * 2.17 int64_t av_rescale_q(int64_t a ,AVRational bq ,AVRational cq) av_const;
+ * 2.18 int avcodec_encode_audio2(AVCodecContext *avctx ,AVPacket *avpkt ,const AVFrame *frame ,int *got_packet_ptr);
+ * 2.19 void av_packet_rescale_ts(AVPacket *pkt ,AVRational tb_src ,AVRational tb_dst);
+ * 2.20 (self define) static void log_packet(const AVFormatContext *fmt_ctx ,const AVPacket *pkt);
+ * 2.21 int av_interleaved_write_frame(AVFormatContext *s ,AVPacket *pkt);
+ * 2.22 int av_write_trailer(AVFormatContext *s);
+ * 2.23 (self define) static void close_stream(AVFormatContext *oc ,OutputStream *ost);
+ * 2.24 void sws_freeContext(struct SwsContext *swsContext);
 **/
