@@ -131,3 +131,27 @@ end:
 	}
 	return 0;
 }
+
+/**
+ * 1. struct
+ * 1.1 struct SwrContext { }SwrContext;
+ * 
+ * 2. function
+ * 2.1 int avformat_alloc_output_context2(AVFormatContext **ctx ,ff_const59 AVOutputFormat *oformat ,const char *format_name ,const char *filename);
+ * 2.2 av_alloc_size(1 ,2) void *av_mallocz_array(size_t nmemb ,size_t size);
+ * 2.3 AVStream *avformat_new_stream(AVFormatContext *s ,const AVCodec *c);
+ * 2.4 int avcodec_parameters_copy(AVCodecParameters *dst ,const AVCodecParameters *src);
+ * 2.5 int avio_open(AVIOContext **s ,const char *url ,int flags);
+ * 2.6 int avformat_write_header(AVFormatContext *s ,AVDictionary **options);
+ * 2.7 int av_read_frame(AVFormatContext *s ,AVPacket *pkt);
+ * 2.8 static void log_packet(const AVFormatContext *fmt_ctx ,const AVPacket *pkt ,const char *tag);
+ * 2.9 int64_t av_rescale_q_rnd(int64_t a ,AVRational bq ,AVRational cq ,enum AVRounding rnd) av_const; 
+ * 2.10 int64_t av_rescale_q(int64_t a ,AVRational bq ,AVRational cq) av_const;
+ * 2.11 int av_interleaved_write_frame(AVFormatContext *s ,AVPacket *pkt);
+ * 2.12 void av_packet_unref(AVPacket *pkt);
+ * 2.13 int av_write_trailer(AVFormatContext *s);
+ * 2.14 void avformat_close_input(AVFormatContext **s); 
+ * 2.15 int avio_closep(AVIOContext **s);
+ * 2.16 void avformat_free_context(AVFormatContext *s);
+ * 2.17 void av_freep(void *ptr);
+**/
