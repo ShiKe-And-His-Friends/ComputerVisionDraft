@@ -19,3 +19,10 @@ int main(int  argc ,char **argv) {
 	avformat_close_input(&fmt_ctx);
 	return 0;
 }
+
+/**
+* 1. struct
+* 
+* 2. function
+* 2.1 AVDictionaryEntry *av_dict_get(const AVDictionary *m ,const char *key ,const AVDictionaryEntry *prev ,int flags);
+*/
