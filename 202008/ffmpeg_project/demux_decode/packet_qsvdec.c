@@ -204,3 +204,17 @@ finish:
 
 	return ret;
 }
+
+/**
+ * 1. struct
+ * 1.1 typedef struct AVHWFrameContext { }AVHWFrameContext;
+ * 1.2 typedef struct AVQSVFramesContext { }AVQSVFramsContext;
+ * 1.3 #define FFALIGN(x ,a) (((X)+(a)-1) &~(a) - 1) 
+ * 1.4 #define FF_ARRAY_ELEMS(a) (sizeof(a) / sizeof((a)[0]))
+ * 
+ * 2. function
+ * 2.1 int av_hwdevice_ctx_create(AVBufferRef **device_ctx ,enum AVHWDeviceType type ,const char *device ,AVDictionary *opts ,int flags);
+ * 2.2 AVBufferRef *av_hwframe_ctx_alloc(AVBufferRef *device_ctx);
+ * 2.3 int av_hwframe_ctx_init(AVBufferRef *ref);
+ * 2.4 int av_hwframe_transfer_data(AVFrame *dst ,const AVFrame *src ,int flags);
+**/
