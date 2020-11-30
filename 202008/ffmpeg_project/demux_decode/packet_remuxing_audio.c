@@ -150,3 +150,24 @@ end:
 	return ret < 0;
 }
 
+/**
+ * 1. struct
+ * 1.1 typedef SwrContext { }SwrContext;
+ * 
+ * 2. function
+ * 2.1 struct SwrContext *swr_alloc(void);
+ * 2.2 int av_opt_set_int(void *obj ,const char *name ,const char *val ,int search_flags);
+ * 2.3 int av_opt_set_sample_fmt(void *obj ,const char *name ,enum AVSampleFormat fmt ,int search_flags);
+ * 2.4 int swr_init(struct SwrContext *s);
+ * 2.5 int av_get_channel_layout_nb_channels(uint64_t channel_layout);
+ * 2.6 int av_samples_alloc_array_and_samples(uint8_t ***audio_data ,int **linesize ,int nb_channels , int nb_samples ,enum AVSampleFormat sample_fmt ,int align);
+ * 2.7 int64_t av_rescale_rnd(int64_t a ,int64_t b ,int64_t c ,enum AVRounding rnd) av_const;
+ * 2.8 static void fill_samples(double *dst ,int nb_samples ,int nb_channels ,int sample_rate ,double *t);
+ * 2.9 int av_samples_alloc(uint8_t **audio_data ,int *linesize ,int nb_channels);
+ * 2.10 int swr_convert(struct SwrContext *s ,uint8_t **out ,int out_count ,const uint8_t **in ,int in_count);
+ * 2.11 int av_samples_get_buffer_size(int *linesize ,int nb_channels ,int nb_samples ,enum AvSampleFormat sample_fmt ,int align);
+ * 2.12 static int get_format_from_sample_fmt(const char **fmt ,enum AVSampleFormat sample_fmt);
+ * 2.13 void av_freep(void *ptr);
+ * 2.14 void swr_free(struct SwrContext **s);
+ *
+**/
