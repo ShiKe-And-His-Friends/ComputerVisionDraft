@@ -227,4 +227,13 @@ end:
 	return ret;
 }
 
+/**
+ * 1. struct
+ * 1.1 *
+ *
+ * 2. function
+ * 2.1 *
+ *
+ */
+
 //Generated on Tue Nov 6 2018 18:10:58 for FFmpeg by 1.8.6
