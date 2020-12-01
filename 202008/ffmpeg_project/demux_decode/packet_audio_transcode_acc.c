@@ -712,3 +712,31 @@ cleanup:
 	return ret;
 }
 
+/**
+ * 1. struct
+ * 1.1 struct AVAudioFifo { };
+ *
+ * 2. function
+ * 2.1 (self define) static int open_input_file(const char *filename ,AVFormatContext **input_format_context ,AVCodecContext **input_codec_context);
+ * 2.2 (self define) static int open_output_file(const char *filename ,AVCodecContext *input_codec_context ,AVFormatContext **output_format_context ,AVCodecContext **output_codec_context);
+ * 2.3 ff_const59 AVOutputFormat *av_guess_format(const char *short_name ,const char *filename ,const char *mime_type);
+ * 2.4 (self define) static int init_resampler(AVCodecContext *input_codec_context ,AVCodecContext *output_codec_context ,SwrContext **resample_context);
+ * 2.5 (self define) static int init_fifo(AVAudioFiFo **fifo ,AVCodecContext *output_codec_context);
+ * 2.6 AVAudioFifo *av_audio_fifo_alloc(enum AVSampleFormat sample_fmt ,int channels ,int nb_samples);
+ * 2.7 (self define) static int write_output_file_header(AVFormatContext *output_format_context);
+ * 2.8 int av_audio_fifo_size(AVAudioFifo *af);
+ * 2.9 (self define) static int read_decode_convert_and_store(AVAudioFifo *fifo ,AVFormatContext *input_format_context ,AVCodecContext *input_codec_context ,AVCodecContext *output_codec_context ,SwrContext *resample_context ,int *finished);
+ * 2.10 (self define) static int init_input_frame(AVFrame **frame);
+ * 2.11 (self define) static int decode_audio_frame(AVFrame *frame ,AVFormatContext *input_format_context ,AVCodecContext *input_codec_context ,int *data_present ,int *finished);
+ * 2.12 (self define) static int init_converted_samples(uint8_t ***converted_input_samples ,AVCodecContext *output_codec_context ,int frame_size);
+ * 2.13 int swr_convert(struct SwrContext *s ,uint8_t **out ,int out_count ,const uint8_t **in ,int in_count);
+ * 2.14 (self define) static int add_samples_to_fifo(AVAudioFifo *fifo ,uint8_t **converted_input_samples ,const int frame_size);
+ * 2.15 int av_audio_fifo_realloc(AVAudioFifo *af ,int nb_samples);
+ * 2.16 int av_audio_fifo_write(AVAudioFifo *af ,void **data ,int nb_samples);
+ * 2.17 (self define) static int load_encode_and_write(AVAudioFifo *fifo ,AVFormatContext *output_format_context ,AVCodecContext *output_codec_context);
+ * 2.18 (self define) static int init_output_frame(AVFrame **frame ,AVCodecContext *output_codec_context ,int frame_size);
+ * 2.19 int av_audio_fifo_read(AVAudioFifo *af ,void **data ,int nb_samples);
+ * 2.20 (self define) static int encode_audio_frame(AVFrame *frame ,AVFormatContext *output_format_context ,AVCodecContext *output_codec_context ,int *data_present);
+ * 2.21 (self define) static int write_output_file_trailer(AVFormatContext *output_format_context);
+ *
+ **/
