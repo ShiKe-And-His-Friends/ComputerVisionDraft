@@ -95,6 +95,19 @@ int main (int argc ,char **argv) {
 		pkt.stream_index = stream_mapping[pkt.stream_index];
 		out_stream = ofmt_ctx->streams[pkt.stream_index];
 		log_packet(ifmt_ctx ,&pkt ,"int");
+		
+		/** copy packet **/
+		pkt.pts = av_rescale_q_rnd(pkt.pts ,in_stream->time_base ,out_stream->time_base ,AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
+		pkt.dts = av_rescale_q_rnd(pkt.dts ,in_stream->time_base ,out_stream->time_base ,AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
+		pkt.duration = av_rescale_q(pkt.duration ,in_stream->time_base ,out_stream->time_base);
+		pkt.pos = -1;
+		log_packet(ofmt_ctx ,&pkt ,"out");
+		ret = av_interleaved_write_frame(ofmt_ctx ,&pkt);
+		if (ret < 0) {
+			fprintf(stderr ,"Error muxing packet.\n");
+			break;
+		}
+		av_packet_unref(&packet);
 	}
 	av_write_trailer(ofmt_ctx);
 	
