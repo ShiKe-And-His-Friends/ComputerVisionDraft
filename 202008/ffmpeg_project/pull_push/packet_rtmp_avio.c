@@ -56,7 +56,7 @@ int main (int argc ,char **argv) {
 		output_stream->codecpar->codec_tag = 0;
 	}
 	av_dump_format(ofmt_ctx ,0 ,output_file_name ,1);
-	if (!(ofmt & AVFMT_NOFILE)) {
+	if (!(ofmt->flags & AVFMT_NOFILE)) {
 		ret = avio_open(&ofmt_ctx->pb ,output_file_name ,AVIO_FLAG_WRITE);
 		if (ret < 0) {
 			fprintf(stderr ,"Could not open output file stream '%s' " ,output_file_name);
@@ -66,8 +66,13 @@ int main (int argc ,char **argv) {
 		fprintf(stderr ,"Failed find output file.\n");
 		goto end;
 	}
-	
 	printf("shikeDebug... ret=%d \n" ,ret);
+	ret = avformat_write_header(ofmt_ctx ,NULL);
+	if (ret < 0) {
+		fprintf(stderr ,"Error occured when opeing output file.\n");
+		goto end;
+	}
+	
 	
 end:
 	avformat_close_input(&ifmt_ctx);
