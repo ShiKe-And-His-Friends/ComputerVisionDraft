@@ -1,4 +1,5 @@
 #include <libavutil/timestamp.h>
+#include <libavutil/time.h>
 #include <libavformat/avformat.h>
 
 static void log_packet(const AVFormatContext *fmt_ctx ,const AVPacket *pkt ,const char *tag) {
@@ -104,11 +105,11 @@ int main (int argc ,char **argv) {
 		pkt.duration = av_rescale_q(pkt.duration ,in_stream->time_base ,out_stream->time_base);
 		pkt.pos = -1;
 		log_packet(ofmt_ctx ,&pkt ,"out");
-		if (out_stream->codec_type == AVMEDIA_TYPE_VIDEO) {
+		if (out_stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
 			int64_t now_time = av_gettime() - start_time;
 			if (pkt.pts > now_time) {
 				int64_t time = pkt.pts - now_time;
-				printf("\n\nshikeDebug... sleep=%d \n\n" ,time);
+				printf("\n\nshikeDebug... sleep=%ld \n\n" ,time);
 				av_usleep(time);
 			}
 		}
