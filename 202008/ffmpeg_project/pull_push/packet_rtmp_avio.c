@@ -38,11 +38,11 @@ int main (int argc ,char **argv) {
 	}
 	ofmt = ofmt_ctx->oformat;
 	printf("shikeDebug... 1=%d 2=%d 3=%d \n" ,(!0) ,(!-1) ,(!1));
-	for (int i=0 ; i < ifmt_ctx->nb_stream ; i++ ) {
+	for (int i=0 ; i < ifmt_ctx->nb_streams ; i++ ) {
 		AVStream *output_stream = NULL;
-		AVStream *input_stream = ifmt_ctx->stream[i];
-		AVCodecParameters *input_codecpar = ifmt_ctx->codecpar;
-		if (input_codecpar->codec_type != AVMEDIA_TYPE_AUDIO && input_codecpar->codec_type != AVMDEIA_TYPE_VIDEO && input_codecpar->codec_type != AVMDEIA_TYPE_SUBTITLE) {
+		AVStream *input_stream = ifmt_ctx->streams[i];
+		AVCodecParameters *input_codecpar = input_stream->codecpar;
+		if (input_codecpar->codec_type != AVMEDIA_TYPE_AUDIO && input_codecpar->codec_type != AVMEDIA_TYPE_VIDEO && input_codecpar->codec_type != AVMEDIA_TYPE_SUBTITLE) {
 			stream_mapping[i] = -1;
 			continue;
 		}
@@ -53,7 +53,7 @@ int main (int argc ,char **argv) {
 			ret = AVERROR_UNKNOWN;
 			goto end;
 		}
-		ret = avcodec_paramters_copy(output_stream->codecpar ,input_codecpar);
+		ret = avcodec_parameters_copy(output_stream->codecpar ,input_codecpar);
 		output_stream->codecpar->codec_tag = 0;
 	}
 	av_dump_format(ofmt_ctx ,0 ,output_file_name ,1);
