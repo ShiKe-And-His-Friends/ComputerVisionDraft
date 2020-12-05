@@ -66,15 +66,27 @@ int main (int argc ,char **argv) {
 		fprintf(stderr ,"Failed find output file.\n");
 		goto end;
 	}
-	printf("shikeDebug... ret=%d \n" ,ret);
 	ret = avformat_write_header(ofmt_ctx ,NULL);
 	if (ret < 0) {
 		fprintf(stderr ,"Error occured when opeing output file.\n");
 		goto end;
 	}
 	
-	
+	while(1) {
+		break;
+	}
+	av_write_trailer(ofmt_ctx);
+	printf("\n\nshikeDebug... ret=%d \n\n" ,ret);
 end:
 	avformat_close_input(&ifmt_ctx);
-	
+	if (ofmt_ctx && !(ofmt->flags & AVFMT_NOFILE)) {
+		avio_closep(&ofmt_ctx->pb);
+	}
+	avformat_free_context(ofmt_ctx);
+	av_freep(&stream_mapping);
+	if (ret < 0 && ret != AVERROR_EOF) {
+		fprintf(stderr ,"Error occurred: %s \n" ,av_error2str(ret));
+		return 1;
+	}
+	return 0;
 }
