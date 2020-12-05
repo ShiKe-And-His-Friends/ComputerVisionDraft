@@ -1,12 +1,20 @@
 #include <libavutil/timestamp.h>
 #include <libavformat/avformat.h>
 
+static void log_packet(const AVFormatContext *fmt_ctx ,const AVPacket *pkt ,const char *tag) {
+	AVRational *time_base = &fmt_ctx->streams[pkt->stream_index]->time_base;
+	printf("%s: pts:%s pts_time:%s dts:%s dts_time:%s duration:%s duration_time:%s stream_index:%d \n" 
+		,tag ,av_ts2str(pkt->pts) ,av_ts2timestr(pkt->pts ,time_base) ,av_ts2str(pkt->dts) ,av_ts2str(pkt->dts ,time_base)
+		,av_ts2str(pkt->duration) ,av_ts2str(pkt->duration ,time_base) ,pkt->stream_index);
+}
+
 int main (int argc ,char **argv) {
 	int ret;
 	int stream_index = 0;
 	int stream_mapping_size = 0;
 	int *stream_mapping = NULL;
 	const char *input_file_name ,*output_file_name;
+	AVPacket pkt;
 	AVOutputFormat *ofmt = NULL;
 	AVFormatContext *ifmt_ctx = NULL ,*ofmt_ctx = NULL;
 	if (argc < 3) {
@@ -73,10 +81,25 @@ int main (int argc ,char **argv) {
 	}
 	
 	while(1) {
-		break;
+		AVStream *in_stream ,*out_stream;
+		ret = av_read_frame(ifmt_ctx ,&pkt);
+		if (ret < 0) {
+			printf("\n stream finished... \n");
+			break;
+		}
+		in_stream = ifmt_ctx->streams[pkt.stream_index];
+		if (pkt.stream_index >= stream_mapping_size || stream_mapping[pkt.stream_index] < 0) {
+			av_packet_unref(&pkt);
+			continue;
+		}
+		pkt.stream_index = stream_mapping[pkt.stream_index];
+		out_stream = ofmt_ctx->streams[pkt.stream_index];
+		log_packet(ifmt_ctx ,&pkt ,"int");
 	}
 	av_write_trailer(ofmt_ctx);
+	
 	printf("\n\nshikeDebug... ret=%d \n\n" ,ret);
+	
 end:
 	avformat_close_input(&ifmt_ctx);
 	if (ofmt_ctx && !(ofmt->flags & AVFMT_NOFILE)) {
