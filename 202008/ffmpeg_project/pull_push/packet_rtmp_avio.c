@@ -36,7 +36,7 @@ int main (int argc ,char **argv) {
 		ret = AVERROR(ENOMEM);
 		goto end;
 	}
-	ofmt = ofmt_ctx->ofmt;
+	ofmt = ofmt_ctx->oformat;
 	printf("shikeDebug... 1=%d 2=%d 3=%d \n" ,(!0) ,(!-1) ,(!1));
 	for (int i=0 ; i < ifmt_ctx->nb_stream ; i++ ) {
 		AVStream *output_stream = NULL;
