@@ -85,7 +85,7 @@ end:
 	avformat_free_context(ofmt_ctx);
 	av_freep(&stream_mapping);
 	if (ret < 0 && ret != AVERROR_EOF) {
-		fprintf(stderr ,"Error occurred: %s \n" ,av_error2str(ret));
+		fprintf(stderr ,"Error occurred: %s \n" ,av_err2str(ret));
 		return 1;
 	}
 	return 0;
