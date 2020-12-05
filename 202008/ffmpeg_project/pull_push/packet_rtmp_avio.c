@@ -3,6 +3,8 @@
 
 int main (int argc ,char **argv) {
 	int ret;
+	int stream_mapping_size = 0;
+	int *stream_mapping = NULL;
 	const char *input_file_name ,*output_file_name;
 	AVFormatContext *ifmt_ctx = NULL ,*ofmt_ctx = NULL;
 	if (argc < 3) {
@@ -26,8 +28,17 @@ int main (int argc ,char **argv) {
 		ret = AVERROR_UNKNOWN;
 		goto end;
 	}
-	av_dump_format(ofmt_ctx ,0 ,output_file_name ,0);
-	printf("shikeDebug... ret = %d \n" ,ret);
+	stream_mapping_size = ifmt_ctx->nb_streams;
+	printf("shikeDebug... nb_stream=%d \n" ,stream_mapping_size);
+	stream_mapping = av_mallocz_array(stream_mapping_size ,sizeof(stream_mapping));
+	if(!stream_mapping) {
+		ret = AVERROR(ENOMEM);
+		goto end;
+	}
+	
+	
+	av_dump_format(ofmt_ctx ,0 ,output_file_name ,1);
+	printf("shikeDebug... ret=%d \n" ,ret);
 	
 end:
 	avformat_close_input(&ifmt_ctx);
