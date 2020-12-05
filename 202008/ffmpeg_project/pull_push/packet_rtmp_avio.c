@@ -4,7 +4,7 @@
 int main (int argc ,char **argv) {
 	int ret;
 	const char *input_file_name ,*output_file_name;
-	AVFormatContext *ifmt_ctx = NULL;
+	AVFormatContext *ifmt_ctx = NULL ,*ofmt_ctx = NULL;
 	if (argc < 3) {
 		printf("Usage: %s intput output\n" ,argv[0]);
 		return 1;
@@ -20,6 +20,13 @@ int main (int argc ,char **argv) {
 		goto end;
 	}
 	av_dump_format(ifmt_ctx ,0 ,input_file_name ,0);
+	avformat_alloc_output_context2(&ofmt_ctx ,NULL ,"flv" ,output_file_name);
+	if (!ofmt_ctx) {
+		fprintf(stderr ,"Could not create output context.\n");
+		ret = AVERROR_UNKNOWN;
+		goto end;
+	}
+	av_dump_format(ofmt_ctx ,0 ,output_file_name ,0);
 	printf("shikeDebug... ret = %d \n" ,ret);
 	
 end:
