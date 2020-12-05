@@ -37,7 +37,6 @@ int main (int argc ,char **argv) {
 		goto end;
 	}
 	ofmt = ofmt_ctx->oformat;
-	printf("shikeDebug... 1=%d 2=%d 3=%d \n" ,(!0) ,(!-1) ,(!1));
 	for (int i=0 ; i < ifmt_ctx->nb_streams ; i++ ) {
 		AVStream *output_stream = NULL;
 		AVStream *input_stream = ifmt_ctx->streams[i];
@@ -57,6 +56,17 @@ int main (int argc ,char **argv) {
 		output_stream->codecpar->codec_tag = 0;
 	}
 	av_dump_format(ofmt_ctx ,0 ,output_file_name ,1);
+	if (!(ofmt & AVFMT_NOFILE)) {
+		ret = avio_open(&ofmt_ctx->pb ,output_file_name ,AVIO_FLAG_WRITE);
+		if (ret < 0) {
+			fprintf(stderr ,"Could not open output file stream '%s' " ,output_file_name);
+			goto end;
+		}
+	} else {
+		fprintf(stderr ,"Failed find output file.\n");
+		goto end;
+	}
+	
 	printf("shikeDebug... ret=%d \n" ,ret);
 	
 end:
