@@ -12,6 +12,7 @@ int main (int argc ,char **argv) {
 	int ret;
 	int stream_index = 0;
 	int stream_mapping_size = 0;
+	int64_t start_time = 0;
 	int *stream_mapping = NULL;
 	const char *input_file_name ,*output_file_name;
 	AVPacket pkt;
@@ -80,6 +81,7 @@ int main (int argc ,char **argv) {
 		goto end;
 	}
 	
+	start_time = av_gettime();
 	while(1) {
 		AVStream *in_stream ,*out_stream;
 		ret = av_read_frame(ifmt_ctx ,&pkt);
@@ -102,6 +104,14 @@ int main (int argc ,char **argv) {
 		pkt.duration = av_rescale_q(pkt.duration ,in_stream->time_base ,out_stream->time_base);
 		pkt.pos = -1;
 		log_packet(ofmt_ctx ,&pkt ,"out");
+		if (out_stream->codec_type == AVMEDIA_TYPE_VIDEO) {
+			int64_t now_time = av_gettime() - start_time;
+			if (pkt.pts > now_time) {
+				int64_t time = pkt.pts - now_time;
+				printf("\n\nshikeDebug... sleep=%d \n\n" ,time);
+				av_usleep(time);
+			}
+		}
 		ret = av_interleaved_write_frame(ofmt_ctx ,&pkt);
 		if (ret < 0) {
 			fprintf(stderr ,"Error muxing packet.\n");
