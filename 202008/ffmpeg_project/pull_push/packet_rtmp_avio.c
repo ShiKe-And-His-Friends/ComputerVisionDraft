@@ -108,11 +108,14 @@ int main (int argc ,char **argv) {
 		if (out_stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
 			int64_t now_time = av_gettime() - start_time;
 			printf("\n\nshikeDebug... start=%ld now=%ld pts=%ld \n\n" ,start_time ,now_time ,pkt.pts);
-			if (pkt.pts > now_time) {
+			usleep(pkt.duration*1000);
+			/*
+			 if (pkt.pts > now_time) {
 				int64_t time = pkt.pts - now_time;
 				printf("\n\nshikeDebug... sleep=%ld \n\n" ,time);
 				av_usleep(time);
-			}
+			 }
+			*/
 		}
 		ret = av_interleaved_write_frame(ofmt_ctx ,&pkt);
 		if (ret < 0) {
