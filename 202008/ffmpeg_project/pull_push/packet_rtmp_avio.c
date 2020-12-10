@@ -76,6 +76,19 @@ int main (int argc ,char **argv) {
 		fprintf(stderr ,"Failed find output file.\n");
 		goto end;
 	}
+
+	
+	/**
+		ADD SOME DEBUG CODE
+		Failed to update header with correct duration.
+	**/
+	
+	/**
+		AVDictionary * opts = NULL;
+		av_dict_set(&opts, "flvflags", "no_duration_filesize", 0);
+		ret = avformat_write_header(ofmt_ctx ,&opts);
+	**/
+
 	ret = avformat_write_header(ofmt_ctx ,NULL);
 	if (ret < 0) {
 		fprintf(stderr ,"Error occured when opeing output file.\n");
@@ -108,7 +121,9 @@ int main (int argc ,char **argv) {
 		if (out_stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
 			int64_t now_time = av_gettime() - start_time;
 			printf("\n\nshikeDebug... start=%ld now=%ld pts=%ld \n\n" ,start_time ,now_time ,pkt.pts);
-			usleep(pkt.duration*1000);
+			/**
+				av_usleep(pkt.duration);
+			**/
 			/*
 			 if (pkt.pts > now_time) {
 				int64_t time = pkt.pts - now_time;
