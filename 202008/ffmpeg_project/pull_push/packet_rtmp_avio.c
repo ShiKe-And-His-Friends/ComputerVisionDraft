@@ -76,7 +76,16 @@ int main (int argc ,char **argv) {
 		fprintf(stderr ,"Failed find output file.\n");
 		goto end;
 	}
-	ret = avformat_write_header(ofmt_ctx ,NULL);
+	
+	/**
+		ADD SOME DEBUG CODE
+		Failed to update header with correct duration.
+	**/
+	AVDictionary * opts = nullptr;
+    av_dict_set(&opts, "flvflags", "no_duration_filesize", 0);
+	
+	
+	ret = avformat_write_header(ofmt_ctx ,pts ? &opts : NULL);
 	if (ret < 0) {
 		fprintf(stderr ,"Error occured when opeing output file.\n");
 		goto end;
