@@ -76,31 +76,20 @@ int main (int argc ,char **argv) {
 		fprintf(stderr ,"Failed find output file.\n");
 		goto end;
 	}
-<<<<<<< HEAD
-=======
-
->>>>>>> fd8c082e217300676fb18bf1704c4878e438aa80
 	
 	/**
 		ADD SOME DEBUG CODE
 		Failed to update header with correct duration.
-	**/
-<<<<<<< HEAD
-	AVDictionary * opts = nullptr;
-    av_dict_set(&opts, "flvflags", "no_duration_filesize", 0);
-	
-	
-	ret = avformat_write_header(ofmt_ctx ,pts ? &opts : NULL);
-=======
-	
-	/**
+		AVDictionary * opts = nullptr;
+	    	av_dict_set(&opts, "flvflags", "no_duration_filesize", 0);
+
+		ret = avformat_write_header(ofmt_ctx ,pts ? &opts : NULL);
 		AVDictionary * opts = NULL;
 		av_dict_set(&opts, "flvflags", "no_duration_filesize", 0);
 		ret = avformat_write_header(ofmt_ctx ,&opts);
 	**/
 
 	ret = avformat_write_header(ofmt_ctx ,NULL);
->>>>>>> fd8c082e217300676fb18bf1704c4878e438aa80
 	if (ret < 0) {
 		fprintf(stderr ,"Error occured when opeing output file.\n");
 		goto end;
