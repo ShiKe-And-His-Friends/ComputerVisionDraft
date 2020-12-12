@@ -66,7 +66,7 @@ int main (int argc ,char **argv) {
 		output_stream->codecpar->codec_tag = 0;
 		out_stream->codec->codec_tag = 0;
 		if (octx->oformat->flags & AVFMT_GLOBALHEADER) {
-            out_stream->codec->flags = out_stream->codec->flags | CODEC_FLAG_GLOBAL_HEADER;
+            out_stream->codec->flags = out_stream->codec->flags | AV_CODEC_FLAG_GLOBAL_HEADER;
         }
 	}
 	av_dump_format(ofmt_ctx ,0 ,output_file_name ,1);
@@ -118,18 +118,18 @@ int main (int argc ,char **argv) {
 		
 		 //延时
         if (pkt.stream_index == AVMEDIA_TYPE_VIDEO) {
-            AVRational time_base = ictx->streams[videoindex]->time_base;
+            AVRational time_base = ifmt_ctx->streams[pkt.stream_index]->time_base;
             AVRational time_base_q = { 1,AV_TIME_BASE };
             //计算视频播放时间
             int64_t pts_time = av_rescale_q(pkt.dts, time_base, time_base_q);
             //计算实际视频的播放时间
             int64_t now_time = av_gettime() - start_time;
 
-            AVRational avr = ictx->streams[videoindex]->time_base;
-            cout << avr.num << " " << avr.den << "  "<<pkt.dts <<"  "<<pkt.pts<<"   "<< pts_time <<endl;
+            AVRational avr = ifmt_ctx->streams[pkt.stream_index]->time_base;
             if (pts_time > now_time) {
                 //睡眠一段时间（目的是让当前视频记录的播放时间与实际时间同步）
                 av_usleep((unsigned int)(pts_time - now_time));
+				printf("\n\nshikeDebug... sleep=%ld \n\n" ,(pts_time - now_time));
             }
         }
 		
