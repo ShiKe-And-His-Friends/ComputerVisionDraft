@@ -64,7 +64,6 @@ int main (int argc ,char **argv) {
 		}
 		ret = avcodec_parameters_copy(output_stream->codecpar ,input_codecpar);
 		output_stream->codecpar->codec_tag = 0;
-		output_stream->codec->codec_tag = 0;
 	}
 	av_dump_format(ofmt_ctx ,0 ,output_file_name ,1);
 	if (!(ofmt->flags & AVFMT_NOFILE)) {
