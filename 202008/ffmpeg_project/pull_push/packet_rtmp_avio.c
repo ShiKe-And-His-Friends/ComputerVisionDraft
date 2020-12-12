@@ -64,6 +64,10 @@ int main (int argc ,char **argv) {
 		}
 		ret = avcodec_parameters_copy(output_stream->codecpar ,input_codecpar);
 		output_stream->codecpar->codec_tag = 0;
+		out_stream->codec->codec_tag = 0;
+		if (octx->oformat->flags & AVFMT_GLOBALHEADER) {
+            out_stream->codec->flags = out_stream->codec->flags | CODEC_FLAG_GLOBAL_HEADER;
+        }
 	}
 	av_dump_format(ofmt_ctx ,0 ,output_file_name ,1);
 	if (!(ofmt->flags & AVFMT_NOFILE)) {
@@ -110,7 +114,24 @@ int main (int argc ,char **argv) {
 		}
 		pkt.stream_index = stream_mapping[pkt.stream_index];
 		out_stream = ofmt_ctx->streams[pkt.stream_index];
-		log_packet(ifmt_ctx ,&pkt ,"int");
+		log_packet(ifmt_ctx ,&pkt ,"in");
+		
+		 //延时
+        if (pkt.stream_index == AVMEDIA_TYPE_VIDEO) {
+            AVRational time_base = ictx->streams[videoindex]->time_base;
+            AVRational time_base_q = { 1,AV_TIME_BASE };
+            //计算视频播放时间
+            int64_t pts_time = av_rescale_q(pkt.dts, time_base, time_base_q);
+            //计算实际视频的播放时间
+            int64_t now_time = av_gettime() - start_time;
+
+            AVRational avr = ictx->streams[videoindex]->time_base;
+            cout << avr.num << " " << avr.den << "  "<<pkt.dts <<"  "<<pkt.pts<<"   "<< pts_time <<endl;
+            if (pts_time > now_time) {
+                //睡眠一段时间（目的是让当前视频记录的播放时间与实际时间同步）
+                av_usleep((unsigned int)(pts_time - now_time));
+            }
+        }
 		
 		/** copy packet **/
 		pkt.pts = av_rescale_q_rnd(pkt.pts ,in_stream->time_base ,out_stream->time_base ,AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX);
@@ -118,20 +139,7 @@ int main (int argc ,char **argv) {
 		pkt.duration = av_rescale_q(pkt.duration ,in_stream->time_base ,out_stream->time_base);
 		pkt.pos = -1;
 		log_packet(ofmt_ctx ,&pkt ,"out");
-		if (out_stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-			int64_t now_time = av_gettime() - start_time;
-			printf("\n\nshikeDebug... start=%ld now=%ld pts=%ld \n\n" ,start_time ,now_time ,pkt.pts);
-			/**
-				av_usleep(pkt.duration);
-			**/
-			/*
-			 if (pkt.pts > now_time) {
-				int64_t time = pkt.pts - now_time;
-				printf("\n\nshikeDebug... sleep=%ld \n\n" ,time);
-				av_usleep(time);
-			 }
-			*/
-		}
+
 		ret = av_interleaved_write_frame(ofmt_ctx ,&pkt);
 		if (ret < 0) {
 			fprintf(stderr ,"Error muxing packet.\n");
