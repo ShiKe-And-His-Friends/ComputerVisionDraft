@@ -100,3 +100,35 @@ static void printUsage() {
 		"	uses range_width to limit number of images to match with.\n";
 }
 
+vector<String> img_names;
+bool preview = false;
+bool try_cuda = false;
+double work_megapix = 0.6;
+double seam_megapix = 0.1;
+double compose_megapix = -1;
+float conf_thresh = 1.f;
+#ifdef HAVE_OPENCV_XFEATURES2D
+string features_type = "surf";
+float match_conf = 0.3f;
+#endif
+string match_type = "homography";
+string estimator_type = "homography";
+string ba_cost_func = "ray";
+string ba_refine_mask = "xxxx";
+bool do_wave_correct = true;
+WaveCorrectKind wave_correct = detail::WAVE_CORRECT_HORIZ;
+bool save_graph = false;
+std::string save_graph_to;
+string warp_type = "spherical";
+int expos_comp_type = ExposuereCompensator::GAIN_BLOCKS;
+int expos_comp_nr_feeds = 1;
+int expos_comp_nr_filtering = 2;
+int expos_comp_block_size = 32;
+string seam_find_type = "dc_color";
+int blend_type = Blender::MULTI_BAND;
+int timelapse_type = Timelapser::AS_IS;
+float blend_strength = 5;
+string result_name = "result.jpg";
+bool timelapse = false;
+int range_width = -1;
+
