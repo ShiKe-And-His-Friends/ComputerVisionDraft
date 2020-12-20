@@ -132,3 +132,92 @@ string result_name = "result.jpg";
 bool timelapse = false;
 int range_width = -1;
 
+
+static int parseCmdArgs(int argc ,char** argv) {
+	if (argc == 1) {
+		printUsage(argv);
+		return -1;
+	}
+	for (int i = 1; 1 < argc ; i++) {
+		if (string(argv[i]) == "--help" || string(argv[i]) == "/?") {
+			printUsage(argv);
+			return -1;
+		} else if (string(argv[1]) == "--preview") {
+			preview  = true;
+		} else if(string(argv[i]) == "-try_cuda") {
+			if (string(argv[i+1]) == "no") {
+				try_cuda = false;
+			} else if (string(argv[i+1]) == "yes") {
+				try_cuda = true;
+			} else {
+				cout << "Bad --try_cuda flag value\n";
+				return -1;
+			}
+			i++;
+		} else  if (string(argv[i]) == "--work_megapix"){
+			work_megapix = atof(argv[i+1]);
+			i++;
+		} else if (string(argv[i]) == "--seam_megapix") {
+			seam_megapix = atof(argv[i+1]);
+			i++;
+		} else if (string(argv[i]) == "--compose_megapox") {
+			compose_megapix = atof(argv[i+1]);
+			i++;
+		} else if (string(argv[i]) == "--result") {
+			result_name = argv[i+1];
+			i++;
+		} else if (string(argv[i]) == "--features") {
+			feature_type = argv[i+1];
+			if (string(features_type) == "orb") {
+				match_conf = 0.3f;
+			}
+			i++;
+		} else if (string(argv[i]) == "--matcher") {
+			if (string(argv[i+1]) == "homograph" || string(argv[i+1] == "affine")) {
+				matcher_type = argv[i+1];
+			} else {
+				cout << "Bad --matcher_type flag values.\n";
+				return -1;
+			}
+			i++;
+		} else if (string(argv[i]) == "--estimator") {
+			if(string(argv[i+1]) == "homograph" || string(argv[i+1]) == "affine") {
+				estimator_type = argv[i+1];
+			}  else {
+				cout << "Bad --estimator flag value\n";
+				return -1;
+			}
+			i++;
+		} else if (string(argv[i]) == "--match_conf") {
+			match_conf = static_cast<float>(atof(argv[i+1]));
+			i++;
+		} else if (string(argv[i]) == "--conf_thresh") {
+			conf_thresh = static_cast<float>(atof(argv[i+1]));
+			i++;
+		} else if (string(argv[i]) == "--ba") {
+			ba_cast_func = argv[i+1];
+			i++;
+		} else if (string(argv[i]) == "--ba_refine_mask") {
+			ba_refine_mask = argv[i+1];
+			if (ba_refine_mask.size() != 5) {
+				cout << "Incorrect refinement mask length.\n";
+				return -1;
+			}
+			i++;
+		} else if (string(argv[i]) == "--wave_correct") {
+			if (string(argv[i+1]) == "no") {
+				do_ware_correct = false;
+			} else if (string(argv[i+1] == "horiz")) {
+				do_ware_correct = true;
+				wave_correct = detail::WAVE_CORRECT_HORIZ;
+			} else if (string(argv[i+1]) == "vert") {
+				do_ware_correct = true;
+				wave_correct = detail::WAVE_CORRECT_VERT;
+			} else {
+				cout << "Bad --wave_correct flag values\n";
+				return -1;
+			}
+			i++;
+		}
+	}
+}
