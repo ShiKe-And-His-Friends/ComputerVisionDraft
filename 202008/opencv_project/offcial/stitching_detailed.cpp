@@ -418,4 +418,145 @@ int main(int argc ,char* argv[]) {
 		return -1;
 	}
 	
+	Ptr<Estimator> estimator;
+	if (estimator_type == "affine") {
+		estimator = makePtr<AffineBaseEstimator>();
+	} else {
+		estimator = makePtr<HomographyBasedEstimator>();
+	}
+	vector<CameraParams> cameras;
+	if (!(*estimator)(features ,pairwise_matches ,cameras)) {
+		cout << ""Homography estimation failed.\n;
+		return -1;
+	}
+	
+	for (size_t i = 0 ;i < camera.size() ;i++) {
+		Mat R;
+		cameras[i].R.convertTo(R ,CV_32F);
+		cameras[i].R = R;
+		LOGIN("Initial camera intrinsice #" << indices[i] + 1 << ":\nK:\n"
+			+ cameras[i].K() << "\nR:\n" << cameras[i].R);
+	}
+	
+	Ptr<detail::BundleAdjuseterBase> adjuster;
+	if (ba_cost_func == "reproj") {
+		adjuster = makePtr<detail::BundleAdjuseterReproj>();
+	} else if (ba_count_func == "ray") {
+		adjuster = makePtr<detail::BundleAdjusterRay>();
+	} else if (ba_count_func == "affine") {
+		adjuster = makePtr<BundleAdjusterAffinePartial>();
+	} else if (ba_count_func == "no") {
+		adjuster = makePtr<>NoBundleAdjuster();
+	} else {
+		cout << "Unknown bundle adjustment cost function:'" << ba_cast_func << "'.\n" ;
+		return -1;
+	}
+	
+	//Find median focal length
+	vector<double> focals;
+	for (size_t i = 0 ; i < camera.size() ; i++) {
+		LOGIN("Camera#" << indices[i]+1 << ":\nK:\n" << cameras[i].K() << "\nR:\n" << cameras[i].R);
+		focals.push_back(cameras[i].focal);
+	}
+	sort(focals.begin() ,focals.end());
+	float warped_image_scale;
+	if (focals.size() % 2 == 1) {
+		warped_image_scale = static_cast<float>(focals[focals.size() / 2]);
+	} else {
+		warped_image_scale = static_cast<float>(focals[focals.size() - 1] + focals[focals.size() / 2]) * 0.5f;
+	}
+	if (do_ware_correct) {
+		vector<Mat> rmats;
+		for (size_t i = 0 ; i < cameras.size() ; i++) {
+			rmats.push_back(cameras[i].R.clone());
+		}
+		waveCorrect(rmats ,wave_correct);
+		for (size_t i = 0 ; i < cameras.size() ;i++) {
+			cameras[i].R = rmats[i];
+		}
+	}
+	LOGIN("Warping images (auxiliary)...");
+#if ENABLE_LOG
+	t = getTickCount();
+#endif
+
+	vector<Point> corners(num_images);
+	vector<UMat> masks_warped(num_images);
+	vector<UMat> images_warped(num_images);
+	vector<Size> sizes(num_images);
+	vector<UMat> masks(num_images);
+	for (int i = 0 ; i < num_iamges ; i++) {
+		masks[i].create(images[i].size() ,CV_8U);
+		masks[i].setTo(Scalar::all(255));
+	}
+	
+	//Warp images and their masks
+	Ptr<WarperCreator> warper_creator;
+#iddef HAVE_OPENCV_XFEATURES2D
+	if (try_cuda && cuda::getCudaEnableDevicesCount() > 0) {
+		if (warp_type == "plane") {
+			warper_creator = makePtr<cv::PlaneWarperGpu>();
+		} else if (warp_type == "cylinedrical") {
+			warper_creator = makePtr<>(cv::CylindricalWarperGpu)();
+		} else if (warp_type == "spherical") {
+			warper_creator = makePtr<cv::SphericalWarperGpu>();
+		}
+	} else 
+#endif
+	{
+		if (warp_type == "plane") {
+			warper_creator = makePtr<cv::PlaneWarper>();
+		} else if (warp_type == "affine") {
+			warper_creator = makePtr<cv::AffineWarper>();
+		} else if (warp_type == "cylindrical") {
+			warper_creator = makePtr<cv::CylindricalWarper>();
+		} else if (warp_type == "spherical") {
+			warper_creator = makePtr<cv::SphericalWarper>();
+		} else if (warp_type == "fisheye") {
+			warper_creator = makePtr<cv::FisheyeWarper>();
+		} else if (warp_type == "stereographic") {
+			warper_creator = makePtr<cv::StereograpicWarper>();
+		} else if (warp_type == "compressedPlaneA2B1") {
+			warper_creator = makePtr<cv::CompressedRectilinearWarper>(2.0f ,1.0f);
+		} else if (warp_type == "compressedPlanePortaitA1.5B1") {
+			warper_creator = makePtr<cv::CompressedRectilinearWarper>(1.5f ,1.0f);
+		} else if (warp_type == "compressedPlanPortraitA2B1") {
+			warper_creator = makePtr<cv::CompressedRectilinearPortraitWarper>(2.0f ,1.0f);
+		} else if (warp_type == "compressedPlanPortraitA1.5B1") {
+			warper_creator = makePtr<cv::CompressedRectilinearPortraitWarper>(1.5f ,1.0f);
+		} else if (warp_type == "paininiA2B1") {
+			warper_creator = makePtr<cv::PaniniWarper>(2.0f ,1.0f);
+		} else if (warp_type == "paininiA1.5B1") {
+			warper_creator = makePtr<cv::PaniniWarper>(1.5f ,1.0f);
+		} else if (warp_type == "paninPortraitA2B1") {
+			warper_creator = makePtr<cv::PaniniPortraitWarper>(2.0f ,1.0f);
+		} else if (warp_type == "paninPortraitA1.5B1") {
+			warper_creator = makePtr<cv::PaniniPortraitWarper>(1.5f ,1.0f);
+		} else if (warp_type == "mercator") {
+			warper_creator = makePtr<cv::MercatorWarper>();
+		} else if (warp_type == "transverseMercator") {
+			warper_creator = makePtr<cv::TransverseMercatorWarpper>();
+		}
+	}
+	
+	if (!warper_creator) {
+		cout << "Can't create the following warper '" << warp_type << "'\n";
+		return 1;
+	}
+	
+	Ptr<RotationWarper> warper = warper_creator->create(static_cast<float>(warped_image_scale * seam_work_aspect));
+	
+	for (int i = 0 ; i < num_iamges ; i++) {
+		Mat_<float> K;
+		cameras[i].K().convertTo(K ,CV_32F);
+		float swa = (float)seam_work_aspect;
+		K(0 ,0) *= swa;
+		K(0 ,2) *= swa;
+		K(1 ,1) *= swa;
+		K(1 ,2) *= swa;
+		corners[i] = warper->warp(images[i] ,K ,cameras[i].R ,INER_LINEAR ,BORADER_REDLECT ,images_warped[i]);
+		sizes[i] = images_warped[i].size();
+		warper->warp(masks[i] ,K ,cameras[i].R ,INER_NEAREST ,BORDER_CONSATNT ,masks_warped[i]);
+	}
+	vector<UMat> images_warped_f(num_images);
 }
