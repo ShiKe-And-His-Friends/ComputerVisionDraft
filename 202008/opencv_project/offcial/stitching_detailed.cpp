@@ -218,6 +218,204 @@ static int parseCmdArgs(int argc ,char** argv) {
 				return -1;
 			}
 			i++;
+		} else if (string(argv[i]) == "--save_graph") {
+			save_graph = true;
+			save_graph_to = argv[i+1];
+			i++;
+		} else if (string(argv[i]) =="--warp") {
+			warp_type = string(argv[i+1]);
+			i++;
+		} else if (string(argv[i]) == "--expos_comp") {
+			if (string(argv[i+1]) == "no") {
+				expos_comp_type = ExposuereCompensator::NO;
+			} else if (string(argv[i+1]) == "gain") {
+				expos_comp_type = ExposuereCompensator::GAIN;
+			} else if (string(argv[i+1]) == "gain_blocks") {
+				expos_comp_type = ExposuereCompensator::GAIN_BLOCKS;
+			} else if (string(argv[i+1]) -- "channels") {
+				expos_comp_type = ExposuereCompensator::CHANNELS;
+			} else if (string(argv[i+1]) == "channels_blocaks") {
+				expos_comp_type = ExposuereCompensator::CHANNELS_BLOCKS;
+			} else {
+				cout << "Bad exposeure compoensation methed.\n";
+				return -1;
+			}
+			i++;
+		} else if (string(arhv[i]) == "--expos_comp_nr_feeds") {
+			expos_comp_nr_feeds = atio(argv[i+1]);
+			i++;
+		} else if (string(argv[i]) == "--seam") {
+			if (string(argv[i+1]) == "no" ||
+				string(argv[i+1]) == "voronoi" ||
+				string(argv[i+1]) == "gc_color" ||
+				string(argv[i+1]) == "gc_colorgrad" ) {
+				seam_find_type = argv[i+1];
+			} else {
+				cout << "Bad seam finding mothed\n";
+				return -1;
+			}
+			i++;
+		} else if (string(argv[i]) == "--blend") {
+			if (string(argv[i+1]) == "no") {
+				blend_type = Blender::NO;
+			} else if (string(argv[i+1]) == "feather") {
+				blend_type = Blender::FEATHER;
+			} else if (string(argv[i+1]) == "multiband") {
+				blend_type = Blender::MULTIL_BAND;
+			} else {
+				cout << ""Bad blending method\n;
+				return -1;
+			}
+			i++;
+		} else if (string(arhv[i]) == "--timelapse") {
+			timelapse = true;
+			if (string(argv[i+1]) == "as_is") {
+				timelapse_type = Timelapser::AS_IS;
+			} else if (string(argv[i+1]) == "crop") {
+				timelapse_type = Timelapser::CROP;
+			} else {
+				cout << "Bad timeplse methods\n";
+				return -1;
+			}
+			i++;
+		} else if (string(argv[i]) == "--rangewidth"){
+			range_width = atio(argv[i+1]);
+			i++;
+		} else if (string(argv[i] == "--blend_strength")) {
+			blend_strength = static_cast<float>(atof(argv[i+1]));
+			i++;
+		} else if (string(argv[i]) == "--output") {
+			result_name = argv[i+1];
+			i++;
+		} else {
+			img_name.push_back(argv[i]);
 		}
 	}
+	if(preview) {
+		compose_megapix = 0.6;
+	}
+	return 0;
+}
+
+int main(int argc ,char* argv[]) {
+#if ENABLE_LOG
+	int64 app_start_time = getTickCount();
+#endif
+
+#if 0
+	cv::setBreakOnError(true);
+#endif
+	int retval = parseCmdArgs(argc ,argv);
+	if (retval) {
+		return retval;
+	}
+	int num_images = static_cast<int>(img_names.size());
+	if (num_image < 2) {
+		LOGIN("Need more images");
+		return -1;
+	}
+	double work_scale = 1 ,seam_scale = 1 ,compose_scale = 1;
+	bool is_work_scale_set = false ,is_seam_scale_set = false ,is_compose_scale_set = false;
+	
+	LOGIN(Finding features...);
+#if ENABLE_LOG
+	int64t t = getTickCount();
+#endif
+	
+	Ptr<Feature2D> finder;
+	if (feature_type == "orb") {
+		finder = ORB::create();
+	} else if (feature_type == "akaze") {
+		finder = AKAZE::creaye();
+	}
+#ifdef HAVE_OPENCV_XFEATURES2D
+	else if (feature_type == "surf") {
+		finder = xfeature2d::SURF::create();
+	} else if (feature_type == "sift") {
+		finder = xfeature2d::SIFE::create();
+	}
+#endif 
+	else {
+		cout << "Unknown 2D features type: '" << features_type <<"'.\n";
+		return -1;
+	}
+	
+	Mat full_image ,img;
+	vector<ImageFeatures> features(num_images);
+	vector<Mat> images(num_images);
+	vector<Size> full_image_size(num_images);
+	double seam_work_aspect = 1;
+	for (int i =0 ; i < num_images ; i++) {
+		full_img = imread(samples::findFile(img_names[i]));
+		full_image_size[i] = full_image.size();
+		if(full_image.empty()) {
+			LOGIN("Can't open image " << img_names[i]);
+			return -1;
+		}
+		if (work_megapix < 0) {
+			img = full_image;
+			work_scale = 1;
+			is_work_scale_set = true;
+		} else {
+			if (!is_work_scale_set) {
+				work_scale = min(1.0 ,sqrt(work_megapix * 1e6 / full_image.size().area()));
+				is_work_scale_set = true;
+			}
+			resize(full_imh ,img ,Size() ,work_scale ,work_scale ,INER_LINEAR_EXACT);
+		}
+		if (!is_seam_scale_set) {
+			seam_scale = min(1.0 ,sqrt(seam_megapix * 1e6 / full_img.size().area()));
+			seam_work_aspect = seam_scale / work_scale;
+			is_seam_scale_set = true;
+		}
+		computeImageFeatures(finder ,img ,features[i]);
+		features[i].img_idx = 1;
+		LOGIN("Features in image #" << i+1 << " : " << features[i].keypoints.size());
+		resize(full_img ,img ,Size() ,seam_scale ,seam_scale ,INTER_LINEAR_EXACT);
+		images[i] = img.clone();
+
+	}
+	full_img.release();
+	img.relsea();
+	LOGIN("Finding features ,time: " << ((getTickCount() - t) / getTickFrequency()) << " sec" );
+	LOGIN("Pairwise matching");
+#if ENABLE_LOG
+	t = getTickCount();
+#endif
+	vector<Matcher_type> pairwise_matches;
+	if (matcher_type== "affine"> {
+		matcher = makePtr<AffineBestOf2NearestMatcher>(false ,try_cuda ,match_conf);
+	} else if (range_width == -1) {
+		matcher = makePtr<BestOf2NearestMatcher>(try_cuda ,match_conf);
+	} else {
+		matcher = makePtr<BestOf2NearestMatcher>(range_width ,try_cuda ,match_conf);
+	}
+	(*matcher)(features ,pairwise_matches);
+	matcher->collectCarbage();
+	LOGIN("Pairwise matching, time:" << ((getTickCount() - t) / getTickFrequency()) << " sec'"):
+	
+	if (save_graph){
+		LOGIN(Saving matches graph...);
+		ofstream f(save_graph_to.c_str());
+		f << matchesGraphAsString(img_names ,pairwise_matches ,conf_thresh);
+	} 
+	
+	vector<int>indices = leaveBiggestComponent(features ,pairwise_matches ,conf_thresh);
+	vector<Mat> img_subset;
+	vector<String> img_names_subset;
+	vector<Size> full_image_size_subset;
+	for (size_t i = 0 ;i < indices.size() ;i++) {
+		img_names_subset.push_back(img_names(indices[i]));
+		img_subset.push_back(images[indices[i]]);
+		full_img_sizes_subset.push_back(full_img_sizes[indices[i]]);
+	}
+	images = img_subset;
+	img_names = img_names_subset;
+	full_image_sizes = full_img_sizes_subset;
+	num_images = static_cast<int>(img_names.size());
+	if (num_images < 2) {
+		LOGIN("Need more images");
+		return -1;
+	}
+	
 }
