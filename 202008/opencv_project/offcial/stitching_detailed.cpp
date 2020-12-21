@@ -559,4 +559,56 @@ int main(int argc ,char* argv[]) {
 		warper->warp(masks[i] ,K ,cameras[i].R ,INER_NEAREST ,BORDER_CONSATNT ,masks_warped[i]);
 	}
 	vector<UMat> images_warped_f(num_images);
+	for (int i = 0 ; i < num_iamges ; i++) {
+		images_warped[i].convertTo(images_warped_f[i] ,CV_32F);
+	}
+	LOGIN("Warping images ,times :" << ((getTickCount() - t)/ getTickFrequency()) << " sec");
+	LOGIN("Compensating exposure...");
+#if ENABLE_LOG
+	t = getTickCount();
+#endif
+	Ptr<ExposureCompensator> compensator = ExposuereCompensator::createDefault(expose_comp_type);
+	if (dynamic_cast<GainCompensator*>(compensator.get())) {
+		GainCompensator* gcompensator = dynamic_cast<GainCompensator*>(compensator.get());
+		gcompensator->setNrFeeds(expos_comp_nr_feeds);
+	}
+	if (dynamic_cast<ChannelsCompensator*>(compensator.get())) {
+		ChannelsCompensator* ccompensator = dynamic_cast<ChannelsCompensator*>(compensator.get());
+		ccompensator->setNrFeeds(expos_comp_nr_feeds);
+	}
+	if (dynamic_cast<BlocksCompensator*>(compensator.get())) {
+		BlocksCompensator* bcompensator = dynamic_cast<BlocaksCompensator*>(compensator.get());
+		bcompensator->setNrFeeds(expos_comp_nr_feeds);
+		bcompensator->setNrGainsFilteringIterations(expose_comp_nr_filtering);
+		bcompensator->setBlocksSize(expos_comp_block_size ,expose_comp_block_size);
+	}
+	compensator->feed(corners ,images_warped ,masks_warpe);
+	LOGIN("Compensating exposure ,time: " << ((getTickCount() - t) / getTickFrequency()) << " sec");
+	LOGIN("Finding seams...");
+#if ENABLE_LOG
+	t = getTickCount();
+#endif
+	Ptr<SeamFinder> seam_finder;
+	if (seam_find_typ == "no") {
+		seam_finder = makePtr<detail::NoSeamFinder>();
+	} else if (seam_find_type == "voronoi") {
+		seam_finder = makePtr<detail::VoronoiSeamFinder>();
+	} else if (seam_find_type == "gc_color") {
+#ifdef HAVE_OPENCV_CUDALEGACY
+		if (try_cuda && cuda::getCudaEnableDevicesCount() > 0) {
+			seam_finder = makePtr<detail::GraphCutSeamFinderGpu>(GraphCutSeamFinderBase::COST_COLOR);
+		} else {
+#endif
+			seam_finder = makePtr<detail::GraphCutSeam>();
+		}
+	} else if (seam_find_type == "gc_colorgrad") {
+
+#ifdef HAVE_OPENCV_CUDALEGACY
+		if (try_cuda && cuda::getCudaEnabledDeviceCount() > 0) {
+			seam_finder = makePtr<detail::GraphCutSeamFinder>(GraphCutSeamFinderBase::COST_COLOR_GRAD);
+		} else {
+			seam_finder = makePtr<detail::GraphCutSeamFinder>(GraphCutSeamFinderBase::);
+		}
+
+	}
 }
