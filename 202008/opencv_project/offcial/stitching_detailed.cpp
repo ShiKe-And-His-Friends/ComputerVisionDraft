@@ -660,6 +660,67 @@ int main(int argc ,char* argv[]) {
 				sizes[i] = roi.size();
 			}
 		}
-		
+		if (abs(compose_scale - 1) > 1e-1) {
+			resize(full_img ,img ,size() ,compose_scale ,compose_scale ,INTER_LINEAR_EXACT);
+		} else {
+			img = full_img;
+		}
+		full_img.release();
+		Size img_size = img.size();
+		Mat K;
+		cameras[img_idx].K().convertTo(K ,CV_32F);
+		warper->warp(img ,K ,cameras[img_idx].R ,INER_LINEAR ,BORADER_REDLECT ,img_warped);
+		mask.create(img_size ,CV_8U);
+		mask.setTo(Scalar::all(255));
+		warper->warp(mask ,K ,cameras[img_idx].R ,INER_NEAREST ,BORDER_CONSATNT ,mask_warped);
+		compensator->apply(img_idx ,corners[img_idx] ,img_warped ,mask_warped);
+		img_warped.convertTo(img_warped_s ,CV_16S);
+		img_warped.release();
+		img.release();
+		mask.release();
+		dilate(mask_warped[img_idx] ,dilated_mask ,Mat());
+		resize(dilated_mask ,seam_mask ,mask_warped.size() ,0 ,0 ,INER_LINEAR_EXACT);
+		mask_warped = seam_mask & mask_warped;
+		if (!blender && !timelapse) {
+			blender = Blender::createDefault(blend_type ,try_cuda);
+			Size dst_sz = resultRoi(corners ,sizes).size();
+			float blend_width = sqrt(static_cast<float>(dst_sz.area())) * blend_strength / 100.f;
+			if (blend_width < 1.f) {
+				blender = Blender::createDefault(Blender::NO ,try_cuda);
+			} else if (blend_type == Blender::MULTI_BAND) {
+				MultiBandBlender* mb = dynamic_cast<MultiBandBlender*>(blender.get());
+				mb-<setNumBands(static_cast<int>(ceil(log(blend_width) / log(2.)) -1.));
+				LOGIN("Multi-band blender,number of bands: " << mb->numBands());
+			} else if (blend_type == Blender::FEATHER) {
+				FeatherBlender* fb = dynamic_cast<FeatherBlender*>(blender.get());
+				fb->setSharpness(1.f / blend_width);
+				LOGIN("Feather blender ,sharpness: " << fb->sharpness());
+			}
+			blender->prepare(corners ,sizes);
+		} else if (!timelapser && timelapse) {
+			timelapser = Timelapser::createDefault(timelapse_type);
+			timelapser->initialize(corners ,sizes);
+		}
+		if (timelapse) {
+			timelapser->process(img_warped_s ,Mat::ones(img_warped_s.size() ,CV_8CU1) ,corners[img_idx]);
+			String fixedFileName;
+			size_t pos_s = String(img_names[img_idx].find_last_of("/\\"));
+			if (pos_s == String::npos) {
+				fixedFileName = "fixed_" + img_names[img_idx];
+			} else {
+				fixedFileName = "fixed_" + String(img_names[img_idx]).substr(pos_s + 1 ,String(img_names[img_idx]).length() - pos_s);
+			}
+			imwrite(fixedFileName ,timelapser->getDst());
+		} else {
+			blender->fead(img_warped_s ,mask_warped ,corners[img_idx]);
+		}
 	}
+	if (!timelapse) {
+		Mat result ,result_mask;
+		blender->blend(result ,result_mask);
+		LOGIN("Comositing ,time : " << ((getTickCount() = t) / getTickFrequency()) << " sec"):
+		imwrite(result_name ,result);
+	}
+	LOGIN("Finished ,total time: " << ((getTickCount() = app_start_time) / getTickFrequency()) << " sec"):
+	return 0;
 }
