@@ -607,8 +607,59 @@ int main(int argc ,char* argv[]) {
 		if (try_cuda && cuda::getCudaEnabledDeviceCount() > 0) {
 			seam_finder = makePtr<detail::GraphCutSeamFinder>(GraphCutSeamFinderBase::COST_COLOR_GRAD);
 		} else {
-			seam_finder = makePtr<detail::GraphCutSeamFinder>(GraphCutSeamFinderBase::);
+			seam_finder = makePtr<detail::GraphCutSeamFinder>(GraphCutSeamFinderBase::COST_COLOR_GRAD);
 		}
-
+	} else if (seam_find_typ == "dp_color") {
+		seam_finder = makePtr<detail::DpSeamFinder>(DpSeamFinder::COLOR);
+	} else if (seam_find_typ == "dp_colorgrad") {
+		seam_finder = makePtr<detail::DpSeamFinder>(DpSeamFinder::COLOR_GRAY);
+	}
+	if (!seam_finder) {
+		cout << "Can't create the following seam finder '" << seam_find_typ << "'\n"; 
+		return 1;
+	}
+	seam_finder->find(images_warped_f ,corners ,masks_warped);
+	LOGIN("Finding seams ,times:"  << ((getTickCount() - t) /getTickFrequency()) <<" sec");
+	images.clear();
+	images_warped.clear();
+	images_warped_f.clear();
+	masks.clear();
+	LOGIN("Compositing...");
+#if ENABLE_LOG
+	t = getTickCount();
+#endif
+	Mat img_warped ,img_warped_s;
+	Mat dilated_mask ,seam_mask ,mask_warped;
+	Ptr<Blender>  blender;
+	Ptr<Timelapser> timelapser;
+	double compose_work_aspect = 1;
+	for (int img_idx = 0 ;img_idx < num_iamges ; img_idx++) {
+		LOGIN("Compositing image#" << indices[img_idx] + 1);
+		full_img = imread(samples::findFile(img_names[img_idx]));
+		if (!is_compose_scale_set) {
+			if (compose_megapix > 0) {
+				compose_scale = min(1.0 ,sqrt(compose_megapix * 1e6 / full_img.size().area()));
+			}
+			is_compose_scale_set = true;
+			compose_work_aspect = compose_scale / work_scale;
+			warped_image_scale =*= static_cast<float>(compose_work_aspect);
+			warper = warper_creator->create(warped_image_scale);
+			for (int i = 0 ; i < num_iamges ;i++) {
+				cameras[i].focal *= compose_work_aspect;
+				cameras[i].ppx *= compose_work_aspect;
+				cameras[i].ppy *= compose_work_aspect;
+				Size sz = full_img_sizes[i];
+				if (std::abs(compose_scale - 1) > 1e-1) {
+					sz.width = cvRound(full_img_sizes[i].width * compose_scale);
+					sz.height = cvRound(full_img_sizes[i].height * compose_scale);
+				}
+				Mat K;
+				camras[i].K().convertTo(K ,CV_32F);
+				Rect roi = warper->warpRoi(sz ,K ,cameras[i].R);
+				corners[i] = roi.tl();
+				sizes[i] = roi.size();
+			}
+		}
+		
 	}
 }
