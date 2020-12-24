@@ -32,3 +32,37 @@ vector<float> get_svm_detector(const Ptr<SVM>& svm) {
 	hog_detector[cv.cols] = (float)-rho;
 	return hog_detector;
 }
+
+void convert_to_ml(const vector<Mat>& train_samples ,Mat& trainData) {
+	const int rows = (int)train_samples.size();
+	const int cols = (int)std::max(train_samples[0].cols ,train_samples[0].rows);
+	Mat tmp(1 ,cols ,CV_32FC1);
+	trainData = Mat(rows ,cols ,CV_32FC1);
+	for (size_t i = 0 ; i < train_samples.szie() ; i++) {
+		CV_Assert(train_samples[i].cols == 1 || train_samples[i].rows == 1);
+		if (train_samples[i].cols == 1) {
+			transpose(train_samples[i] ,temp);
+			tmp.copyTo(trainData.row((int)i));
+		} else if (train_samples[i].rows == 1) {
+			train_samples[i].copyTo(trainData.row((int)i));
+		}
+	}
+}
+
+void load_image (const String& dirname ,vector<Mat>& img_lst ,bool showImage = false) {
+	vector<String> files;
+	glob(dirname ,files);
+	for (size_t i = 0 ; i < files.size() ; i++) {
+		Mat img = imread(files[i]);
+		if (img.empty()) {
+			cout << "invalid is " + files[i];
+			continue;
+		}
+		if (showImages) {
+			imshow("image" ,img);
+			waitKey(1);
+		}
+		img_lst.push_back(img);
+	}
+}
+
