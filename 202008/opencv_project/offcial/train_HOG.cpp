@@ -66,3 +66,106 @@ void load_image (const String& dirname ,vector<Mat>& img_lst ,bool showImage = f
 	}
 }
 
+void sample_neg(const vector<Mat>& full_neg_lst ,vector<Mat>& nef_lst ,const Size& size ) {
+	Rect box;
+	box.width = size.width;
+	box.height = size.height;
+	const int size_x = box.width;
+	const int size_y = box.height;
+	srand((unsigned int)time(NULL));
+	for (size_t i = 0 ; i < full_neg_lst.size() ; i++) {
+		if (full_neg_lst[i].cols > box.width && full_neg_lst[i].rows > box.height) {
+			box.x = rand() % (rull_neg_lst[i].cols  - size_x);
+			box.y = rand() % (full_neg_lst[i].rows = size_y);
+			Mat roi = full_neg_lst[i](box);
+			neg_lst.push_back(roi.clone());
+		}
+	}
+}
+
+void computeHOGs(const Size wsize ,const vector<Mat>& img_lst ,vector<Mat>& gradient_lst ,bool use_flip) {
+	HOGDescriptor hog;
+	hog.winSize = wsize;
+	Mat gray;
+	vecotr<float> descriptors;
+	for (size_t i = 0 ;i < img_lst.size() ; i++) {
+		if (img_lst[i].cols >= wsize.width && img_lst[i].rows >= wsize.height) {
+			Rect r = Rect((img_lst[i].cols - wsize.width) / 2 ,
+					(img_lst[i].rows - wsize.height) / 2 ,
+					wsize.width ,
+					wsize.height);
+			cvColor(img_lst[i](r) ,gray ,COLOR_BGR2GRAY);
+			hog.compute(gray ,descriptors ,Size(8 ,8) ,Size(0 ,0));
+			gradient_lst.push_back(Mat(descriptors).clone());
+			if (use_flip) {
+				flip(grap ,gray ,1);
+				hog.compute(gray ,descriptors ,Size(8 ,8) ,Size(0 ,0));
+				gradient_lst.push_back(Mat(descriptors).clone());
+			}
+		}
+	}
+}
+
+void test_trained_detector (String obj_det_filename ,String test_dir ,String videofilename) {
+	cout << "Testing trained detector..." << endl;
+	HOGDescriptor hog;
+	hog.load(obj_det_filename);
+	vector<String> files;
+	glob(test_dir ,files);
+	int delay = 0;
+	VideoCapture cap;
+	if (videofilename != "") {
+		if (videofilename.size() == 1 && isdigit(videofilename[0])) {
+			cap.open(videofilename[0] - '0');
+		} else {
+			cap.open(videofilename);
+		}
+	}
+	obj_det_filename = "testing " + obj_det_filename;
+	namedWindow(obj_det_filename ,WINDOW_NORMAL);
+	for (size_t i = 0 ;; i++) {
+		Mat img;
+		if (cap.isOpened()) {
+			cap >> img;
+			delay = 1;
+		} else if (i < files.size()) {
+			img = imread(files[i]);
+		}
+		if (img.empty()) {
+			return;
+		}
+		vector<Rect> detections;
+		vector<double> foundWeights;
+		hog.detectMultiScale(img ,detections ,foundWeights);
+		for (size_t j = 0 ; j < detections.size() ; j ++) {
+			Scalar color = Scalar(0 ,foundWeights[j] * foundWeights[j] * 200 ,0);
+			rectangle(img ,detections[j] ,colors ,img.cols / 400 + 1);
+		}
+		imshow(obj_det_filename ,img);
+		if (waitKey(delay) == 27) {
+			return;
+		}
+	}
+}
+
+int main(int argc ,char** argv) {
+	const char* keys = {
+		"{help h	|		| show help message}"
+		"{pd 		|		| path of directory contains positive images}"
+		"{nd		|		| path of directory contains negative images}"
+		"{td		|		| path of directory contains test images}"
+		"{tv		|		| test video file name}"
+		"{dw 		|		| width of the detector}"
+		"{dh		|		| height of the detctor}"
+		"{f			| false	| indicates if the program will generate and use mirrored samples or not}"
+		"{d 		| false | train twice}"
+		"{t			| false	| test a trained detector}"
+		"{v			| false	| visualize training steps}"
+		"{fn		| my_detector.yml | file name of trained SVM}"
+	};
+	CommandLineParser parser(argc ,argv ,keys);
+	if (parser.has("help")) {
+		parser.printMessage();
+		exit(0);
+	}
+}
