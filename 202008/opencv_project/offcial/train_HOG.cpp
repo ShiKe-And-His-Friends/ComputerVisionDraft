@@ -168,4 +168,11 @@ int main(int argc ,char** argv) {
 		parser.printMessage();
 		exit(0);
 	}
+	
+	<!-- merge -->
+	if (pos_dir.empty() || neg_dir.empty()) {
+		parser.printMessage();
+		cout << "Wrong number of parameters.\n\n"
+			<< "Example command line:\n" << argv[0] << " -dw=64 -dh=128 -pd=/INRIAPerson/96X"
+	}
 }
