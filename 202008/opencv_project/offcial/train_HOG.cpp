@@ -169,14 +169,29 @@ int main(int argc ,char** argv) {
 		exit(0);
 	}
 	
-	<!-- merge -->
+	String pos_dir = parser.get<String>("pd");
+	String neg_dir = parser.get<String>("nd");
+	String test_dir = parser.get<String>("td");
+	String obj_det_filename = parser.get<String>("fn");
+	String videofilename = parser.get<String>("tv");
+	int detector_width = parser.get<int>("dw");
+	int detector_height = parser.get<int>("dh");
+	bool test_detector = parser.get<bool>("t");
+	bool train_twice = parser.get<bool>("d");
+	bool visualization = parser.get<bool>("v");
+	bool flip_samples = parser.get<bool>("f");
+	if (test_detector) {
+		test_trained_detector(obj_det_filename ,test_dir ,videofilename);
+		exit(0);
+	}
 	if (pos_dir.empty() || neg_dir.empty()) {
 		parser.printMessage();
 		cout << "Wrong number of parameters.\n\n"
-			<< "Example command line:\n" << argv[0] << " -dw=64 -dh=128 -pd=/INRIAPerson/96X"
+			<< "Example command line:\n" << argv[0] << " -dw=64 -dh=128 -pd=/INRIAPersin/96X160H96/Train/pos -nd=/INRIAPerson/neg -td=/INRIAPersion/Test/pos -fn=HOGpedestriab64X128.xml -d\n"
+			<< "\nExample command line for testing trained detector:\n" << argv[0] << " -t -fn=HOGpedestrian64X128.xml -td=/INRIAPerson/Test/pos";
+		exit(1);
 	}
-
-	<!-- merge info -->
+	
 	vector<Mat> pos_lst ,full_neg_lst ,meg_lst ,ghrandinent_let;
 	vector<int> labels;
 	clog << "Positive images are being loaded..." ;
