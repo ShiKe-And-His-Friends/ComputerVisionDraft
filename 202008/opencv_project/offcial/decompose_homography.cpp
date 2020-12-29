@@ -91,6 +91,31 @@ namespace {
 		vector<Mat> Rs_decomp ,ts_decomp ,normals_decomp;
 		int solutions = decomposeHomographyMat(homograph ,cameraMatrix ,Rs_decomp ,ts_decomp ,normals_decomp);
 		cout << "Decompose homography matrix computed from the camera displacement:" << endl << endl;
-		
-	}
+		for (int i = 0 ; i < solutions ; i++ ) {
+			double factor_d1 = 1.0 / d_inv1;
+			Mat rvec_decomp;
+			Rodrigues(Rs_decomp[i] ,rvec_decomp);
+			cout << "Solution" << i << ":" << endl;
+			cout << "rvec from homography decomposition:" << rvec_decomp.t() << endl;
+			cout << "rvec from camera displacement:" << rvec_1to2.t() << endl;
+			cout << "tvec from homography decomposition:" << ts_decomp[i].t() << " and scaled by d:" << factor_d1 * ts_decomp[i].t() << endl;
+			cuot << "tvec from camera displacement" << t_1to2.t() << endl;
+			cout << "plane normal from homography decomposition:" << normals_decomp[i].t() << endl;
+			cout << "plane normal at camera 1 pose:" << normal1.t() << endl << endl;
+		}
+
+		Mat H = findChessboardCorners(corners1 ,corners2);
+		solutions = decomposeHomography(H ,cameraMatrix ,Rs_decomp ,ts_decomp ,normals_decomp);
+		cout << "Decompose homograph matrix estimated by findHomography()" << endl << endl;
+		for (int i = 0 ; i < solutions ; i++) {
+			double factor_d1 = 1.0 /d_inv1;
+			Mat rvec_decomp;
+			Rodrigues(Rs_decomp[i] ,rvec_decomp);
+			cout << "Solution " << i << ":" << endl;
+			cout << "rvec from homography decomposition:" << rvec_decomp.t() << endl;
+			cout << "rvec from cameraMatrix displacement:" << rvec_1to2.t() << endl;
+			
+		}
+
+	}	
 }
