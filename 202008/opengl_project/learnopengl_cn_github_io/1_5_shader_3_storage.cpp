@@ -1,9 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "shader_s_1.h"
+#include "raw/shader_s_1.h"
 #include <iostream>
 
-using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window ,int width ,int height);
 void processInput(GLFWwindow* windows);
@@ -24,23 +23,23 @@ int main () {
 
 	GLFWwindow* window = glfwCreateWindow(800 ,600 ,"LearnOpenGl" ,NULL ,NULL);
 	if (window == NULL) {
-		cout << "Failed to create GLFW window" << endl;
+		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	} else {
-		cout << "Success to create GLFW window" << endl;
+		std::cout << "Success to create GLFW window" << std::endl;
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window ,framebuffer_size_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		cout << "Failed to initialize GLAD" << endl;
+		std::cout << "Failed to initialize GLAD" << std::endl;
 		return -1;
 	} else {
-		cout << "Success initialize GLAD" << endl;	
+		std::cout << "Success initialize GLAD" << std::endl;	
 	}
 
-	Shader outShader("3.3.shader.vs" ,"3.3.shader.fs");
+	Shader ourShader("./raw/3.3.shader.vs" ,"./raw/3.3.shader.fs");
 
 	float vertices[] = {
 		// position	// color
@@ -62,14 +61,13 @@ int main () {
 	glVertexAttribPointer(1 ,3 ,GL_FLOAT ,GL_FALSE ,6 * sizeof(float) ,(void*)(3*sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	glUseProgram(shaderProgram);
 
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		glClearColor(0.2f ,0.3f ,0.3f ,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		outShader.use();
+		ourShader.use();
 
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES ,0 ,3);
@@ -80,7 +78,6 @@ int main () {
 
 	glDeleteVertexArrays(1 ,&VAO);
 	glDeleteBuffers(1 ,&VBO);
-	glDeleteProgram(shaderProgram);
 
 	glfwTerminate();
 	return 0;

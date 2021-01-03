@@ -5,7 +5,6 @@ project(1_5_shader_3_storage)
 find_package(glfw3 REQUIRED)
 file(GLOB project_file
 	glad.c
-	shader_s_1.h
 	1_5_shader_3_storage.cpp)
 add_executable(${PROJECT_NAME} ${project_file})
 
