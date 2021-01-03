@@ -2,7 +2,6 @@
 #define SHADER_H
 
 #include <glad/glad.h>
-#include <glm/glm.hpp>
 
 #include <string>
 #include <fstream>
@@ -44,7 +43,7 @@ public :
 
 		unsigned int vertex ,fragment;
 		vertex = glCreateShader(GL_VERTEX_SHADER);
-		glShaderSource(vertex ,1 ,&fShaderCode ,NULL);
+		glShaderSource(vertex ,1 ,&vShaderCode ,NULL);
 		glCompileShader(vertex);
 		checkCompileErrors(vertex ,"VERTEX");
 

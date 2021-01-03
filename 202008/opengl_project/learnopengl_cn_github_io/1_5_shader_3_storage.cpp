@@ -1,13 +1,12 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include "shader_s_1.h"
 #include <iostream>
 
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window ,int width ,int height);
 void processInput(GLFWwindow* windows);
-
-#include "raw/shader_s_1.h"
 
 const unsigned int SRC_WIDTH = 800;
 const unsigned int SRC_HEIGHT = 600;
