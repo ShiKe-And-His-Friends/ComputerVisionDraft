@@ -40,6 +40,9 @@ int main () {
 	}
 
 	Shader ourShader("./raw/3.3.shader.vs" ,"./raw/3.3.shader.fs");
+	
+	// offset
+	//Shader ourShader("./raw/3.3.shader.vs_exerices_2" ,"./raw/3.3.shader.fs");
 
 	float vertices[] = {
 		// position	// color
@@ -61,12 +64,14 @@ int main () {
 	glVertexAttribPointer(1 ,3 ,GL_FLOAT ,GL_FALSE ,6 * sizeof(float) ,(void*)(3*sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	float offset = 0.5f;
 
 	while (!glfwWindowShouldClose(window)) {
 		processInput(window);
 		glClearColor(0.2f ,0.3f ,0.3f ,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
+		
+		// ourShader.setFloat("xOffset" ,offset);
 		ourShader.use();
 
 		glBindVertexArray(VAO);
