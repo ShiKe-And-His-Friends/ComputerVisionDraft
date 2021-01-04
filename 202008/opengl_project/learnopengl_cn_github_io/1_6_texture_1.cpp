@@ -1,8 +1,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#define STB_IMAGE_IMPLEMENTATION
 #include "raw/stb_image.h"
 #include "raw/shader_s_1.h"
 #include <iostream>
+#include <filesystem>
 
 
 void framebuffer_size_callback(GLFWwindow* window ,int width ,int height);
@@ -53,7 +55,7 @@ int main () {
 	unsigned int indices[] = {
 		0 ,1 ,3
 		,1 ,2 ,3
-	}
+	};
 
 	unsigned int VBO ,VAO ,EBO;
 	glGenVertexArrays(1 ,&VAO);
@@ -79,19 +81,19 @@ int main () {
 	glGenTextures(1 ,&texture);
 	glBindTexture(GL_TEXTURE_2D ,texture);
 	
-	glTexParamteri(GL_TEXTURE_2D ,GL_TEXTURE_WARP_S ,GL_REPEAT);
-	glTexParamteri(GL_TEXTURE_2D ,GL_TEXTURE_WARP_T ,GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D ,GL_TEXTURE_WRAP_S ,GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D ,GL_TEXTURE_WRAP_T ,GL_REPEAT);
 	
-	glTexParamteri(GL_TEXTURE_2D ,GL_TEXTURE_MIN_FILTER ,GL_LINEAR);
-	glTexParamteri(GL_TEXTURE_2D ,GL_TEXTURE_MAX_FILTER ,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D ,GL_TEXTURE_MIN_FILTER ,GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D ,GL_TEXTURE_MAG_FILTER ,GL_LINEAR);
 	
 	int width ,height ,nrChannels;
-	unsigned char* data = stbi_load(FileSystem::getPath("drawable/container.jpg") ,&width ,&height ,&nrChannels ,0);
+	unsigned char* data = stbi_load("/home/shike/Documents/computerVisionDraft/202008/opengl_project/learnopengl_cn_github_io/drawable/container.jpg" ,&width ,&height ,&nrChannels ,0);
 	if (data) {
-		glImage2D(GL_TEXTURE_2D ,0 ,GL_RGB ,width ,height ,0 ,GL_RGB ,GL_UNSIGNED_BYTE ,data);
+		glTexImage2D(GL_TEXTURE_2D ,0 ,GL_RGB ,width ,height ,0 ,GL_RGB ,GL_UNSIGNED_BYTE ,data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	} else {
-		std::out << "Failed to load texture" << std::endl;
+		std::cout << "Failed to load texture" << std::endl;
 	}
 	stbi_image_free(data);
 	
@@ -103,7 +105,7 @@ int main () {
 		ourShader.use();
 
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES ,6 ,GL_UNSIGNED_INT,3);
+		glDrawElements(GL_TRIANGLES ,6 ,GL_UNSIGNED_INT,0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
