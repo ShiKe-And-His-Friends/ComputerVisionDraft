@@ -1,10 +1,15 @@
 import numpy as np
+from numpy import linalg as LA
 import scipy as sp
 
-a = np.arange(12);
-a = a.reshape(3 ,2 ,2);
+a = np.random.randint(1 ,10 ,10);
+print(a)
 
-print (a)
-sp.test(10)
-np.test(1 ,2)
+np.random.shuffle(a);
+print(a)
 
+a = np.array([[-2 ,-36 ,0] ,[-36 ,-23 ,0] ,[0 ,0 ,3]])
+w,v = LA.eig(a)
+
+print(w)
+print(v)
