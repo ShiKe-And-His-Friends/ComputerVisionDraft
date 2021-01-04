@@ -8,5 +8,5 @@ in vec2 TexCoord;
 uniform sampler2D textuere1;
 
 void main () {
-	FragColor = texture(textuere1 ,TexCoord);
+	FragColor = texture(textuere1 ,TexCoord) * vec4(ourColor ,1.0);
 }
