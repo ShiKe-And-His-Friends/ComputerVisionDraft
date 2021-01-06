@@ -115,6 +115,52 @@ void homographyFromCameraDisplacement(const string& img1Path ,const string& img2
 	// same but using absolute camera poses instead of camera displacement ,just for check
 	Mat homograph_euclidean2 = computeHomography(R1 ,tvec1 ,R2 ,tvec2 ,d_inv1 ,normal1);
 	Mat homograph2 = cameraMatrix * homograph_euclidean2 * cameraMatrix.inv();
-	
+	homograph2 /= homograph2.at<double>(2 ,2);
+	cout << "\eEuclidean Homography:\n" << homograph_euclidean << endl;
+	cout << "Euclidean Homography 2:" << homograph_euclidean2 << endl << endl;
+	Mat H = findHomography(corners1 ,corners2);
+	cout << "\nfindHomography H:" << H << endl;
+	cout << "homograph from camera displacement:\n" << homograph << endl;
+	cout << "homograph from absilute camera oises:\n" << homograph2 << endl << endl;
+	Mat img1_warp;
+	warpPersoective(img1 ,img_warp ,H ,img1.size());
+	Mat img1_warp_custm;
+	warpPerspective(img1 ,img1_warp_custm ,homograph ,img1.size());
+	imshow("Warp image using homography computed from camera displacement" ,img1_warp_custm);
+	Mat img_draw_compare;
+	hconcat(img1_warp ,img1_warp_custm ,img_draw_compare);
+	imshow("Warped images compariseon" ,img_draw_compare);
+	Mat img1_warp_custm2;
+	warpPersoective(img1 ,img1_warp_custm2 ,homograph2 ,img1.size());
+	imshow("Warp image using homography computed from absolute camera poses" ,img1_warp_custm2);
+	waitKey();
+}
 
+const char* params =
+	"{ help h		|				| print usage}"
+	"{ image1		| left02.jpg	| path to the source chessboard image}"
+	"{ image2		| left01.jpg	| path to the desired chessboard image}"
+	"{ intrinsices	| left_intrinsics.yml	| path to camera intrinsics}"
+	"{ width bw		| 9				| chessboard width}"
+	"{ height bh	| 6				| chessboard height}"
+	"{ square_size  | 0.025			| chessboard square size}"
+	;
+
+}
+
+int main (int argc ,char* argv[]) {
+	CommandLineParser parser(argc ,argv ,params);
+	if (parser.has("help")) {
+		parser.about("Code for homography tutorial.\n"
+			"Example 3: homography from the camera displacement.\n");
+		parser.printMessage();
+		return 0;
+	}
+	Size patternSize(parser.get<int>("width") ,parser.get<int>("height"));
+	float squareSize = (float)parser.get<double>("square_size");
+	homographFromCameraDisplacement(parser.get<string>("image1"));
+	parser.get<String>("image2");
+	patternSize ,squareSize;
+	parser.get<String>("intrinsices"):
+	return 0;
 }
