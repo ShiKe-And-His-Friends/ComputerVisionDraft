@@ -2,10 +2,18 @@
 #include <GLFW/glfw3.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "raw/stb_image.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "raw/shader_s_1.h"
 #include <iostream>
 #include <filesystem>
 
+/**
+ sudo apt-get install libglm-dev
+ */
 
 void framebuffer_size_callback(GLFWwindow* window ,int width ,int height);
 void processInput(GLFWwindow* windows);
@@ -42,14 +50,14 @@ int main () {
 		std::cout << "Success initialize GLAD" << std::endl;	
 	}
 
-	Shader ourShader("./raw/4.2.texture.vs" ,"./raw/4.2.texture.fs");
+	Shader ourShader("./raw/5.1.texture.vs" ,"./raw/5.1.texture.fs");
 
 	float vertices[] = {
-		// position			// color			// texture coords
-		0.5f ,0.5f ,0.0f 	,1.0f ,0.0f ,0.0f 	,1.0f ,1.0f
-		,0.5f ,-0.5f ,0.0f 	,0.0f ,1.0f ,0.0f 	,1.0f ,0.0f
-		,-0.5f ,-0.5f ,0.0f ,0.0f ,0.0f ,1.0f 	,0.0f ,0.0f
-		,-0.5f ,0.5f ,0.0f	,1.0f ,1.0f ,0.0f	,0.0f ,1.0f
+		// position			// texture coords			
+		0.5f ,0.5f ,0.0f 	,1.0f ,1.0f
+		,0.5f ,-0.5f ,0.0f 	,1.0f ,0.0f
+		,-0.5f ,-0.5f ,0.0f ,0.0f ,0.0f
+		,-0.5f ,0.5f ,0.0f	,0.0f ,1.0f
 	};
 	
 	unsigned int indices[] = {
@@ -69,12 +77,10 @@ int main () {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER ,EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER ,sizeof(indices) ,indices ,GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0 ,3 ,GL_FLOAT ,GL_FALSE ,8 * sizeof(float) ,(void*)0);
+	glVertexAttribPointer(0 ,3 ,GL_FLOAT ,GL_FALSE ,5 * sizeof(float) ,(void*)0);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1 ,3 ,GL_FLOAT ,GL_FALSE ,8 * sizeof(float) ,(void*)(3*sizeof(float)));
+	glVertexAttribPointer(1 ,2 ,GL_FLOAT ,GL_FALSE ,5 * sizeof(float) ,(void*)(3*sizeof(float)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2 ,2 ,GL_FLOAT ,GL_FALSE ,8 * sizeof(float) ,(void*)(6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
 
 	// load and create a texture
 	unsigned int texture ,texture2;
@@ -127,6 +133,10 @@ int main () {
 		glBindTexture(GL_TEXTURE_2D ,texture);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D ,texture2);
+		
+		glm::mat4 transformLoc = glGetUniformLocation("ourShader.ID" ,"transform");
+		glUniformMatrix4fv(transform ,(float)glfwGetTime() ,glm::vec3(0.0f ,0.0f ,1.0f));
+		
 		ourShader.use();
 
 		glBindVertexArray(VAO);
