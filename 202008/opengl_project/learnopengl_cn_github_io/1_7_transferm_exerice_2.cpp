@@ -50,7 +50,7 @@ int main () {
 		std::cout << "Success initialize GLAD" << std::endl;	
 	}
 
-	Shader ourShader("./raw/5.1.texture.vs" ,"./raw/5.1.texture.fs");
+	Shader ourShader("./raw/5.2.texture.vs" ,"./raw/5.2.texture.fs");
 
 	float vertices[] = {
 		// position			// texture coords			
@@ -137,15 +137,22 @@ int main () {
 
 		glm::mat4 transform = glm::mat4(1.0f);
 
-		transform = glm::rotate(transform ,(float)glfwGetTime() ,glm::vec3(0.0f ,0.0f ,1.0f));
 		transform = glm::translate(transform ,glm::vec3(0.5f ,-0.5f ,0.0f));
-		ourShader.use();
-
+		transform = glm::rotate(transform ,(float)glfwGetTime() ,glm::vec3(0.0f ,0.0f ,1.0f));
 		unsigned int transformLoc = glGetUniformLocation(ourShader.ID ,"transform");
 		glUniformMatrix4fv(transformLoc ,1 ,GL_FALSE ,glm::value_ptr(transform));
 		
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES ,6 ,GL_UNSIGNED_INT,0);
+
+		// second transformation
+		transform = glm::mat4(1.0f);
+		transform = glm::translate(transform ,glm::vec3(-0.5 ,0.5 ,0.0f));
+		float scaleAmount = sin(glfwGetTime());
+		transform = glm::scale(transform ,glm::vec3(scaleAmount ,scaleAmount ,scaleAmount));
+		glUniformMatrix4fv(transformLoc ,1 ,GL_FALSE ,&transform[0][0]);
+
+		glDrawElements(GL_TRIANGLES ,6 ,GL_UNSIGNED_INT ,0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
