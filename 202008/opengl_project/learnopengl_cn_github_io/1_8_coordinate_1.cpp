@@ -7,7 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "raw/shader_s_1.h"
+#include "raw/shader_s_2.h"
 #include <iostream>
 #include <filesystem>
 
@@ -50,7 +50,7 @@ int main () {
 		std::cout << "Success initialize GLAD" << std::endl;	
 	}
 
-	Shader ourShader("./raw/5.1.texture.vs" ,"./raw/5.1.texture.fs");
+	Shader ourShader("./raw/6.1.coordinate.vs" ,"./raw/6.1.coordinate.fs");
 
 	float vertices[] = {
 		// position			// texture coords			
@@ -121,7 +121,7 @@ int main () {
 	}
 	stbi_image_free(data);
 	ourShader.use();
-	glUniform1i(glGetUniformLocation(ourShader.ID ,"texture1") ,0);
+	ourShader.setInt("texture1" ,0);
 	ourShader.setInt("texture2" ,1);
 	
 	while (!glfwWindowShouldClose(window)) {
@@ -134,18 +134,26 @@ int main () {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D ,texture2);
 		
-
-		glm::mat4 transform = glm::mat4(1.0f);
-
-		transform = glm::rotate(transform ,(float)glfwGetTime() ,glm::vec3(0.0f ,0.0f ,1.0f));
-		transform = glm::translate(transform ,glm::vec3(0.5f ,-0.5f ,0.0f));
 		ourShader.use();
 
-		unsigned int transformLoc = glGetUniformLocation(ourShader.ID ,"transform");
-		glUniformMatrix4fv(transformLoc ,1 ,GL_FALSE ,glm::value_ptr(transform));
-		
+		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 projection = glm::mat4(1.0f);
+
+		model = glm::rotate(model ,glm::radians(-55.0f) ,glm::vec3(1.0f ,0.0f ,0.0f));
+		view = glm::translate(view ,glm::vec3(0.0f ,0.0f ,-3.0f));
+		projection = glm::perspective(glm::radians(45.0f) ,(float)SRC_WIDTH / (float)SRC_HEIGHT ,0.1f ,100.0f);
+
+		unsigned int modelLoc = glGetUniformLocation(ourShader.ID ,"model");
+		unsigned int viewLoc = glGetUniformLocation(ourShader.ID ,"view");
+
+		glUniformMatrix4fv(modelLoc ,1 ,GL_FALSE ,glm::value_ptr(model));
+		glUniformMatrix4fv(viewLoc ,1 ,GL_FALSE ,&view[0][0]);
+
+		ourShader.setMat4("projection" ,projection);
+
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES ,6 ,GL_UNSIGNED_INT,0);
+		glDrawElements(GL_TRIANGLES ,6 ,GL_UNSIGNED_INT ,0);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
