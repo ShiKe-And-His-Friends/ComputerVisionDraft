@@ -50,6 +50,8 @@ int main () {
 		std::cout << "Success initialize GLAD" << std::endl;	
 	}
 
+	glEnable(GL_DEPTH_TEST);
+
 	Shader ourShader("./raw/6.3.coordinate.vs" ,"./raw/6.3.coordinate.fs");
 
 	float vertices[] = {
@@ -190,6 +192,9 @@ int main () {
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model ,cubePositions[i]);
 			float angle = 20.0f * i;
+			if (i % 3 == 0) {
+				angle = glfwGetTime() * 25.0f;
+			}
 			model = glm::rotate(model ,glm::radians(angle) ,glm::vec3(1.0f ,0.3f ,0.5f));
 			ourShader.setMat4("model" ,model);
 			glDrawArrays(GL_TRIANGLES ,0 ,36);
