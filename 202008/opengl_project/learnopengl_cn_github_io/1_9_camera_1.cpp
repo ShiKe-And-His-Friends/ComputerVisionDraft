@@ -32,7 +32,7 @@ int main () {
 	cout << "Initialize Forward apple compat." << endl;
 #endif
 
-	GLFWwindow* window = glfwCreateWindow(800 ,600 ,"LearnOpenGl" ,NULL ,NULL);
+	GLFWwindow* window = glfwCreateWindow(SRC_WIDTH ,SRC_HEIGHT ,"LearnOpenGl" ,NULL ,NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -50,11 +50,13 @@ int main () {
 		std::cout << "Success initialize GLAD" << std::endl;	
 	}
 
-	Shader ourShader("./raw/7.1.coordinate.vs" ,"./raw/7.1.coordinate.fs");
+	glEnable(GL_DEPTH_TEST);
+
+	Shader ourShader("./raw/7.1.camera.vs" ,"./raw/7.1.camera.fs");
 
 	float vertices[] = {
 		// position			// texture coords			
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
          0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
          0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
          0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
@@ -156,7 +158,7 @@ int main () {
 
 	data = stbi_load("/home/shike/Documents/computerVisionDraft/202008/opengl_project/learnopengl_cn_github_io/drawable/awesomeface.png" ,&width ,&height ,&nrChannels ,0);
 	if (data) {
-		glTexImage2D(GL_TEXTURE_2D ,0 ,GL_RGBA ,width ,height ,0 ,GL_RGBA ,GL_UNSIGNED_BYTE ,data);
+		glTexImage2D(GL_TEXTURE_2D ,0 ,GL_RGB ,width ,height ,0 ,GL_RGBA ,GL_UNSIGNED_BYTE ,data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	} else {
 		std::cout << "Failed to load texture" << std::endl;
@@ -167,7 +169,7 @@ int main () {
 	ourShader.setInt("texture2" ,1);
 	
 	// pass postion matrix to shader
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f) ,(float)SRC_HEIGHT ,0.1f ,100.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f) ,(float)SRC_WIDTH ,0.1f ,100.0f);
 	ourShader.setMat4("projection" ,projection);
 	
 	while (!glfwWindowShouldClose(window)) {
@@ -185,13 +187,13 @@ int main () {
 		glm::mat4 view = glm::mat4(1.0f);
 		float radians = 10.0f;
 		float camX = sin(glfwGetTime()) * radians;
-		float camY = cos(glfwGetTime()) * radians;
+		float camZ = cos(glfwGetTime()) * radians;
 		view = glm::lookAt(glm::vec3(camX ,0.0f ,camZ) ,glm::vec3(0.0f ,0.0f ,0.0f) ,glm::vec3(0.0f ,1.0f ,0.0f));
 		ourShader.setMat4("view" ,view);
 	
-		glBindVertexArray(AVO);
+		glBindVertexArray(VAO);
 		for (unsigned int i = 0 ; i < 10 ;i++) {
-			glm::vec4 model = glm::mat4(1.0f);
+			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model ,cubePositions[i]);
 			float angle = 20.0f * i;
 			model = glm::rotate(model ,glm::radians(angle) ,glm::vec3(1.0f ,0.3f ,0.5f));
