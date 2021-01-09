@@ -32,7 +32,7 @@ int main () {
 	cout << "Initialize Forward apple compat." << endl;
 #endif
 
-	GLFWwindow* window = glfwCreateWindow(800 ,600 ,"LearnOpenGl" ,NULL ,NULL);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH ,SCR_HEIGHT ,"LearnOpenGl" ,NULL ,NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -157,7 +157,7 @@ int main () {
 
 	data = stbi_load("/home/shike/Documents/computerVisionDraft/202008/opengl_project/learnopengl_cn_github_io/drawable/awesomeface.png" ,&width ,&height ,&nrChannels ,0);
 	if (data) {
-		glTexImage2D(GL_TEXTURE_2D ,0 ,GL_RGBA ,width ,height ,0 ,GL_RGBA ,GL_UNSIGNED_BYTE ,data);
+		glTexImage2D(GL_TEXTURE_2D ,0 ,GL_RGB ,width ,height ,0 ,GL_RGBA ,GL_UNSIGNED_BYTE ,data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	} else {
 		std::cout << "Failed to load texture" << std::endl;
