@@ -32,7 +32,7 @@ int main () {
 	cout << "Initialize Forward apple compat." << endl;
 #endif
 
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH ,SCR_HEIGHT ,"LearnOpenGl" ,NULL ,NULL);
+	GLFWwindow* window = glfwCreateWindow(SRC_WIDTH ,SRC_HEIGHT ,"LearnOpenGl" ,NULL ,NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -193,11 +193,9 @@ int main () {
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model ,cubePositions[i]);
 			float angle = 20.0f * i;
-			/**
-				if (i % 3 == 0) {
-					angle = glfwGetTime() * 25.0f;
-				}
-			**/
+			// if (i % 3 == 0) {
+				angle = glfwGetTime() * 25.0f;
+			// }
 			model = glm::rotate(model ,glm::radians(angle) ,glm::vec3(1.0f ,0.3f ,0.5f));
 			ourShader.setMat4("model" ,model);
 			glDrawArrays(GL_TRIANGLES ,0 ,36);
