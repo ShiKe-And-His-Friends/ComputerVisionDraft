@@ -169,7 +169,7 @@ int main () {
 	ourShader.setInt("texture2" ,1);
 	
 	// pass postion matrix to shader
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f) ,(float)SRC_WIDTH ,0.1f ,100.0f);
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f) ,(float)SRC_WIDTH/(float)SRC_HEIGHT ,0.1f ,100.0f);
 	ourShader.setMat4("projection" ,projection);
 	
 	while (!glfwWindowShouldClose(window)) {
