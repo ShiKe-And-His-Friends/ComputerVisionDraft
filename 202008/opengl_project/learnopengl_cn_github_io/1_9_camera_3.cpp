@@ -16,6 +16,8 @@
  */
 
 void framebuffer_size_callback(GLFWwindow* window ,int width ,int height);
+void mouse_callback(GLFWwindow* window ,double xpos ,double ypos);
+void scroll_callback(GLFWwindow* window ,double xoffset ,double yoffset);
 void processInput(GLFWwindow* windows);
 
 const unsigned int SRC_WIDTH = 800;
@@ -24,6 +26,13 @@ const unsigned int SRC_HEIGHT = 600;
 glm::vec3 cameraPos = glm::vec3(0.0f ,0.0f ,3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f ,0.0f ,-1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f ,1.0f ,0.0f);
+
+bool firstMouse = true;
+float yaw = -90.0f;
+float picth = 0.0f;
+float lastX = 800.0f / 2.0;
+float lastY = 600.0f / 2.0;
+float fov = 45.0f;
 
 float deletaTime = 0.0f;
 float lastFrame = 0.0f;
@@ -48,6 +57,8 @@ int main () {
 		std::cout << "Success to create GLFW window" << std::endl;
 	}
 	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetFramebufferSizeCallback(window ,framebuffer_size_callback);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -59,7 +70,7 @@ int main () {
 
 	glEnable(GL_DEPTH_TEST);
 
-	Shader ourShader("./raw/7.2.camera.vs" ,"./raw/7.2.camera.fs");
+	Shader ourShader("./raw/7.3.camera.vs" ,"./raw/7.3.camera.fs");
 
 	float vertices[] = {
 		// position			// texture coords			
@@ -175,11 +186,11 @@ int main () {
 	ourShader.setInt("texture1" ,0);
 	ourShader.setInt("texture2" ,1);
 	
-	// pass postion matrix to shader
-	glm::mat4 projection = glm::perspective(glm::radians(45.0f) ,(float)SRC_WIDTH/(float)SRC_HEIGHT ,0.1f ,100.0f);
-	ourShader.setMat4("projection" ,projection);
-	
 	while (!glfwWindowShouldClose(window)) {
+		float currentFrame = glfwGetTime();
+		deletaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+		
 		processInput(window);
 		glClearColor(0.2f ,0.3f ,0.3f ,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -191,7 +202,10 @@ int main () {
 		
 		ourShader.use();
 
-		view = glm::lookAt(cameraPos ,cameraPos + cameraFront ,cameraUp);
+		glm::mat4 projection = glm::perspective(glm::radians(fov) ,(float)SRC_WIDTH / (float)SRC_HEIGHT ,0.1f ,100.0f);
+		ourShader.setMat4("projection" ,projection);
+		
+		glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 		ourShader.setMat4("view" ,view);
 	
 		glBindVertexArray(VAO);
@@ -236,4 +250,46 @@ void processInput(GLFWwindow* window) {
 
 void framebuffer_size_callback(GLFWwindow* window ,int width ,int height) {
 	glViewport(0 ,0 ,width ,height);
+}
+
+void mouse_callback(GLFWwindow* window ,double xpos ,double ypos) {
+	if (firstMouse) {
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+	
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+	
+	float sensitivity = 0.1f;
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+	
+	yaw += xoffset;
+	picth += yoffset;
+	
+	if (picth > 89.0f) {
+		picth = 89.0f;
+	}
+	if (picth < -89.0f) {
+		picth = -89.0f;
+	}
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(picth));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(front);
+}
+
+void scroll_callback(GLFWwindow* window ,double xoffset ,double yoffset) {
+	fov -= (float)yoffset;
+	if (fov < 1.0f) {
+		fov = 1.0f;
+	}
+	if (fov > 45.0f) {
+		fov = 45.0f;
+	}
 }
