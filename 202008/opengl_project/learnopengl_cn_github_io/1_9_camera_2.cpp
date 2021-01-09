@@ -21,6 +21,13 @@ void processInput(GLFWwindow* windows);
 const unsigned int SRC_WIDTH = 800;
 const unsigned int SRC_HEIGHT = 600;
 
+glm::vec3 cameraPos = glm::vec3(0.0f ,0.0f ,3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f ,0.0f ,-1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f ,1.0f ,0.0f);
+
+float deletaTime = 0.0f;
+float lastFrame = 0.0f;
+
 int main () {
 
 	glfwInit();
@@ -52,7 +59,7 @@ int main () {
 
 	glEnable(GL_DEPTH_TEST);
 
-	Shader ourShader("./raw/7.1.camera.vs" ,"./raw/7.1.camera.fs");
+	Shader ourShader("./raw/7.2.camera.vs" ,"./raw/7.2.camera.fs");
 
 	float vertices[] = {
 		// position			// texture coords			
@@ -184,11 +191,7 @@ int main () {
 		
 		ourShader.use();
 
-		glm::mat4 view = glm::mat4(1.0f);
-		float radians = 10.0f;
-		float camX = sin(glfwGetTime()) * radians;
-		float camZ = cos(glfwGetTime()) * radians;
-		view = glm::lookAt(glm::vec3(camX ,0.0f ,camZ) ,glm::vec3(0.0f ,0.0f ,0.0f) ,glm::vec3(0.0f ,1.0f ,0.0f));
+		view = glm::lookAt(cameraPos ,cameraPos + cameraFront ,cameraUp);
 		ourShader.setMat4("view" ,view);
 	
 		glBindVertexArray(VAO);
@@ -215,6 +218,19 @@ int main () {
 void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window ,GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window ,true);
+	}
+	float cameraSend = 2.5 * deltaTime;
+	if (glfwGetKey(window ,GLFW_KEY_W) == GLFW_PRESS) {
+		cameraPos += cameraSend * cameraFront;
+	}
+	if (glfwGetKey(window ,GLFW_KEY_S) == GLFW_PRESS) {
+		cameraPos -= cameraSend * cameraFront;
+	}
+	if (glfwGetKey(window ,GLFW_KEY_A) == GLFW_PRESS) {
+		cameraPos -= glm::normalize(glm::cross(cameraFront ,cameraUp)) * cameraSpeed;
+	}
+	if (glfwGetKey(window ,GLFW_KEY_D) == GLFW_PRESS) {
+		cameraPos += glm::normalize(glm::cross(cameraFront ,cameraUp)) * cameraSpeed;
 	}
 }
 
