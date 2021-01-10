@@ -146,7 +146,7 @@ int main () {
 	
 	int width ,height ,nrChannels;
 	stbi_set_flip_vertically_on_load(true);
-	unsigned char* data = stbi_load("/home/shike/Documents/computerVisionDraft/202008/opengl_project/learnopengl_cn_github_io/drawable/container.jpg" ,&width ,&height ,&nrChannels ,0);
+	unsigned char* data = stbi_load("/home/sk95120/Documents/ComputerVisionDraft/202008/opengl_project/learnopengl_cn_github_io/drawable/container.jpg" ,&width ,&height ,&nrChannels ,0);
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D ,0 ,GL_RGB ,width ,height ,0 ,GL_RGB ,GL_UNSIGNED_BYTE ,data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -163,7 +163,7 @@ int main () {
 	glTexParameteri(GL_TEXTURE_2D ,GL_TEXTURE_MIN_FILTER ,GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D ,GL_TEXTURE_MAG_FILTER ,GL_LINEAR);
 
-	data = stbi_load("/home/shike/Documents/computerVisionDraft/202008/opengl_project/learnopengl_cn_github_io/drawable/awesomeface.png" ,&width ,&height ,&nrChannels ,0);
+	data = stbi_load("/home/sk95120/Documents/ComputerVisionDraft/202008/opengl_project/learnopengl_cn_github_io/drawable/awesomeface.png" ,&width ,&height ,&nrChannels ,0);
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D ,0 ,GL_RGB ,width ,height ,0 ,GL_RGBA ,GL_UNSIGNED_BYTE ,data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -180,6 +180,10 @@ int main () {
 	ourShader.setMat4("projection" ,projection);
 	
 	while (!glfwWindowShouldClose(window)) {
+		float currentFrame = glfwGetTime();
+		deletaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+		
 		processInput(window);
 		glClearColor(0.2f ,0.3f ,0.3f ,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -191,7 +195,7 @@ int main () {
 		
 		ourShader.use();
 
-		view = glm::lookAt(cameraPos ,cameraPos + cameraFront ,cameraUp);
+		glm::mat4 view = glm::lookAt(cameraPos ,cameraPos + cameraFront ,cameraUp);
 		ourShader.setMat4("view" ,view);
 	
 		glBindVertexArray(VAO);
@@ -219,12 +223,13 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window ,GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window ,true);
 	}
-	float cameraSend = 2.5 * deltaTime;
+	float cameraSpeed = 2.5 * deletaTime;
 	if (glfwGetKey(window ,GLFW_KEY_W) == GLFW_PRESS) {
-		cameraPos += cameraSend * cameraFront;
+		cameraPos += cameraSpeed * cameraFront;
+		std::cout << "press w " << cameraSpeed << std::endl;
 	}
 	if (glfwGetKey(window ,GLFW_KEY_S) == GLFW_PRESS) {
-		cameraPos -= cameraSend * cameraFront;
+		cameraPos -= cameraSpeed * cameraFront;
 	}
 	if (glfwGetKey(window ,GLFW_KEY_A) == GLFW_PRESS) {
 		cameraPos -= glm::normalize(glm::cross(cameraFront ,cameraUp)) * cameraSpeed;
