@@ -22,7 +22,7 @@ void scroll_callback(GLFWwindow* window ,double xoffset ,double yoffset);
 void processInput(GLFWwindow* windows);
 
 const unsigned int SRC_WIDTH = 800;
-const unsigned int  = 600;
+const unsigned int SRC_HEIGHT = 600;
 
 Camera camera(glm::vec3(0.0f ,0.0f ,3.0f));
 bool firstMouse = true;
