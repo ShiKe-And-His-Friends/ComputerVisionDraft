@@ -26,8 +26,8 @@ const unsigned int SRC_HEIGHT = 600;
 
 Camera camera(glm::vec3(0.0f ,0.0f ,3.0f));
 bool firstMouse = true;
-float lastX = SRC_WIDTH / 2.0;
-float lastY = SRC_HEIGHT / 2.0;
+float lastX = SRC_WIDTH / 2.0f;
+float lastY = SRC_HEIGHT / 2.0f;
 
 float deletaTime = 0.0f;
 float lastFrame = 0.0f;

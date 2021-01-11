@@ -39,6 +39,7 @@ public:
 		, MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM) {
 		Position = position;
 		WorldUp = up;
+		Yaw = yaw;
 		Pitch = pitch;
 		updateCameraVectors();
 	}
@@ -48,6 +49,7 @@ public:
 		Position = glm::vec3(posX ,posY ,posZ);
 		WorldUp = glm::vec3(upX ,upY ,upZ);
 		Yaw = yaw;
+		Pitch = pitch;
 		updateCameraVectors();
 	}
 	
@@ -64,10 +66,10 @@ public:
 			Position -= Front * velocity;
 		}
 		if (direction == LEFT) {
-			Position += Right * velocity;
+			Position -= Right * velocity;
 		}
 		if (direction == RIGHT) {
-			Position -= Right * velocity;
+			Position += Right * velocity;
 		}
 	}
 	
