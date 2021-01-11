@@ -8,7 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "raw/shader_s_2.h"
-#include "raw/camera.h"
+#include "raw/camera_2.h"
 #include <iostream>
 #include <filesystem>
 
