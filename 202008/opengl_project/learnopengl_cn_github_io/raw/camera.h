@@ -71,6 +71,9 @@ public:
 		if (direction == RIGHT) {
 			Position += Right * velocity;
 		}
+		
+		// at ground line
+		//Position.y = 0.0f;
 	}
 	
 	void ProcessMouseMovement(float xoffset ,float yoffset ,GLboolean constrainPitch = true) {
