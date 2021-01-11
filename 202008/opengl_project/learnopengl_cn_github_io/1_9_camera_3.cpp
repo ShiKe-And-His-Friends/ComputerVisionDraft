@@ -233,12 +233,12 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window ,GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window ,true);
 	}
-	float cameraSend = 2.5 * deltaTime;
+	float cameraSpeed = 2.5 * deltaTime;
 	if (glfwGetKey(window ,GLFW_KEY_W) == GLFW_PRESS) {
-		cameraPos += cameraSend * cameraFront;
+		cameraPos += cameraSpeed * cameraFront;
 	}
 	if (glfwGetKey(window ,GLFW_KEY_S) == GLFW_PRESS) {
-		cameraPos -= cameraSend * cameraFront;
+		cameraPos -= cameraSpeed * cameraFront;
 	}
 	if (glfwGetKey(window ,GLFW_KEY_A) == GLFW_PRESS) {
 		cameraPos -= glm::normalize(glm::cross(cameraFront ,cameraUp)) * cameraSpeed;
