@@ -60,7 +60,8 @@ int main () {
 	}
 	glEnable(GL_DEPTH_TEST);
 	
-	Shader lightingShader("./raw/2.2.basic_lighting.vs" ,"./raw/2.2.basic_lighting.fs");
+	// 2.2.basic_lighting_exerices2.vs  2.2.basic_lighting_exerices2.fs
+	Shader lightingShader("./raw/2.2.basic_lighting_exerices2.vs" ,"./raw/2.2.basic_lighting_exerices2.fs");
 	Shader lightCubeShader("./raw/2.2.light_cube.vs" ,"./raw/2.2.light_cube.fs");
 	
 	float vertices[] = {
@@ -139,10 +140,12 @@ int main () {
 		
 		glClearColor(0.1f ,0.1f ,0.1f ,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-		lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
-		lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
-		
+	
+		/**
+			lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
+			lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
+		*/
+
 		lightingShader.use();
 		lightingShader.setVec3("objectColor" ,1.0f ,0.5f ,0.31f);
 		lightingShader.setVec3("lightColor" ,1.0f ,1.0f ,1.0f);
