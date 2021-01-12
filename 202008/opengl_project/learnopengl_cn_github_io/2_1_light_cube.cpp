@@ -1,5 +1,5 @@
 #include <glad/glad.h>
-#include <GLFW/glfw3.hpp>
+#include <GLFW/glfw3.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -25,7 +25,7 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-glm::vec3 lighrPos(1.2f ,1.0f ,2.0f);
+glm::vec3 lightPos(1.2f ,1.0f ,2.0f);
 
 int main () {
 	glfwInit();
@@ -39,24 +39,24 @@ int main () {
 
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH ,SCR_HEIGHT ,"LearnOpenGL" ,NULL ,NULL);
 	if (window == NULL) {
-		std::out << "GLFW Window init failure." << std::endl;
+		std::cout << "GLFW Window init failure." << std::endl;
 		glfwTerminate();
 		return -1;
 	} else {
-		std::out << "GLFW Window init success." << std::endl;
+		std::cout << "GLFW Window init success." << std::endl;
 	}
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window ,framebuffer_size_callback);
 	glfwSetCursorPosCallback(window ,mouse_callback);
 	glfwSetScrollCallback(window ,scroll_callback);
 	
-	glfwSetInoutMode(window ,GLFW_CURSOR ,GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window ,GLFW_CURSOR ,GLFW_CURSOR_DISABLED);
 	
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		std::out << "Initialize GLAD failure." << std::endl;
+		std::cout << "Initialize GLAD failure." << std::endl;
 		return -1;
 	} else {
-		std::out << "Initialize GLAD success." << std::endl;
+		std::cout << "Initialize GLAD success." << std::endl;
 	}
 	glEnable(GL_DEPTH_TEST);
 	
@@ -114,14 +114,14 @@ int main () {
 	glBindBuffer(GL_ARRAY_BUFFER ,VBO);
 	glBufferData(GL_ARRAY_BUFFER ,sizeof(vertices) ,vertices ,GL_STATIC_DRAW);
 	
-	glBindVertextArray(cubeVAO);
+	glBindVertexArray(cubeVAO);
 	
 	glVertexAttribPointer(0 ,3 ,GL_FLOAT ,GL_FALSE ,3*sizeof(float) ,(void*)0);
 	glEnableVertexAttribArray(0);
 	
 	unsigned int lightCubeVAO;
 	glGenVertexArrays(1 ,&lightCubeVAO);
-	glBindVertextArray(lightCubeVAO);
+	glBindVertexArray(lightCubeVAO);
 	
 	glBindBuffer(GL_ARRAY_BUFFER ,VBO);
 	
@@ -178,16 +178,16 @@ void processInput(GLFWwindow* window) {
 		glfwSetWindowShouldClose(window ,true);
 	}
 	if (glfwGetKey(window ,GLFW_KEY_W) == GLFW_PRESS) {
-		camera.ProcessKeyboard(FORWARD ,deltaTime);
+		camera.ProcessKeyBoard(FORWARD ,deltaTime);
 	}
 	if (glfwGetKey(window ,GLFW_KEY_S) == GLFW_PRESS) {
-		camera.ProcessKeyboard(BACKWARD ,deltaTime);
+		camera.ProcessKeyBoard(BACKWARD ,deltaTime);
 	}
 	if (glfwGetKey(window ,GLFW_KEY_A) == GLFW_PRESS) {
-		camera.ProcessKeyboard(LEFT ,deltaTime);
+		camera.ProcessKeyBoard(LEFT ,deltaTime);
 	}
 	if (glfwGetKey(window ,GLFW_KEY_D) == GLFW_PRESS) {
-		camera.ProcessKeyboard(RIGHT ,deltaTime);
+		camera.ProcessKeyBoard(RIGHT ,deltaTime);
 	}
 }
 
@@ -202,7 +202,7 @@ void mouse_callback(GLFWwindow* window ,double xpos ,double ypos) {
 		firstMouse = false;
 	}
 	float xoffset = xpos - lastX;
-	float yoffset = lastX - ypos;
+	float yoffset = lastY - ypos;
 	lastX = xpos;
 	lastY = ypos;
 	camera.ProcessMouseMovement(xoffset ,yoffset);

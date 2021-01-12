@@ -40,7 +40,7 @@ enum Camera_Movement {
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
 const float SPEED = 2.5f;
-const float SENSITIVITY = 0.1f;
+const float SENSITIVITY = 0.008f;
 const float ZOOM = 45.0f;
 
 class Camera {
@@ -103,7 +103,7 @@ public:
 	void ProcessMouseMovement(float xoffset ,float yoffset ,GLboolean constrainPitch = true) {
 		xoffset *= MouseSensitivity;
 		yoffset *= MouseSensitivity;
-		
+
 		Yaw += xoffset;
 		Pitch += yoffset;
 		
