@@ -61,7 +61,7 @@ int main () {
 	glEnable(GL_DEPTH_TEST);
 	
 	Shader lightingShader("./raw/3.1.materials.vs" ,"./raw/3.1.materials.fs");
-	Shader lightCubeShader("./raw/3.light_cube.vs" ,"./raw/3.1.light_cube.fs");
+	Shader lightCubeShader("./raw/3.1.light_cube.vs" ,"./raw/3.1.light_cube.fs");
 	
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
@@ -139,11 +139,8 @@ int main () {
 		
 		glClearColor(0.1f ,0.1f ,0.1f ,1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-		/**
-			lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
-			lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
-		*/
+		lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
+		lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
 
 		lightingShader.use();
 		lightingShader.setVec3("light.position" ,lightPos);
