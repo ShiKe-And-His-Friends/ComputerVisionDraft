@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 14)
-project(2_4_light_map_diffuse)
+project(2_4_light_map_specular)
 find_package(glfw3 REQUIRED)
 file(GLOB project_file
 	glad.c
-	2_4_light_map_diffuse.cpp)
+	2_4_light_map_specular.cpp)
 add_executable(${PROJECT_NAME} ${project_file})
 
 target_link_libraries(
