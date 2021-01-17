@@ -64,7 +64,7 @@ public:
 			} else if (name == "texture_height") {
 				number == std::to_string(heightNr++);
 			} 
-			glUniform1i(glgetUniformLocation(shader.ID ,(name+number).c_str() ,i));
+			glGetUniformLocation(shader.ID ,(name+number).c_str() ,i);
 			glBindTexture(GL_TEXTURE0 ,textures[i].id);
 		}
 		
