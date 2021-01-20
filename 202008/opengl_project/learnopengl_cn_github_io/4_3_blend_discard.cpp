@@ -169,10 +169,10 @@ int main () {
     // load textures
     // -------------
     unsigned int cubeTexture = loadTexture("./drawable/marble.jpg");
-    unsigned int floorTexture = loadTexture("./drawable/metal.png");
+    unsigned int floorTexture = loadTexture("./drawable/metal.jpg");
     unsigned int transparentTexture = loadTexture("./drawable/grass.png");
 	
-	 vector<glm::vec3> vegetation 
+   std::vector <glm::vec3> vegetation 
     {
         glm::vec3(-1.5f, 0.0f, -0.48f),
         glm::vec3( 1.5f, 0.0f, 0.51f),
