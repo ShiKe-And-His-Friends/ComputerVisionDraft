@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <stb_image.h>
+#include "stb_image.h"
 #include <assimp/Importer.hpp>
 #include <assimp/scenc.hpp>
 #include <assimp/postprocess.h>

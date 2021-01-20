@@ -10,7 +10,6 @@
 
 #include "raw/shader_s_2.h"
 #include "raw/camera_2.h"
-#include "raw/model.h"
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window ,int width ,int height);
@@ -63,9 +62,9 @@ int main () {
 	}
 	
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_ALWAYS);
+	glDepthFunc(GL_LESS);
 	
-	Shader lightingShader("./raw/1.1.depth_testing.vs" ,"./raw/1.1.depth_testing.fs");
+	Shader shader("./raw/1.1.depth_testing.vs" ,"./raw/1.1.depth_testing.fs");
 	float cubeVertices[] = {
         // positions          // texture Coords
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -133,7 +132,7 @@ int main () {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glBindVertexArray(0);
 	
-	// plane VAO
+    // plane VAO
     unsigned int planeVAO, planeVBO;
     glGenVertexArrays(1, &planeVAO);
     glGenBuffers(1, &planeVBO);
@@ -145,10 +144,10 @@ int main () {
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glBindVertexArray(0);
-	unsigned int cubeTexture  = loadTexture("./raw/marble.jpg");
-    unsigned int floorTexture = loadTexture("./raw/metal.jpg");
-	
-	shader.use();
+    unsigned int cubeTexture  = loadTexture("./drawable/marble.jpg");
+    unsigned int floorTexture = loadTexture("./drawable/metal.jpg");
+
+    shader.use();
     shader.setInt("texture1", 0);
 	
 	while(!glfwWindowShouldClose(window)) {
@@ -190,8 +189,9 @@ int main () {
 	}
 	
 	glDeleteVertexArrays(1 ,&cubeVAO);
-	glDeleteVertexArrays(1 ,&lightCubeVAO);
-	glGenBuffers(1 ,&VBO);
+	glDeleteVertexArrays(1 ,&planeVAO);
+	glDeleteBuffers(1 ,&cubeVBO);
+	glDeleteBuffers(1 ,&planeVBO);
 	
 	glfwTerminate();
 	return 0;
