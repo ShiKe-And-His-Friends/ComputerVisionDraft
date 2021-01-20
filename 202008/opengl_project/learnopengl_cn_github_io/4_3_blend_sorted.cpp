@@ -65,7 +65,7 @@ int main () {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	Shader shader("./raw/3.1.blending.vs" ,"./raw/3.2.blending.fs");
+	Shader shader("./raw/3.1.blending.vs" ,"./raw/3.1.blending.fs");
 
 	float cubeVertices[] = {
         // positions          // texture Coords
@@ -171,10 +171,10 @@ int main () {
     // load textures
     // -------------
     unsigned int cubeTexture = loadTexture("./drawable/marble.jpg");
-    unsigned int floorTexture = loadTexture("./drawable/metal.png");
+    unsigned int floorTexture = loadTexture("./drawable/metal.jpg");
     unsigned int transparentTexture = loadTexture("./drawable/blending_transparent_window.png");
 	
-	 vector<glm::vec3> vegetation 
+   std::vector <glm::vec3> vegetation 
     {
         glm::vec3(-1.5f, 0.0f, -0.48f),
         glm::vec3( 1.5f, 0.0f, 0.51f),
