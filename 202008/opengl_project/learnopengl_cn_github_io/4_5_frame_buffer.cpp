@@ -64,7 +64,7 @@ int main () {
 	glEnable(GL_DEPTH_TEST);
 	
 	Shader shader("./raw/5.1.framebuffers.vs" ,"./raw/5.1.framebuffers.fs");
-	Shader screenShader("./raw/5.1.framebuffers_screen.vs" ,"./raw/5.1.framebuffers_screen.fs");
+	Shader screenShader("./raw/5.1.framebuffers_screen.vs" ,"./raw/5.1.framebuffers_screen_3.fs");
 
 	float cubeVertices[] = {
 		// Back face
