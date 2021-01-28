@@ -22,7 +22,7 @@ message(STATUS "    libraries: ${OpenCV_LIBS}")
 message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
 # Declare the executable target built from your sources
-add_executable(grabcut ../grabcut.cpp)
+add_executable(add_images_track ../grabcut.cpp)
 
 # Link your application with OpenCV libraries
 target_link_libraries(grabcut  PRIVATE ${OpenCV_LIBS})
