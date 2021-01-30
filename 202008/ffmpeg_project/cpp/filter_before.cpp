@@ -4,6 +4,7 @@ extern "C" {
 	#include <libavfilter/avfilter.h>
 	#include <libavfilter/buffersrc.h>
 	#include <libavfilter/buffersink.h>
+	#include <libavutil/channel_layout.h>	
 	#include <libavutil/samplefmt.h>
 	#include <libavutil/opt.h>
 	#include <libavutil/md5.h>
@@ -16,8 +17,8 @@ extern "C" {
 #define INPUT_SAMPLERATE 48000
 #define INPUT_FORMAT AV_SAMPLE_FMT_FLTP
 #define INPUT_CHANNEL_LAYOUT AV_CH_LAYOUT_5POINT0
-#define VOLUME_VAL 1.0f
-#define FRAME_SIZE 64
+#define VOLUME_VAL 0.9
+#define FRAME_SIZE 2048
 
 using namespace std;
 
@@ -26,8 +27,8 @@ static int init_filter_graph(AVFilterGraph** graphInf ,AVFilterContext** bufferI
 	AVFilterGraph* filter_graph;
 	const AVFilter* abuffer;
 	AVFilterContext* abufferContext;
-	//const AVFilter* volume;
-	//AVFilterContext* volmueContext;
+	const AVFilter* volume;
+	AVFilterContext* volumeContext;
 	AVDictionary* dictionary = nullptr;
 	const AVFilter* format;
 	AVFilterContext* formatContext;
@@ -35,13 +36,12 @@ static int init_filter_graph(AVFilterGraph** graphInf ,AVFilterContext** bufferI
 	AVFilterContext* abuffersinkContext;
 
 	int err;
-	char ch_layout[1024];
-	char option_str[64];
-	char option_str_2[64];
+	char ch_layout[64];
+	char option_str[2048];
 
 	filter_graph = avfilter_graph_alloc();
 	if (filter_graph == nullptr || !filter_graph) {
-		cout << "init filter graph failure." << endl;
+		cout << "init abuffer filter graph failure." << endl;
 		return AVERROR(ENOMEM);
 	}
 
@@ -51,7 +51,7 @@ static int init_filter_graph(AVFilterGraph** graphInf ,AVFilterContext** bufferI
 		return AVERROR(ENOMEM);
 	}
 
-	abufferContext = avfilter_graph_alloc_filter(filter_graph ,abuffer ,"bufferInf");
+	abufferContext = avfilter_graph_alloc_filter(filter_graph ,abuffer ,"src");
 	if (abufferContext == nullptr || !abufferContext) {
 		cout << "init abuffer filter context failure." << endl;
 		return AVERROR(ENOMEM);
@@ -71,62 +71,58 @@ static int init_filter_graph(AVFilterGraph** graphInf ,AVFilterContext** bufferI
 	}
 
 	// different way set this
+	volume = avfilter_get_by_name("volume");
+	if (volume == nullptr || !volume) {
+		cout << "init volume filter failure." << endl;
+		return AVERROR(ENOMEM);
+	}
+	volumeContext = avfilter_graph_alloc_filter(filter_graph, volume, "volume");
+	if (volumeContext == nullptr || !volumeContext) {
+		cout << "init volume filter context failure." << endl;
+		return AVERROR(ENOMEM);
+	}
+	av_opt_set(volumeContext, "volume", AV_STRINGIFY(VOLUME_VAL), AV_OPT_SEARCH_CHILDREN);
+
 	/*
-		volume = avfilter_get_by_name("volume");
-		if (volume == nullptr || !volume) {
-			cout << "init volume filter failure." << endl;
-			return AVERROR(ENOMEM);
-		}
-		volmueContext = avfilter_graph_alloc_filter(filter_graph, volume, "volume");
-		if (volmueContext == nullptr || !volmueContext) {
-			cout << "init volume filter context failure." << endl;
-			return AVERROR(ENOMEM);
-		}
-	*/
-	
-	/**
 		av_dict_set(&dictionary, "volume", AV_STRINGIFY(VOLUME_VAL), 0);
-		err = avfilter_init_dict(volmueContext , &dictionary);
+		err = avfilter_init_dict(volumeContext , &dictionary);
 		av_dict_free(&dictionary);
-	**/
-
-	/*
-		snprintf((char*)option_str_2, sizeof(option_str_2), "volume=0.9000");
-		err = avfilter_init_str(volmueContext, (char*)option_str_2);
-
-		if (err < 0) {
-			cout << "volume filter config failure." << endl;
-			return err;
-		}
 	*/
-
+	err = avfilter_init_str(volumeContext, NULL);
+	if (err < 0) {
+		cout << "volume filter config failure." << endl;
+		return err;
+	}
 
 	// set avformat
-	format = avfilter_get_by_name("format");
+	format = avfilter_get_by_name("aformat");
 	if (format == nullptr || !format) {
 		cout << "init format filter failure." << endl;
 		return AVERROR(ENOMEM);
 	}
-	formatContext = avfilter_graph_alloc_filter(filter_graph, format, "format");
+	formatContext = avfilter_graph_alloc_filter(filter_graph, format, "aformat");
 	if (formatContext == nullptr || !formatContext) {
 		cout << "init format filter context failure." << endl;
 		return AVERROR(ENOMEM);
 	}
 
 	////third way set option
-	//snprintf(option_str ,sizeof(option_str) , "sample_fmts=%s|sample_rates=%d|channel_layouts=0x%" PRIx64 ,av_get_sample_fmt_name(AV_SAMPLE_FMT_S16) ,44100 ,(uint64_t)AV_CH_LAYOUT_STEREO);
-	//err = avfilter_init_str(formatContext ,option_str);
-	//if (err < 0) {
-	//	cout << "format filter config failure." << endl;
-	//	return err;
-	//}
+	snprintf(option_str ,sizeof(option_str) , "sample_fmts=%s : sample_rates=%d : channel_layouts=0x%" PRIx64,
+		av_get_sample_fmt_name(AV_SAMPLE_FMT_S16),
+		44100,
+		(uint64_t)AV_CH_LAYOUT_STEREO);
+	err = avfilter_init_str(formatContext ,option_str);
+	if (err < 0) {
+		cout << "format filter config failure." << endl;
+		return err;
+	}
 
 	abuffersink = avfilter_get_by_name("abuffersink");
 	if (abuffersink == nullptr || !abuffersink) {
 		cout << "init abuffer filter failure." << endl;
 		return AVERROR(ENOMEM);
 	}
-	abuffersinkContext = avfilter_graph_alloc_filter(filter_graph, abuffersink, "sinkInf");
+	abuffersinkContext = avfilter_graph_alloc_filter(filter_graph, abuffersink, "sink");
 	if (abuffersinkContext == nullptr || !abuffersinkContext) {
 		cout << "init abuufersink filter context failure." << endl;
 		return AVERROR(ENOMEM);
@@ -140,14 +136,11 @@ static int init_filter_graph(AVFilterGraph** graphInf ,AVFilterContext** bufferI
 	}
 
 	// connect the filters in this chain samples case from a linear chain.
-	err = avfilter_link(abufferContext,0 ,/*volmueContext*/formatContext ,0);
-
-	/*
-		if (err > 0) {
-			err = avfilter_link(volmueContext, 0, formatContext, 0);
-		}
-	*/
-	if (err > 0) {
+	err = avfilter_link(abufferContext,0 , volumeContext,0);
+	if (err >= 0) {
+		err = avfilter_link(volumeContext, 0, formatContext, 0);
+	}
+	if (err >= 0) {
 		err = avfilter_link(formatContext, 0, abuffersinkContext, 0);
 	}
 	if (err < 0) {
@@ -166,6 +159,7 @@ static int init_filter_graph(AVFilterGraph** graphInf ,AVFilterContext** bufferI
 }
 
 static int process_output(struct AVMD5* md5 ,AVFrame* frame) {
+	cout << "shikDebug output is " << endl;
 	int planar = av_sample_fmt_is_planar((AVSampleFormat)frame->format);
 	int channels = av_get_channel_layout_nb_channels(frame->channel_layout);
 	int planes = planar ? channels : 1;
@@ -187,23 +181,36 @@ static int process_output(struct AVMD5* md5 ,AVFrame* frame) {
 }
 
 static int get_input(AVFrame* frame ,int frame_num) {
-	int ret ,i ,j;
+	int ret;
+	uint8_t i, j;
 	frame->sample_rate = INPUT_SAMPLERATE;
 	frame->format = INPUT_FORMAT;
 	frame->channel_layout = INPUT_CHANNEL_LAYOUT;
 	frame->nb_samples = FRAME_SIZE;
-	frame->pts = frame_num * FRAME_SIZE;
+	frame->pts = static_cast<int64_t>(frame_num * FRAME_SIZE);
 	ret = av_frame_get_buffer(frame ,0);
 	if (ret < 0) {
 		return ret;
 	}
 
+	/*
+		for (i = 0; i < 5; i++) {
+			float* data = (float*)frame->extended_data[i];
+			for (j = 0; j < frame->nb_samples; j++) {
+				data[j] = sin(2 * M_PI * (frame_num + j) * (i + 1) / FRAME_SIZE);
+			}
+		}
+	*/
+
+	uint8_t** data = frame->extended_data;
 	for (i = 0; i < 5; i++) {
-		float* data = (float*)frame->extended_data[i];
 		for (j = 0; j < frame->nb_samples; j++) {
-			data[j] = sin(2 * M_PI * (frame_num + j) * (i + 1) / FRAME_SIZE);
+			(data[i][j]) = (uint8_t)sin(2 * M_PI * (frame_num + j) * (i + 1) / FRAME_SIZE);
+			cout << "shikeDebug size is  values result " << (data[i][j]) << endl;
 		}
 	}
+
+	cout << "shikeDebug size is ====================="<< endl;
 	return 0;
 }
 
@@ -280,9 +287,10 @@ int main (int argc ,char** argv) {
 		}
 	}
 
+	cout << "release success. " << av_version_info() << endl;
 	avfilter_graph_free(&graph);
 	av_frame_free(&frame);
-	av_free(&md5);
+
 	return 0;
 
 fail:
