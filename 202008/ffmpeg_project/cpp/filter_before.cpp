@@ -159,7 +159,6 @@ static int init_filter_graph(AVFilterGraph** graphInf ,AVFilterContext** bufferI
 }
 
 static int process_output(struct AVMD5* md5 ,AVFrame* frame) {
-	cout << "shikDebug output is " << endl;
 	int planar = av_sample_fmt_is_planar((AVSampleFormat)frame->format);
 	int channels = av_get_channel_layout_nb_channels(frame->channel_layout);
 	int planes = planar ? channels : 1;
@@ -170,19 +169,18 @@ static int process_output(struct AVMD5* md5 ,AVFrame* frame) {
 		uint8_t checksum[16];
 		av_md5_init(md5);
 		av_md5_sum(checksum, frame->extended_data[i], plane_size);
-		cout << "plane :" << i << " 0 x";
+		fprintf(stdout, "plane %d: 0x", i);
 		for (j = 0; j < sizeof(checksum); j++) {
-			cout << "" << checksum[j];
+			fprintf(stdout, "%02X", checksum[j]);
 		}
-		cout << endl;
+		fprintf(stdout, "\n");
 	}
-	cout << endl;
 	return 0;
 }
 
 static int get_input(AVFrame* frame ,int frame_num) {
 	int ret;
-	uint8_t i, j;
+	int i, j;
 	frame->sample_rate = INPUT_SAMPLERATE;
 	frame->format = INPUT_FORMAT;
 	frame->channel_layout = INPUT_CHANNEL_LAYOUT;
@@ -193,24 +191,25 @@ static int get_input(AVFrame* frame ,int frame_num) {
 		return ret;
 	}
 
+	for (i = 0; i < 5; i++) {
+		float* data = (float*)frame->extended_data[i];
+		for (j = 0; j < frame->nb_samples; j++) {
+			data[j] = sin(2 * M_PI * (frame_num + j) * (i + 1) / FRAME_SIZE);
+			//cout << "values is " << (data[j]) << endl;
+		}
+	}
+
+	// not alloc continuous arrays
 	/*
+		uint8_t** data = frame->extended_data;
 		for (i = 0; i < 5; i++) {
-			float* data = (float*)frame->extended_data[i];
 			for (j = 0; j < frame->nb_samples; j++) {
-				data[j] = sin(2 * M_PI * (frame_num + j) * (i + 1) / FRAME_SIZE);
+				(data[i][j]) = (uint8_t)sin(2 * M_PI * (frame_num + j) * (i + 1) / FRAME_SIZE);
+				cout << "shikeDebug size is  values result " << (data[i][j]) << endl;
 			}
 		}
 	*/
 
-	uint8_t** data = frame->extended_data;
-	for (i = 0; i < 5; i++) {
-		for (j = 0; j < frame->nb_samples; j++) {
-			(data[i][j]) = (uint8_t)sin(2 * M_PI * (frame_num + j) * (i + 1) / FRAME_SIZE);
-			cout << "shikeDebug size is  values result " << (data[i][j]) << endl;
-		}
-	}
-
-	cout << "shikeDebug size is ====================="<< endl;
 	return 0;
 }
 
@@ -267,7 +266,7 @@ int main (int argc ,char** argv) {
 			cout << "Error submitting the frame to filtring." << endl << endl;
 			av_frame_unref(frame);
 		}
-		while ((ret = av_buffersink_get_frame(sink, frame)) > 0) {
+		while ((ret = av_buffersink_get_frame(sink, frame)) >= 0) {
 			ret = process_output(md5, frame);
 			if (ret < 0) {
 				cout << "Error processing output data." << endl << endl;
