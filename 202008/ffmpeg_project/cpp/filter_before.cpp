@@ -213,7 +213,7 @@ static int get_input(AVFrame* frame ,int frame_num) {
 	return 0;
 }
 
-int main (int argc ,char** argv) {
+int main_audio_filter (int argc ,char** argv) {
 	int duration = 0 ,nb_frame ,i;
 	int ret = -1;
 	char errstr[1024];
