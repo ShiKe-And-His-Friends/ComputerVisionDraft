@@ -21,8 +21,7 @@ static int open_input_file(const char *filename) {
 	AVCodec *dec;
 	if ((ret = avformat_open_input(&fmt_ctx ,filename ,NULL ,NULL)) < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Cannot open input file\n");
-		return ret;
-	}
+		return ret
 	if ((ret = avformat_find_stream_info(fmt_ctx ,NULL)) < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Cannot find stream information\n");
 		return ret;
@@ -79,6 +78,13 @@ static int init_filters(const char *filters_descr) {
 		av_log(NULL ,AV_LOG_ERROR ,"Cannot create audio buffer source.\n");
 		goto end;
 	}
+	/* buffer audio sink: to terminate the filter chain. */
+    ret = avfilter_graph_create_filter(&buffersink_ctx, abuffersink, "out",
+                                       NULL, NULL, filter_graph);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Cannot create audio buffer sink\n");
+        goto end;
+    }
 	ret = av_opt_set_int_list(buffersink_ctx ,"sample_fmts" ,out_sample_fmts ,-1 ,AV_OPT_SEARCH_CHILDREN);
 	if (ret < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Cannot set output sample format\n");
