@@ -3,6 +3,7 @@ extern "C" {
 	#include <libavutil/frame.h>
 	#include <libavutil/md5.h>
 }
+
 #include <iostream>
 #include <stdlib.h>
 #include <math.h>
@@ -30,6 +31,7 @@ static void decode(AVCodecContext* dec_ctx ,AVPacket* pkt ,AVFrame* frame ,FILE*
 			fprintf(stderr, "Error during decode\n");
 			exit(1);
 		}
+		data_size = av_get_bytes_per_sample(dec_ctx->sample_fmt);
 		if (data_size < 0) {
 			fprintf(stderr, "Failed to calculate data size\n");
 			exit(1);
@@ -58,12 +60,12 @@ int main(int argc ,char** argv) {
 
 	if (argc <= 2) {
 		fprintf(stderr ,"Usage: %s <input_file> <ouput_file>\n" ,argv[0]);
-		exit(0);
+		exit(2);
 	}
 	filename = argv[1];
 	outfilename = argv[2];
 	packet = av_packet_alloc();
-	codec = avcodec_find_decoder(AV_CODEC_ID_MP3);
+	codec = avcodec_find_decoder(AV_CODEC_ID_MP2);
 	if (!codec) {
 		fprintf(stderr ,"Parser not found.\n");
 		return -1;
@@ -82,12 +84,12 @@ int main(int argc ,char** argv) {
 		fprintf(stderr, "open file failure.\n");
 		return -1;
 	}
-	file = fopen(filename ,"rb");
+	fopen_s(&file ,filename ,"rb");
 	if (!file) {
 		fprintf(stderr, "can not open file %s.\n" ,filename);
 		return -1;
 	}
-	outfile = fopen(outfilename, "wb");
+	fopen_s(&outfile,outfilename, "wb");
 	if (!outfile) {
 		fprintf(stderr, "can not open output file %s.\n", outfilename);
 		return -1;
@@ -114,7 +116,7 @@ int main(int argc ,char** argv) {
 		if (data_size < AUDIO_REFILL_THRESH) {
 			memmove(inbuf ,data ,data_size);
 			data = inbuf;
-			len = fread(data + data_size ,1 ,AUDIO_INBUF_SIZE - data_size ,f);
+			len = fread(data + data_size ,1 ,AUDIO_INBUF_SIZE - data_size ,file);
 			if (len > 0) {
 				data_size += len;
 			}
