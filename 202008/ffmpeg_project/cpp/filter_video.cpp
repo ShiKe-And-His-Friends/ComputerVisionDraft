@@ -19,16 +19,18 @@ extern "C" {
 #define INPUT_CHANNEL_LAYOUT AV_CH_LAYOUT_5POINT0
 #define VOLUME_VAL 0.9
 #define FRAME_SIZE 2048
+#
 
 using namespace std;
 
-int audio_stream_index = -1;
+int video_stream_index = -1;
 static AVFormatContext* aformatCtx;
 static AVCodecContext* acodecCtx;
 const static AVCodecParameters* acodecParams;
 AVFilterContext* abufferFilterCtx;
 AVFilterContext* sinkFilterCtx;
 AVFilterGraph* filterGrap;
+static int64_t last_pts = AV_NOPTS_VALUE;
 
 static int init_filter(const char* filter_detscr) {
 
@@ -38,11 +40,9 @@ static int init_filter(const char* filter_detscr) {
 	const AVFilter* abuffersink = avfilter_get_by_name("abuffersink");
 	AVFilterInOut* outputs = avfilter_inout_alloc();
 	AVFilterInOut* inputs = avfilter_inout_alloc();
-	static const enum AVSampleFormat out_sample_fmts[] = { AV_SAMPLE_FMT_S16 ,AV_SAMPLE_FMT_NONE };
-	static const int64_t out_channel_layouts[] = { AV_CH_LAYOUT_MONO ,-1 };
-	static const int out_sample_rates[] = { 8000 ,-1 };
+	enum AVPixelFormat pix_fmt[] = { AV_PIX_FMT_GRAY8 ,AV_PIX_FMT_NONE };
 	const AVFilterLink* outLink;
-	AVRational time_base = aformatCtx->streams[audio_stream_index]->time_base;
+	AVRational time_base = aformatCtx->streams[video_stream_index]->time_base;
 
 	filterGrap = avfilter_graph_alloc();
 	if (!inputs || !outputs || !filterGrap) {
@@ -50,10 +50,8 @@ static int init_filter(const char* filter_detscr) {
 		err = AVERROR(ENOMEM);
 		goto end;
 	}
-	if (!acodecCtx->channel_layout) {
-		acodecCtx->channel_layout = av_get_default_channel_layout(acodecCtx->channels);
-	}
-	snprintf(option_str ,sizeof(option_str) ,"time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%" PRIx64 ,time_base.num ,time_base.den ,acodecCtx->sample_rate ,av_get_sample_fmt_name(acodecCtx->sample_fmt) ,acodecCtx->channel_layout);
+	
+	snprintf(option_str ,sizeof(option_str) ,"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d"  , acodecCtx->width , acodecCtx->height , acodecCtx->pix_fmt,time_base.num ,time_base.den , acodecCtx->sample_aspect_ratio.num , acodecCtx->sample_aspect_ratio.den);
 	err = avfilter_graph_create_filter(&abufferFilterCtx ,abuffersrc ,"in" ,option_str ,nullptr , filterGrap);
 	if (err < 0) {
 		av_log(nullptr, AV_LOG_ERROR, "filter graph abuffer src context failure.\n");
@@ -64,19 +62,9 @@ static int init_filter(const char* filter_detscr) {
 		av_log(nullptr, AV_LOG_ERROR, "filter graph abuufer sink context failure.\n");
 		goto end;
 	}
-	err = av_opt_set_int_list(sinkFilterCtx ,"sample_fmts" , out_sample_fmts ,-1 , AV_OPT_SEARCH_CHILDREN);
+	err = av_opt_set_int_list(sinkFilterCtx ,"pix_fmts" , pix_fmt ,AV_PIX_FMT_NONE, AV_OPT_SEARCH_CHILDREN);
 	if (err < 0) {
-		av_log(nullptr, AV_LOG_ERROR, "filter graph sample fmts failure.\n");
-		goto end;
-	}
-	err = av_opt_set_int_list(sinkFilterCtx, "channel_layouts", out_channel_layouts, -1, AV_OPT_SEARCH_CHILDREN);
-	if (err < 0) {
-		av_log(nullptr, AV_LOG_ERROR, "filter graph channel_layouts failure.\n");
-		goto end;
-	}
-	err = av_opt_set_int_list(sinkFilterCtx, "sample_rates", out_sample_rates, -1, AV_OPT_SEARCH_CHILDREN);
-	if (err < 0) {
-		av_log(nullptr, AV_LOG_ERROR, "filter graph sample fmts failure.\n");
+		av_log(nullptr, AV_LOG_ERROR, "filter graph pixel fmts failure.\n");
 		goto end;
 	}
 	
@@ -109,15 +97,29 @@ end:
 	return err;
 }
 
-static void print_frame(const AVFrame* frame)
-{
-	const int n = frame->nb_samples * av_get_channel_layout_nb_channels(frame->channel_layout);
-	const uint16_t* p = (uint16_t*)frame->data[0];
-	const uint16_t* p_end = p + n;
-	while (p < p_end) {
-		fputc(*p, stdout);
-		fputc(*p >> 16, stdout);
-		p++;
+static void display_frame(const AVFrame* frame ,const AVRational time_base){
+	int x, y;
+	uint8_t* p0, * p;
+	int64_t delay;
+	if (frame->pts != AV_NOPTS_VALUE) {
+		if (last_pts != AV_NOPTS_VALUE) {
+			delay = av_rescale_q(frame->pts - last_pts,time_base, AV_TIME_BASE_Q);
+			if (delay > 0 && delay < 1000000) {
+				usleep(delay);
+			}
+		}
+		last_pts = frame->pts;
+	}
+
+	/* Trivial ASCII grayscale display. */
+	p0 = frame->data[0];
+	puts("\033c");
+	for (y = 0; y < frame->height; y++) {
+		p = p0;
+		for (x = 0; x < frame->width; x++)
+			putchar(" .-+#"[*(p++) / 52]);
+		putchar('\n');
+		p0 += frame->linesize[0];
 	}
 	fflush(stdout);
 }
@@ -133,17 +135,17 @@ static int open_input_file(const char* name) {
 		av_log(nullptr, AV_LOG_ERROR, "open input file info failure.\n");
 		return ret;
 	}
-	ret = av_find_best_stream(aformatCtx ,AVMEDIA_TYPE_AUDIO ,-1 ,-1 ,&codec ,0);
+	ret = av_find_best_stream(aformatCtx , AVMEDIA_TYPE_VIDEO,-1 ,-1 ,&codec ,0);
 	if (ret < 0) {
 		av_log(nullptr, AV_LOG_ERROR, "open input file find best stream info failure.\n");
 		return ret;
 	}
-	audio_stream_index = ret;
+	video_stream_index = ret;
 	acodecCtx = avcodec_alloc_context3(codec);
 	if (!acodecCtx) {
 		return AVERROR(ENOMEM);
 	}
-	avcodec_parameters_to_context(acodecCtx , aformatCtx->streams[audio_stream_index]->codecpar);
+	avcodec_parameters_to_context(acodecCtx , aformatCtx->streams[video_stream_index]->codecpar);
 	if ((ret = avcodec_open2(acodecCtx , codec ,nullptr))) {
 		av_log(nullptr, AV_LOG_ERROR, "open codec failure.\n");
 		return ret;
@@ -152,12 +154,12 @@ static int open_input_file(const char* name) {
 	return 0;
 }
 
-int main_filter_audio(int argc ,char** argv) {
+int main(int argc ,char** argv) {
 	int ret;
 	AVPacket packet;
 	AVFrame* frame = av_frame_alloc();
 	AVFrame* filter_frame = av_frame_alloc();
-	const static char* filter_desrc = "aresample=8000,aformat=sample_fmts=s16:channel_layouts=mono";
+	const static char* filter_desrc = "scale=78:24,transpose=cclock";
 	const static char* player = "ffplay -f s16le -ar 8000 -ac 1 -";
 
 	if (!frame || !filter_frame) {
@@ -181,10 +183,10 @@ int main_filter_audio(int argc ,char** argv) {
 		if ((ret = av_read_frame(aformatCtx ,&packet)) < 0) {
 			break;
 		}
-		if (packet.stream_index == audio_stream_index) {
+		if (packet.stream_index == video_stream_index) {
 			ret = avcodec_send_packet(acodecCtx ,&packet);
 			if (ret < 0) {
-				av_log(nullptr, AV_LOG_ERROR, "send packet failure. %d  %d\n", ret, audio_stream_index);
+				av_log(nullptr, AV_LOG_ERROR, "send packet failure. %d  %d\n", ret, video_stream_index);
 				break;
 			}
 			while (ret >= 0) {
@@ -195,24 +197,23 @@ int main_filter_audio(int argc ,char** argv) {
 					av_log(nullptr, AV_LOG_ERROR, "receive frame failure.\n");
 					goto end;
 				}
-				if (ret >= 0) {
-					if (av_buffersrc_add_frame_flags(abufferFilterCtx ,frame ,AV_BUFFERSRC_FLAG_KEEP_REF)< 0) {
-						av_log(nullptr, AV_LOG_ERROR, "filter src add frame failure.\n");
+				frame->pts = frame->best_effort_timestamp;
+				if (av_buffersrc_add_frame_flags(abufferFilterCtx, frame, AV_BUFFERSRC_FLAG_KEEP_REF) < 0) {
+					av_log(nullptr, AV_LOG_ERROR, "filter src add frame failure.\n");
+					break;
+				}
+				while (1) {
+					ret = av_buffersink_get_frame(sinkFilterCtx, filter_frame);
+					if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
 						break;
 					}
-					while (1) {
-						ret = av_buffersink_get_frame(sinkFilterCtx, filter_frame);
-						if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-							break;
-						}
-						if (ret < 0) {
-							goto end;
-						}
-						print_frame(filter_frame);
-						av_frame_unref(filter_frame);
+					if (ret < 0) {
+						goto end;
 					}
-					av_frame_unref(frame);
+					display_frame(filter_frame ,sinkFilterCtx->inputs[0]->time_base);
+					av_frame_unref(filter_frame);
 				}
+				av_frame_unref(frame);
 
 			}
 		}
