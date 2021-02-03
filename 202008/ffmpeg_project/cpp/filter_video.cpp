@@ -154,7 +154,7 @@ static int open_input_file(const char* name) {
 	return 0;
 }
 
-int main(int argc ,char** argv) {
+int main_filter_video(int argc ,char** argv) {
 	int ret;
 	AVPacket packet;
 	AVFrame* frame = av_frame_alloc();
