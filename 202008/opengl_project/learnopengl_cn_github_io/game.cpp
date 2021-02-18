@@ -40,3 +40,17 @@ void Game::ProcessInput(GLfloat dt)
             Ball->Stuck = false;
     }
 }
+void Game::DoCollisions()
+{
+    for (GameObject &box : this->Levels[this->Level].Bricks)
+    {
+        if (!box.Destroyed)
+        {
+            if (CheckCollision(*Ball, box))
+            {
+                if (!box.IsSolid)
+                    box.Destroyed = GL_TRUE;
+            }
+        }
+    }
+}
