@@ -21,7 +21,8 @@ static int open_input_file(const char *filename) {
 	AVCodec *dec;
 	if ((ret = avformat_open_input(&fmt_ctx ,filename ,NULL ,NULL)) < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Cannot open input file\n");
-		return ret
+		return ret;
+	}
 	if ((ret = avformat_find_stream_info(fmt_ctx ,NULL)) < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Cannot find stream information\n");
 		return ret;
