@@ -65,7 +65,7 @@ int main(int argc ,char **argv){
 	pkt = av_packet_alloc();
 
 	/** find MPEG audio decoder **/
-	codec = avcodec_find_decoder(AV_CODEC_ID_MP2);
+	codec = avcodec_find_decoder(AV_CODEC_ID_MP3);
 	if (!codec) {
 		fprintf(stderr ,"Codec not find.\n");
 		exit(1);
