@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 
 PROJECT(FFmpegDraft)
 
-SET(SRC_LIST ../packet_http_multiclient.c)
+SET(SRC_LIST ../packet_qsvdec.c)
 
 include_directories("/usr/local/include")
 
-ADD_EXECUTABLE(packet_http_multiclient  ${SRC_LIST})
+ADD_EXECUTABLE(packet_qsvdec  ${SRC_LIST})
 
-target_link_libraries(packet_http_multiclient libavformat.so libavcodec.so libavdevice.so libavfilter.so libavutil.so libswscale.so libswresample.so libavutil.so m z)
+target_link_libraries(packet_qsvdec libavformat.so libavcodec.so libavdevice.so libavfilter.so libavutil.so libswscale.so libswresample.so libavutil.so m z)
