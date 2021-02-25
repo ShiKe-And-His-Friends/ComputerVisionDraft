@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 PROJECT(FFmpegDraft)
 
-SET(SRC_LIST ../drawText.c)
+SET(SRC_LIST ../drawText2.c)
 
 include_directories("/usr/local/include")
 
