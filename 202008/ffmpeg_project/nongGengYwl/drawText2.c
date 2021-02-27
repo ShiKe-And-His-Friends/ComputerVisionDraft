@@ -524,7 +524,6 @@ int main(int argc, char **argv)
             goto end;
         }
     }
-    av_write_trailer(ofmt_ctx);
 end:
     av_packet_unref(&packet);
     av_frame_free(&frame);
