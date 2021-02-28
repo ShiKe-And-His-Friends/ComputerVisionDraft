@@ -112,6 +112,11 @@ int main(int argc ,char* argv[]) {
 		return -1;
 	}
 
+	ret = avfilter_init();
+	if (!ret) {
+		fprintf(stderr ,"Init filter failure");
+		return -1;
+	}
 	fprintf(stderr ,"\nFINISH\n");
 	return 0;
 }
