@@ -22,7 +22,6 @@ int main(int argc ,char* argv[]) {
 	AVFormatContext* output_context = NULL;
 	AVDictionary* format_opts = NULL;
 	AVCodec* codec = NULL;
-	AVCodec* h264Codec = NULL;
 	AVCodecContext* decode_ctx = NULL;
 	AVCodecContext* encode_ctx = NULL;
 	AVStream* in_stream = NULL;
@@ -102,44 +101,74 @@ int main(int argc ,char* argv[]) {
 	fprintf(stderr ,"Open Success\n");
 
 	// open output file
+	AVCodec* h264Codec = NULL;
+	AVCodecContext* dec_ctx = NULL;
 	avformat_alloc_output_context2(&output_context ,NULL ,NULL ,output);
 	if (!output_context) {
 		av_log(NULL ,AV_LOG_ERROR ,"Could not open output context.\n");
 		return AVERROR_UNKNOWN;
 	}
-	out_stream = avformat_new_stream(output_context ,NULL);
-	if (!out_stream) {
-		av_log(NULL ,AV_LOG_ERROR ,"Failed allocting output stream.\n");
-		return AVERROR_UNKNOWN;
-	}
-	in_stream = context->streams[0];
-	h264Codec = avcodec_find_encoder(decode_ctx->codec_id);
-	if (!h264Codec) {
-		av_log(NULL ,AV_LOG_ERROR ,"Necessary encoder not found.\n");
-		return AVERROR_INVALIDDATA;
-	}
-	encode_ctx = avcodec_alloc_context3(h264Codec);
-	if (!encode_ctx) {
-		av_log(NULL ,AV_LOG_ERROR ,"Necessary encoder context not found.\n");
-		return AVERROR_INVALIDDATA;
-	}
-	encode_ctx->height = decode_ctx->height;
-	encode_ctx->width = decode_ctx->width;
-	encode_ctx->sample_aspect_ratio = decode_ctx->sample_aspect_ratio;
-	if (h264Codec->pix_fmts) {
-		encode_ctx->pix_fmt = h264Codec->pix_fmts[0];
-	} else {
-		encode_ctx->pix_fmt = decode_ctx->pix_fmt;
-	}
-	encode_ctx->time_base = av_inv_q(decode_ctx->framerate);
-	AVDictionary* options = NULL;
-	encode_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-	ret = avcodec_open2(encode_ctx ,h264Codec ,&options);
-	if (ret < 0) {
-		fprintf(stderr ,"Open Out Codec Failure.\n");
-		return -1;
-	}
+	for (int i = 0 ; i < context->nb_streams ; i++) {
+		out_stream = avformat_new_stream(output_context ,NULL);
+		if (!out_stream) {
+			av_log(NULL ,AV_LOG_ERROR ,"Failed allocting output stream.\n");
+			return AVERROR_UNKNOWN;
+		}
+		in_stream = context->streams[i];
+		dec_ctx = stream_ctx[i].dec_ctx;
+		if () {
+			h264Codec = avcodec_find_encoder(decode_ctx->codec_id);
+			if (!h264Codec) {
+				av_log(NULL ,AV_LOG_ERROR ,"Necessary encoder not found.\n");
+				return AVERROR_INVALIDDATA;
+			}
+			encode_ctx = avcodec_alloc_context3(h264Codec);
+			if (!encode_ctx) {
+				av_log(NULL ,AV_LOG_ERROR ,"Necessary encoder context not found.\n");
+				return AVERROR_INVALIDDATA;
+			}
+			if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
+				encode_ctx->height = decode_ctx->height;
+				encode_ctx->width = decode_ctx->width;
+				encode_ctx->sample_aspect_ratio = decode_ctx->sample_aspect_ratio;
+				if (h264Codec->pix_fmts) {
+					encode_ctx->pix_fmt = h264Codec->pix_fmts[0];
+				} else {
+					encode_ctx->pix_fmt = decode_ctx->pix_fmt;
+				}
+				encode_ctx->time_base = av_inv_q(decode_ctx->framerate);
+			} else {
+				encode_ctx->sample_rate = decode_ctx->sample_rate;
+				encode_ctx->channel_layout = decode_ctx->channel_layout;
+				encode_ctx->channels = av_get_channel_layout_nb_channels(encode_ctx->channel_layout);
+				encode_ctx->sample_fmt = h264Codec->sample_fmts[0];
+				encode_ctx->time_base = (AVRational) {1 ,encode_ctx->time_base};
+			}
 
+			AVDictionary* options = NULL;
+			encode_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+			ret = avcodec_open2(encode_ctx ,h264Codec ,&options);
+			if (ret < 0) {
+				fprintf(stderr ,"Open Out Codec Failure.\n");
+				return -1;
+			}
+			ret = avcodec_parameters_from_context(out_stream->codecpar ,encode_ctx);
+			out_stream->time_base = in_stream->time_base;
+			stream_ctx[i].enc_ctx = encode_ctx;
+		} else if (dec_ctx->codec_type == AVMEDIA_TYPE_UNKNOWN) {
+			av_log(NULL ,AV_LOG_FATAL ,"Elementary stream#%d is of unknown type, cannot proceed\n" ,i);
+			return AVERROR_INVALIDDATA;
+		} else {
+			/* MUST REMUXED */
+			ret = avcodec_parameters_copy(out_stream->codecpar ,in_stream->codecpar);
+			if (ret < 0) {
+				av_log(NULL ,AV_LOG_ERROR ,"Copying parameters for stream#%u failed.\n" ,i);
+				return ret;
+			}
+			out_stream->time_base = in_stream->time_base;
+		}
+	}
+	av_dump_format(output_context ,0 ,output_file ,1);
 	fprintf(stderr ,"\nFINISH\n");
 	return 0;
 }
