@@ -10,7 +10,7 @@ typedef struct StreamContext {
 }StreamContext;
 
 int interrupt_cb(void* ctx) {
-	fprintf(stderr ,"interrupt cb.\n");
+	// fprintf(stderr ,"interrupt cb.\n");
 	return 0;
 }
 
@@ -37,7 +37,7 @@ int main(int argc ,char* argv[]) {
 	input = argv[1];
 	output = argv[2];
 
-	
+	// open input file	
 	context = avformat_alloc_context();
 	context->interrupt_callback.callback = interrupt_cb;
 	ret = avformat_open_input(&context ,input ,NULL ,&format_opts);
@@ -47,31 +47,59 @@ int main(int argc ,char* argv[]) {
 		return 0;
 	}
 	stream_ctx = av_mallocz_array(context->nb_streams ,sizeof(*stream_ctx));
+	if (!stream_ctx) {
+		return AVERROR(ENOMEM);
+	}
 	ret = avformat_find_stream_info(context ,NULL);
 	if (ret) {
 		fprintf(stderr ,"Find stream best info failure.\n");
 		return 0;
 	}
 	
-	codec = avcodec_find_decoder(context->streams[0]->codecpar->codec_id);	
-	decode_ctx = avcodec_alloc_context3(codec);
-	if (!decode_ctx) {
-		fprintf(stderr ,"Find stream codec failure.\n");
-		return 0;
+	for (int i = 0 ; i < context->nb_streams ;i++) {
+		AVStream* stream = context->streams[i];
+		AVCodec* dec = avcodec_find_decoder(stream->codecpar->codec_id);
+		AVCodecContext* codec_ctx = NULL;
+		if (!dec) {
+			av_log(NULL ,AV_LOG_ERROR ,"Fialure to find decoder for stream#%u\n" ,i);
+			return AVERROR_DECODER_NOT_FOUND;
+		}
+		codec_ctx = avcodec_alloc_context3(dec);
+		
+		if (!codec_ctx) {
+			av_log(NULL ,AV_LOG_ERROR ,"Fialure to allocate the decoder context \n");
+			return AVERROR(ENOMEM);
+		}
+		ret = avcodec_parameters_to_context(codec_ctx ,stream->codecpar);
+		if (ret < 0) {
+			av_log(NULL ,AV_LOG_ERROR ,"Failure to copy decoder paramters to input decoder codec for stream#%u" ,i);
+			return ret;
+		}
+		av_log(NULL ,AV_LOG_ERROR ,"opening stream#%u\n" ,i);
+		if (codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO
+				|| codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
+			if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
+				codec_ctx->framerate = av_guess_frame_rate(context ,stream ,NULL);
+				codec_ctx->time_base = av_inv_q(codec_ctx->framerate);
+				av_log(NULL ,AV_LOG_ERROR ,"MEDIA VIDEO\n");
+			}
+			if (codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO) {
+				codec_ctx->time_base = (AVRational){1 ,codec_ctx->sample_rate};
+				av_log(NULL ,AV_LOG_ERROR ,"MEDIA AUDIO\n");
+			}
+			ret = avcodec_open2(codec_ctx ,dec ,NULL);
+			if (ret < 0) {
+				av_log(NULL ,AV_LOG_ERROR ,"Failed to open decoder for stream#%u\n" ,i);
+				return ret;
+			} else {
+				
+				av_log(NULL ,AV_LOG_ERROR ,"Success to open decoder for stream#%u\n" ,i);
+			}
+		}
+		stream_ctx[i].dec_ctx = codec_ctx;
 	}
-	ret = avcodec_parameters_to_context(decode_ctx ,context->streams[0]->codecpar);
-	if (ret < 0) {
-		fprintf(stderr ,"File copy parameters failure.\n");
-		return 0;
-	}
-	if (codec->capabilities & AV_CODEC_CAP_TRUNCATED) {
-		decode_ctx->flags |= AV_CODEC_CAP_TRUNCATED;
-	}
-	ret = avcodec_open2(decode_ctx ,codec ,NULL);
-	if (ret < 0) {
-		fprintf(stderr ,"File Codec Open Failure.\n");
-		return 0;
-	}
+
+	fprintf(stderr ,"Open Success\n");
 
 	// open output file
 	avformat_alloc_output_context2(&output_context ,NULL ,NULL ,output);
@@ -112,11 +140,6 @@ int main(int argc ,char* argv[]) {
 		return -1;
 	}
 
-	ret = avfilter_init();
-	if (!ret) {
-		fprintf(stderr ,"Init filter failure");
-		return -1;
-	}
 	fprintf(stderr ,"\nFINISH\n");
 	return 0;
 }
