@@ -117,8 +117,8 @@ int main(int argc ,char* argv[]) {
 		decode_ctx = stream_ctx[i].dec_ctx;
 		if (decode_ctx->codec_type == AVMEDIA_TYPE_AUDIO
 				|| decode_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
+			// sudo vim /etc/ld.so.conf #libx264 update
 			h264Codec = avcodec_find_encoder(decode_ctx->codec_id);
-			printf("\nCODEC ID %u\n" ,decode_ctx->codec_id);
 			if (!h264Codec) {
 				av_log(NULL ,AV_LOG_ERROR ,"Necessary encoder not found.\n");
 				return AVERROR_INVALIDDATA;
@@ -183,6 +183,7 @@ int main(int argc ,char* argv[]) {
 		}
 	}
 	av_dump_format(output_context ,0 ,output ,1);
+
 	fprintf(stderr ,"\nFINISH\n");
 	return 0;
 }
