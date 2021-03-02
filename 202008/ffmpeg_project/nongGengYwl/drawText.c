@@ -22,8 +22,6 @@ int main(int argc ,char* argv[]) {
 	AVFormatContext* output_context = NULL;
 	AVDictionary* format_opts = NULL;
 	AVCodec* codec = NULL;
-	AVCodecContext* decode_ctx = NULL;
-	AVCodecContext* encode_ctx = NULL;
 	AVStream* in_stream = NULL;
 	AVStream* out_stream = NULL;
 	StreamContext* stream_ctx = NULL;
@@ -102,8 +100,9 @@ int main(int argc ,char* argv[]) {
 
 	// open output file
 	AVCodec* h264Codec = NULL;
-	AVCodecContext* dec_ctx = NULL;
-	avformat_alloc_output_context2(&output_context ,NULL ,NULL ,output);
+	avformat_alloc_output_context2(&output_context ,NULL ,NULL ,output);	
+	AVCodecContext* decode_ctx = NULL;
+	AVCodecContext* encode_ctx = NULL;
 	if (!output_context) {
 		av_log(NULL ,AV_LOG_ERROR ,"Could not open output context.\n");
 		return AVERROR_UNKNOWN;
@@ -115,9 +114,11 @@ int main(int argc ,char* argv[]) {
 			return AVERROR_UNKNOWN;
 		}
 		in_stream = context->streams[i];
-		dec_ctx = stream_ctx[i].dec_ctx;
-		if () {
+		decode_ctx = stream_ctx[i].dec_ctx;
+		if (decode_ctx->codec_type == AVMEDIA_TYPE_AUDIO
+				|| decode_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
 			h264Codec = avcodec_find_encoder(decode_ctx->codec_id);
+			printf("\nCODEC ID %u\n" ,decode_ctx->codec_id);
 			if (!h264Codec) {
 				av_log(NULL ,AV_LOG_ERROR ,"Necessary encoder not found.\n");
 				return AVERROR_INVALIDDATA;
@@ -127,7 +128,8 @@ int main(int argc ,char* argv[]) {
 				av_log(NULL ,AV_LOG_ERROR ,"Necessary encoder context not found.\n");
 				return AVERROR_INVALIDDATA;
 			}
-			if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
+
+			if (decode_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
 				encode_ctx->height = decode_ctx->height;
 				encode_ctx->width = decode_ctx->width;
 				encode_ctx->sample_aspect_ratio = decode_ctx->sample_aspect_ratio;
@@ -137,25 +139,37 @@ int main(int argc ,char* argv[]) {
 					encode_ctx->pix_fmt = decode_ctx->pix_fmt;
 				}
 				encode_ctx->time_base = av_inv_q(decode_ctx->framerate);
+				printf("\nVIDEO\n");
 			} else {
 				encode_ctx->sample_rate = decode_ctx->sample_rate;
 				encode_ctx->channel_layout = decode_ctx->channel_layout;
 				encode_ctx->channels = av_get_channel_layout_nb_channels(encode_ctx->channel_layout);
 				encode_ctx->sample_fmt = h264Codec->sample_fmts[0];
-				encode_ctx->time_base = (AVRational) {1 ,encode_ctx->time_base};
+				encode_ctx->time_base = (AVRational) {1 ,encode_ctx->sample_rate};
+				printf("\nAUDIO\n");
+			}
+			if (output_context->oformat->flags & AVFMT_GLOBALHEADER) {
+				encode_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 			}
 
+
 			AVDictionary* options = NULL;
-			encode_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+			// encode_ctx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 			ret = avcodec_open2(encode_ctx ,h264Codec ,&options);
 			if (ret < 0) {
 				fprintf(stderr ,"Open Out Codec Failure.\n");
 				return -1;
+			} else {
+				fprintf(stderr ,"Open Out Success stream#%u\n" ,i);
 			}
 			ret = avcodec_parameters_from_context(out_stream->codecpar ,encode_ctx);
-			out_stream->time_base = in_stream->time_base;
+			if (ret < 0) {
+				av_log(NULL ,AV_LOG_ERROR ,"Failed to copy encoder parmeters stream#%u" ,i);
+				return ret;
+			}
+			out_stream->time_base = encode_ctx->time_base;
 			stream_ctx[i].enc_ctx = encode_ctx;
-		} else if (dec_ctx->codec_type == AVMEDIA_TYPE_UNKNOWN) {
+		} else if (decode_ctx->codec_type == AVMEDIA_TYPE_UNKNOWN) {
 			av_log(NULL ,AV_LOG_FATAL ,"Elementary stream#%d is of unknown type, cannot proceed\n" ,i);
 			return AVERROR_INVALIDDATA;
 		} else {
@@ -168,7 +182,7 @@ int main(int argc ,char* argv[]) {
 			out_stream->time_base = in_stream->time_base;
 		}
 	}
-	av_dump_format(output_context ,0 ,output_file ,1);
+	av_dump_format(output_context ,0 ,output ,1);
 	fprintf(stderr ,"\nFINISH\n");
 	return 0;
 }
