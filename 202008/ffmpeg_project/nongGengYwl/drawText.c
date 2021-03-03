@@ -4,6 +4,12 @@
 #include <libavfilter/buffersink.h>
 #include <libavfilter/buffersrc.h>
 
+typedef struct FilteringContext{
+	AVFilterContext* buffersink_ctx;
+	AVFilterContext* buffersrc_ctx;
+	AVFilterContext* filter_graph;
+} FilteringContext;
+
 typedef struct StreamContext {
 	AVCodecContext* dec_ctx;
 	AVCodecContext* enc_ctx;
@@ -184,6 +190,37 @@ int main(int argc ,char* argv[]) {
 	}
 	av_dump_format(output_context ,0 ,output ,1);
 
+	//init filter
+	FilteringContext* filterCtx = NULL;
+	char* space;
+	filterCtx = av_malloc_array(context->nb_streams ,sizeof(*filterCtx));
+	if (!filterCtx) {
+		return AVERROR(ENOMEM);
+	}
+	for (int i = 0 ; i < context->nb_streams ;i++) {
+		filterCtx[i].buffersrc_ctx = NULL;
+		filterCtx[i].buffersink_ctx = NULL;
+		filterCtx[i].filter_graph = NULL;
+		if (!(context->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO || context->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) ) {
+			continue;
+		}
+
+		if (context->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+			space = "null";
+		} else {
+			space = "anull";
+		}
+		ret = init_filter(&filterCtx[i] ,stream_ctx[i].dec_ctx 
+				,stream_ctx[i].enc_ctx ,space);
+		if (ret < 0) {
+			goto end;
+		}
+	}
+
 	fprintf(stderr ,"\nFINISH\n");
 	return 0;
+
+end:
+	fprintf(stderr ,"\nERROR\n");
+	return -1;
 }
