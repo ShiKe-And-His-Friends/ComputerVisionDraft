@@ -55,7 +55,7 @@ static int init_filter(FilteringContext* fctx ,AVCodecContext* dec_ctx
 			av_log(NULL ,AV_LOG_ERROR ,"Can not create buffer source\n");
 			goto end;
 		}
-		ret = avfilter_graph_create_filter(&buffersrc_ctx ,buffersink ,"out" ,NULL ,NULL ,filter_graph);
+		ret = avfilter_graph_create_filter(&buffersink_ctx ,buffersink ,"out" ,NULL ,NULL ,filter_graph);
 
 		if (ret < 0) {
 			av_log(NULL ,AV_LOG_ERROR ,"Can not create buffer sink\n");
@@ -68,8 +68,8 @@ static int init_filter(FilteringContext* fctx ,AVCodecContext* dec_ctx
 		}
 	} else if (dec_ctx->codec_type == AVMEDIA_TYPE_AUDIO) {
 	
-		buffersrc = avfilter_get_by_name("buffer");
-		buffersink = avfilter_get_by_name("buffersink");
+		buffersrc = avfilter_get_by_name("abuffer");
+		buffersink = avfilter_get_by_name("abuffersink");
 		if (!buffersrc || ! buffersink) {
 			av_log(NULL ,AV_LOG_ERROR ,"filter source or sink element not found\n");
 			ret = AVERROR_UNKNOWN;
