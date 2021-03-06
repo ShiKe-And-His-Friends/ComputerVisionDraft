@@ -341,10 +341,120 @@ int main(int argc ,char* argv[]) {
 		}
 	}
 
-	fprintf(stderr ,"\nFINISH\n");
+	// read packet
+	int stream_index = -1;
+	enum AVMediaType type;
+	AVPacket packet;
+	AVFrame* frame;
+	AVFrame* filte_frame;
+	int got_frame;
+	int (*dec_func)(AVCodecContext* ,AVFrame* ,int* ,const AVPacket*);
+	while(1) {
+		if ((ret = av_read_frame(context ,&packet)) < 0) {
+			av_log(NULL ,AV_LOG_INFO ,"read packect from file result end.\n");
+			break;
+		}
+		stream_index = packet.stream_index;
+		type = context->streams[stream_index]->codecpar->codec_type;
+		av_log(NULL ,AV_LOG_DEBUG ,"Demuxer gave frame of stream index %u\n" ,stream_index);
+		if (filterCtx[stream_index].filter_graph) {
+			av_log(NULL ,AV_LOG_DEBUG ,"Going recodec&filter the frame\n");
+			frame = av_frame_alloc();
+			if (!frame) {
+				ret = AVERROR(ENOMEM);
+				av_log(NULL ,AV_LOG_ERROR ,"GET FRAME FAILURE\n");
+				break;
+			}
+			av_packet_rescale_ts(&packet ,context->streams[stream_index]->time_base ,stream_ctx[stream_index].dec_ctx->time_base);
+			dec_func = (type == AVMEDIA_TYPE_VIDEO) ? avcodec_decode_video2 : avcodec_decode_audio4;
+			ret = dec_func(stream_ctx[stream_index].dec_ctx ,frame ,&got_frame ,&packet);
+			if (ret < 0) {
+				av_frame_free(&frame);
+				av_log(NULL ,AV_LOG_ERROR ,"Deocding failed.\n");
+			}
+			if (got_frame) {
+				frame->pts = frame->best_effort_timestamp;
+				//TODO add write codec frame
+				av_log(NULL ,AV_LOG_DEBUG ,"Pushing decoded frame to filters.\n");
+				ret = av_buffersrc_add_frame_flags(filterCtx[stream_index].buffersrc_ctx ,frame ,0);
+				if (ret < 0) {
+					av_log(NULL ,AV_LOG_ERROR ,"Error while feeding the filtergraph.\n");
+					ret = AVERROR_UNKNOWN;
+					goto end;
+				}
+				while(1) {
+					filte_frame = av_frame_alloc();
+					if(!filte_frame) {
+						av_log(NULL ,AV_LOG_ERROR ,"filter frame alloc failure.\n");
+						ret = AVERROR(ENOMEM);
+						goto end;
+					}
+					av_log(NULL ,AV_LOG_DEBUG ,"Pulling filtered frame from filters.\n");
+					ret = av_buffersink_get_frame(filterCtx[stream_index].buffersink_ctx ,filte_frame);
+					if (ret < 0) {
+						/**
+						 * If no more frame into sink filter - returen AVERROR(EAGAIN)
+						 * If no more frame for output - return AVERROR_EOF;
+						 * rewrite and retcode to 0 to show it as normal procedure completion.
+						 * */
+						if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN)) {
+							ret = 0;
+						}
+						av_frame_free(&filte_frame);
+						break;
+					}
+					filte_frame->pict_type = AV_PICTURE_TYPE_NONE;
+					int got_frame_local;
+					AVPacket enc_pkt;
+					int (*enc_func)(AVCodecContext* ,AVPacket* ,const AVFrame* ,int*) = 
+						(context->streams[stream_index]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) ? avcodec_encode_video2 : avcodec_encode_audio2;
+					if (!got_frame) {
+						av_log(NULL ,AV_LOG_ERROR ,"got frame failure\n");
+						got_frame = &got_frame_local;
+					}
+					av_log(NULL ,AV_LOG_DEBUG ,"Encodeing frame.\n");
+					enc_pkt.data = NULL;
+					enc_pkt.size = 0;
+					av_init_packet(&enc_pkt);
+					ret = enc_func(stream_ctx[stream_index].enc_ctx ,&enc_pkt ,filte_frame ,&got_frame);
+					av_frame_free(&filte_frame);
+					if (ret < 0) {
+						break;
+					}
+					if (!(&got_frame)) {
+						ret = 0;
+						av_log(NULL ,AV_LOG_ERROR ,"Not info got frame.\n");
+						break;	
+					}
+					enc_pkt.stream_index = stream_index;
+					av_packet_rescale_ts(&enc_pkt ,stream_ctx[stream_index].enc_ctx->time_base ,output_context->streams[stream_index]->time_base);
+					ret = av_interleaved_write_frame(output_context ,&enc_pkt);
+
+				}
+				if (ret < 0) {
+					av_log(NULL ,AV_LOG_ERROR ,"recodec rescale failure in sink filter\n");
+					goto end;
+				}
+				av_frame_free(&frame);
+			} else {
+				av_frame_free(&frame);
+			}
+		} else {
+			/** rescale frame without recode */
+			av_log(NULL ,AV_LOG_INFO ,"rescale frame without recodeing.\n");
+			av_packet_rescale_ts(&packet ,context->streams[stream_index]->time_base ,output_context->streams[stream_index]->time_base);
+			ret = av_interleaved_write_frame(output_context ,&packet);
+			if (ret < 0) {
+				goto end;
+			}
+		}
+		av_packet_unref(&packet);	
+	}
+
+	fprintf(stderr ,"\nDRAW TEXT FINISH\n");
 	return 0;
 
 end:
-	fprintf(stderr ,"\nERROR\n");
+	fprintf(stderr ,"\nDRAW TEXT ERROR\n");
 	return -1;
 }
