@@ -18,6 +18,15 @@ typedef struct StreamContext {
 
 int interrupt_cb(void* ctx) {
 	// fprintf(stderr ,"interrupt cb.\n");
+	if (got_frame) {
+                frame->pts = frame->best_effort_timestamp;
+                ret = filter_encode_write_frame(frame, stream_index);
+                av_frame_free(&frame);
+                if (ret < 0)
+                    goto end;
+            } else {
+                av_frame_free(&frame);
+            }
 	return 0;
 }
 
