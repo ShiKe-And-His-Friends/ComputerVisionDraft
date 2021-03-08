@@ -145,6 +145,7 @@ end:
 }
 
 int main(int argc ,char* argv[]) {
+	int error_result;
 	int ret;
 	char* output = NULL;
 	char* input = NULL;
@@ -181,7 +182,7 @@ int main(int argc ,char* argv[]) {
 	}
 	ret = avformat_find_stream_info(context ,NULL);
 	if (ret) {
-		av_log(NULL ,AV_LOG_ERROR ,stderr ,"Find stream best info failure.\n");
+		av_log(NULL ,AV_LOG_ERROR ,"Find stream best info failure.\n");
 		return 0;
 	}
 	
@@ -209,7 +210,7 @@ int main(int argc ,char* argv[]) {
 				|| codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
 			if (codec_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
 				codec_ctx->framerate = av_guess_frame_rate(context ,stream ,NULL);
-				codec_ctx->time_base = av_inv_q(codec_ctx->framerate);
+				 codec_ctx->time_base = av_inv_q(codec_ctx->framerate);
 				av_log(NULL ,AV_LOG_ERROR ,"MEDIA VIDEO\n");
 			}
 			if (codec_ctx->codec_type == AVMEDIA_TYPE_AUDIO) {
@@ -315,6 +316,18 @@ int main(int argc ,char* argv[]) {
 		}
 	}
 	av_dump_format(output_context ,0 ,output ,1);
+	if (!(output_context->oformat->flags & AVFMT_NOFILE)) {
+		ret = avio_open(&output_context->pb ,output ,AVIO_FLAG_WRITE);
+		if (ret < 0) {
+			av_log(NULL ,AV_LOG_ERROR ,"Could not open file '%s'\n" ,output);
+			goto end;
+		}
+	}
+	ret = avformat_write_header(output_context ,NULL);
+	if (ret < 0) {
+		av_log(NULL ,AV_LOG_ERROR ,"Error occurred when opening output file\n");
+		goto end;
+	}
 
 	fprintf(stderr ,"Init Filter Start.\n");
 	//init filter
@@ -426,19 +439,14 @@ int main(int argc ,char* argv[]) {
 						break;
 					}
 					if (!(got_frame)) {
-						av_log(NULL ,AV_LOG_ERROR ,"Not Info Got Frame.\n");
+						av_log(NULL ,AV_LOG_DEBUG ,"Not Info Got Frame.\n");
 						ret = 0;
 						continue;	
 					}
 					enc_pkt.stream_index = stream_index;
-					printf("\nSHIKEDEBUG 1\n");
-					printf("\nshikedebug index%ld ,time_base1:%d ,time_base2:%d\n" ,stream_index ,stream_ctx[stream_index].enc_ctx->time_base.den ,output_context->streams[stream_index]->time_base.den);
 					av_packet_rescale_ts(&enc_pkt ,stream_ctx[stream_index].enc_ctx->time_base ,output_context->streams[stream_index]->time_base);
-					printf("\nSHIKEDEBUG 2\n");
-					printf("\nshikeDebug pts%ld dts%ld\n" ,enc_pkt.pts ,enc_pkt.dts);
 					enc_pkt.stream_index = stream_index;
 					ret = av_interleaved_write_frame(output_context ,&enc_pkt);
-					printf("\nSHIKEDEBUG 3\n");
 					if (ret < 0) {
 						break;
 					}
@@ -463,11 +471,51 @@ int main(int argc ,char* argv[]) {
 		}
 		av_packet_unref(&packet);	
 	}
-
+	ret = 0;
+	for (int i = 0 ; i < context->nb_streams ;i++) {
+		if (!filterCtx[i].filter_graph) {
+			continue;
+		}
+//		ret = filter_encode_write_frame(NULL ,i);
+		if (ret < 0) {
+			av_log(NULL ,AV_LOG_ERROR ,"Flushing filter failed.\n");
+			goto end;
+		}
+//		ret = flush_encode(i);
+		if (ret < 0) {
+			av_log(NULL ,AV_LOG_ERROR ,"Flushing encoder failed\n");
+			goto end;
+		}
+	}
+	av_write_trailer(output_context);
 	fprintf(stderr ,"\nDRAW TEXT FINISH\n");
-	return 0;
-
+	error_result = 1;
 end:
-	fprintf(stderr ,"\nDRAW TEXT ERROR\n");
-	return -1;
+	if (!error_result) {
+		fprintf(stderr ,"\nDRAW TEXT ERROR\n");
+	}
+	av_packet_unref(&packet);
+	av_frame_free(&frame);
+	av_frame_free(&filte_frame);
+	for (int i = 0 ; i < context->nb_streams ;i++) {
+		avcodec_free_context(&stream_ctx[i].dec_ctx);
+		if (output_context && output_context->nb_streams > i && output_context->streams[i] && stream_ctx[i].enc_ctx) {
+			avcodec_free_context(&stream_ctx[i].enc_ctx);
+		}
+		if (filterCtx && filterCtx[i].filter_graph) {
+			avfilter_graph_free(&filterCtx[i].filter_graph);
+		}
+	}
+	av_free(filterCtx);
+	av_free(stream_ctx);
+	avformat_close_input(&context);
+	if (output_context && !(output_context->oformat->flags & AVFMT_NOFILE)) {
+		avio_closep(&output_context->pb);
+	}
+	avformat_free_context(output_context);
+	if (ret < 0) {
+		av_log(NULL ,AV_LOG_ERROR ,"Error occur is %s \n" ,av_err2str(ret));
+	}
+
+	return ret ? 1 : 0;
 }
