@@ -18,15 +18,6 @@ typedef struct StreamContext {
 
 int interrupt_cb(void* ctx) {
 	// fprintf(stderr ,"interrupt cb.\n");
-	if (got_frame) {
-                frame->pts = frame->best_effort_timestamp;
-                ret = filter_encode_write_frame(frame, stream_index);
-                av_frame_free(&frame);
-                if (ret < 0)
-                    goto end;
-            } else {
-                av_frame_free(&frame);
-            }
 	return 0;
 }
 
@@ -180,15 +171,17 @@ int main(int argc ,char* argv[]) {
 	if (!ret) {
 		av_dump_format(context ,0 ,input ,0);
 	} else {
+		av_log(NULL ,AV_LOG_ERROR ,"INPUT CONTEXT ALLOC ERROR.\n");
 		return 0;
 	}
 	stream_ctx = av_mallocz_array(context->nb_streams ,sizeof(*stream_ctx));
-	if (!stream_ctx) {
+	if (!stream_ctx) {	
+		av_log(NULL ,AV_LOG_ERROR ,"INPUT CONTEXT COPY ERROR.\n");
 		return AVERROR(ENOMEM);
 	}
 	ret = avformat_find_stream_info(context ,NULL);
 	if (ret) {
-		fprintf(stderr ,"Find stream best info failure.\n");
+		av_log(NULL ,AV_LOG_ERROR ,stderr ,"Find stream best info failure.\n");
 		return 0;
 	}
 	
@@ -323,6 +316,7 @@ int main(int argc ,char* argv[]) {
 	}
 	av_dump_format(output_context ,0 ,output ,1);
 
+	fprintf(stderr ,"Init Filter Start.\n");
 	//init filter
 	static FilteringContext* filterCtx = NULL;
 	char* space;
@@ -350,6 +344,7 @@ int main(int argc ,char* argv[]) {
 		}
 	}
 
+	fprintf(stderr ,"Init Filter Success.\n");
 	// read packet
 	int stream_index = -1;
 	enum AVMediaType type;
@@ -401,11 +396,11 @@ int main(int argc ,char* argv[]) {
 					av_log(NULL ,AV_LOG_DEBUG ,"Pulling filtered frame from filters.\n");
 					ret = av_buffersink_get_frame(filterCtx[stream_index].buffersink_ctx ,filte_frame);
 					if (ret < 0) {
-						/**
+						/*
 						 * If no more frame into sink filter - returen AVERROR(EAGAIN)
 						 * If no more frame for output - return AVERROR_EOF;
 						 * rewrite and retcode to 0 to show it as normal procedure completion.
-						 * */
+						 */
 						if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN)) {
 							ret = 0;
 						}
@@ -419,7 +414,7 @@ int main(int argc ,char* argv[]) {
 						(context->streams[stream_index]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) ? avcodec_encode_video2 : avcodec_encode_audio2;
 					if (!got_frame) {
 						av_log(NULL ,AV_LOG_ERROR ,"got frame failure\n");
-						got_frame = &got_frame_local;
+						got_frame = got_frame_local;
 					}
 					av_log(NULL ,AV_LOG_DEBUG ,"Encodeing frame.\n");
 					enc_pkt.data = NULL;
@@ -430,21 +425,30 @@ int main(int argc ,char* argv[]) {
 					if (ret < 0) {
 						break;
 					}
-					if (!(&got_frame)) {
+					if (!(got_frame)) {
+						av_log(NULL ,AV_LOG_ERROR ,"Not Info Got Frame.\n");
 						ret = 0;
-						av_log(NULL ,AV_LOG_ERROR ,"Not info got frame.\n");
-						break;	
+						continue;	
 					}
 					enc_pkt.stream_index = stream_index;
+					printf("\nSHIKEDEBUG 1\n");
+					printf("\nshikedebug index%ld ,time_base1:%d ,time_base2:%d\n" ,stream_index ,stream_ctx[stream_index].enc_ctx->time_base.den ,output_context->streams[stream_index]->time_base.den);
 					av_packet_rescale_ts(&enc_pkt ,stream_ctx[stream_index].enc_ctx->time_base ,output_context->streams[stream_index]->time_base);
+					printf("\nSHIKEDEBUG 2\n");
+					printf("\nshikeDebug pts%ld dts%ld\n" ,enc_pkt.pts ,enc_pkt.dts);
+					enc_pkt.stream_index = stream_index;
 					ret = av_interleaved_write_frame(output_context ,&enc_pkt);
-
+					printf("\nSHIKEDEBUG 3\n");
+					if (ret < 0) {
+						break;
+					}
 				}
+				av_frame_free(&frame);
 				if (ret < 0) {
 					av_log(NULL ,AV_LOG_ERROR ,"recodec rescale failure in sink filter\n");
 					goto end;
 				}
-				av_frame_free(&frame);
+				
 			} else {
 				av_frame_free(&frame);
 			}
