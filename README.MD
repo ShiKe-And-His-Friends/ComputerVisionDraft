@@ -27,6 +27,7 @@ g++ ffmpeg_demo.cpp -o ffmpeg_demo2 -I/usr/local/include -L/usr/local/lib -lavfo
 
 示例4，一处FFMPEG调用：
 ```C
+./configure  --enable-shared  --enable-static --enable-gpl --enable-libx264 --enable-libfreetype --prefix=/usr/local/ffmpeg
 ret = avcodec_send_packet(dec_ctx, pkt);
 ```
 
