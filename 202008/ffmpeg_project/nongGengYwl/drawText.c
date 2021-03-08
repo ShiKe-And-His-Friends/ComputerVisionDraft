@@ -126,8 +126,17 @@ static int init_filter(FilteringContext* fctx ,AVCodecContext* dec_ctx
 		ret = AVERROR(ENOMEM);
 		goto end;
 	}
+	/**
+	 * Add Windows system YaHei TTF file.
+	 * Link this font file.
+	 * */
+	if (space && dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO) {
+		space = "drawtext=fontfile=../STLITI.TTF:fontcolor=black:fontsize=50:text='Hello World,\n 124GUdwq北京很冷':x=0:y=100";	
+		av_log(NULL ,AV_LOG_INFO ,"Set space info\n");
+	}
 	if ((ret = avfilter_graph_parse_ptr(filter_graph ,space 
 		,&inputs ,&outputs ,NULL)) < 0) {
+		av_log(NULL ,AV_LOG_ERROR ,"Filter config fialure.\n");
 		goto end;
 	}
 	if ((ret = avfilter_graph_config(filter_graph ,NULL) < 0)) {
