@@ -3,14 +3,15 @@
 #include <libavcodec/avcodec.h>
 #include <libavutil/time.h>
 
-int64_t lastTime;
+int64_t lastTime = -1;
 static int interrupt_cb_cut(void *ctx){
-	/**if (av_gettime() - lastTime > 20 * 1000 * 1000) {
+	// Internet stream no response
+	if (av_gettime() - lastTime > 10 * 1000 * 1000) {
 		av_log(NULL ,AV_LOG_INFO ,"Interrupt\n");
 		return -1;		
 	} else {
 		return 0;
-	}**/
+	}
 	return 0;
 }
 
@@ -30,9 +31,9 @@ int main(int argc ,char* argv[]) {
 	input  = argv[1];
 	output = argv[2];
 	inputCtx = avformat_alloc_context();
-	lastTime = av_gettime();
 	inputCtx->interrupt_callback.callback = interrupt_cb_cut;
 	AVDictionary* options = NULL;
+	lastTime = av_gettime();
 	ret = avformat_open_input(&inputCtx ,input ,NULL ,&options);
 	if (ret < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"open input context failure.\n");
@@ -79,12 +80,12 @@ int main(int argc ,char* argv[]) {
 			if(firstPts < 0) {
 				firstPts = packet.pts;
 			}
-			/**if (firstPts >= 0) {
-				if (packet.stream_index == 0 && packet.pts - firstPts >= 3600 * 25 * 30) {
+			if (firstPts >= 0) {
+				if (packet.pts - firstPts >= 3600 * 25 * 10) {
 					fprintf(stderr ,"\nTIME OUT\n");
 					break;
 				}
-			}**/
+			}
 			AVStream* inputStream = inputCtx->streams[packet.stream_index];
 			AVStream* outputStream = outputCtx->streams[packet.stream_index];
 			av_packet_rescale_ts(&packet ,inputStream->time_base ,outputStream->time_base);
@@ -102,7 +103,9 @@ int main(int argc ,char* argv[]) {
 		}
 	}
 
-
+	av_write_trailer(outputCtx);
+	avformat_close_input(&outputCtx);
+	avformat_free_context(outputCtx);
 	fprintf(stderr ,"SUCCESS FILE CUT\n");
 	return 0;
 
