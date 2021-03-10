@@ -3,15 +3,16 @@
 #include <stdio.h>
 
 int main (int argc ,char* argvs[]) {
-	uint8_t index;
+	uint8_t index = 0;
 	int ret;
 	int size;
-	int lastPts;
+	int lastPacketPts = 0;
+	int lastPts = 0;
 	char* input[2];
 	char* output;
 	AVFormatContext* inputCtx[2];
 	AVFormatContext* outputCtx;
-	AVPacket* packet;
+	AVPacket packet;
 	if (argc != 4) {
 		fprintf(stderr ,"Format Error.\n %s <input_file1> <input_file2> <output_file>\n" ,argvs[0]);
 		return -1;
@@ -82,29 +83,33 @@ int main (int argc ,char* argvs[]) {
 	
 	// Process Data
 	while(1) {
-		packet->size = 0;
-		packet->data = NULL;
-		av_init_packet(packet);
-		ret = av_read_frame(inputCtx[index] ,packet);
+		packet.size = 0;
+		packet.data = NULL;
+		av_init_packet(&packet);
+		ret = av_read_frame(inputCtx[index] ,&packet);
 		if (ret >= 0) {
-			int64_t diff = packet->pts - lastPts;
+			int64_t diff = packet.pts - lastPacketPts;
+//			av_log(NULL ,AV_LOG_INFO ,"index = %d diff = %d packet.pts = %ls \nlastPacketPts = %ld\n\n\n" ,index ,diff ,packet.pts ,lastPacketPts);
 			if (diff > 0) {
-				diff += diff;
+				lastPts += diff;
+			} else {
+				lastPts += 1;
 			}
-			lastPts = packet->pts;
-			packet->pts = packet->dts = lastPts;
-			AVStream* inputStream = inputCtx[index]->streams[packet->stream_index];
-			AVStream* outputStream = outputCtx->streams[packet->stream_index];
-			av_packet_rescale_ts(packet ,inputStream->time_base ,outputStream->time_base);
-			ret = av_interleaved_write_frame(outputCtx ,packet);
-			av_packet_unref(packet);
+			lastPacketPts = packet.pts;
+			packet.pts = packet.dts = lastPts;
+			av_log(NULL ,AV_LOG_INFO ,"pts dts = %d  lastPackFlag = %d\n" ,lastPts ,lastPacketPts);
+			AVStream* inputStream = inputCtx[index]->streams[packet.stream_index];
+			AVStream* outputStream = outputCtx->streams[packet.stream_index];
+			av_packet_rescale_ts(&packet ,inputStream->time_base ,outputStream->time_base);
+			ret = av_interleaved_write_frame(outputCtx ,&packet);
+			av_packet_unref(&packet);
 			if (ret < 0) {
 				av_log(NULL ,AV_LOG_ERROR ,"Packet Write Failure.\n");
 				//check line
 				goto end;
 			}
 		} else {
-			av_packet_unref(packet);
+			av_packet_unref(&packet);
 			index ++;
 			if (index == size) {
 				av_log(NULL ,AV_LOG_INFO ,"\nFile End...\n");
@@ -112,8 +117,12 @@ int main (int argc ,char* argvs[]) {
 			}
 		}
 	}
-	
-	fprintf(stderr ,"MERGE SUCCESS\n");
+
+	av_write_trailer(outputCtx);
+	avformat_free_context(outputCtx);
+	avformat_free_context(inputCtx[0]);
+	avformat_free_context(inputCtx[1]);
+	fprintf(stderr ,"\n\nMERGE SUCCESS\n");
 	return 0;
 
 end:
