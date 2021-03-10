@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 
 PROJECT(FFmpegDraft)
 
-SET(SRC_LIST ../fileCut.c)
+SET(SRC_LIST ../fileMerge.c)
 
 include_directories("/usr/local/include")
 
-ADD_EXECUTABLE(fileCut  ${SRC_LIST})
+ADD_EXECUTABLE(fileMerge  ${SRC_LIST})
 
-target_link_libraries(fileCut libavformat.so libavcodec.so libavdevice.so libavfilter.so libavutil.so libswscale.so libswresample.so libavutil.so m z x264 )
+target_link_libraries(fileMerge libavformat.so libavcodec.so libavdevice.so libavfilter.so libavutil.so libswscale.so libswresample.so libavutil.so m z x264 )
