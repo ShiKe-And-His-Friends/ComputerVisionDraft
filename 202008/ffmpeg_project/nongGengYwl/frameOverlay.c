@@ -11,7 +11,8 @@ int main (int argc ,char* argvs[] ) {
 	char* input[2];
 	char* output;
 	AVFormatContext* inputCtx[2];
-	AVCodecContext* outputCodecCtx[2];
+	AVFormatContext* outputCtx;
+	AVCodecContext* inputCodecCtx[2];
 
 	if (argc != 4) {
 		fprintf(stderr ,"Input Format Error.\n %s <input_video_file> <input_picture_file> <output_video_file>\n" ,argvs[0]);
@@ -42,12 +43,12 @@ int main (int argc ,char* argvs[] ) {
 		av_log(NULL ,AV_LOG_ERROR ,"Find Decoder Video# %d failure\n" ,codecId);
 		goto end;
 	}
-	outputCodecCtx[0] = avcodec_alloc_context3(codec);
-	if (!outputCodecCtx[0]) {	
+	inputCodecCtx[0] = avcodec_alloc_context3(codec);
+	if (!inputCodecCtx[0]) {	
 		av_log(NULL ,AV_LOG_ERROR ,"Find Decoder Context Video# %d failure\n" ,codecId);
 		goto end;
 	}
-	ret = avcodec_open2(outputCodecCtx[0] ,codec ,NULL);
+	ret = avcodec_open2(inputCodecCtx[0] ,codec ,NULL);
 
 	if (ret < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Open Output Codec For File %s Failure\n" ,input[0]);
@@ -74,15 +75,74 @@ int main (int argc ,char* argvs[] ) {
 		av_log(NULL ,AV_LOG_ERROR ,"Find Decoder Video# %d failure\n" ,codecIdPic);
 		goto end;
 	}
-	outputCodecCtx[1] = avcodec_alloc_context3(codecPic);
-	if (!outputCodecCtx[1]) {	
+	inputCodecCtx[1] = avcodec_alloc_context3(codecPic);
+	if (!inputCodecCtx[1]) {	
 		av_log(NULL ,AV_LOG_ERROR ,"Find Decoder Context Video# %d failure\n" ,codecId);
 		goto end;
 	}
-	ret = avcodec_open2(outputCodecCtx[1] ,codecPic ,NULL);
+	ret = avcodec_open2(inputCodecCtx[1] ,codecPic ,NULL);
 
 	if (ret < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Open Output Codec For File %s Failure\n" ,input[1]);
+		goto end;
+	}
+	
+	// Open Output File
+	ret = avformat_alloc_output_context2(&outputCtx ,NULL ,"mpegts" ,output);
+	if (ret < 0){
+		av_log(NULL ,AV_LOG_ERROR ,"Ouput File %s Open Failure\n" ,output);
+		goto end;
+	}
+	ret = avio_open2(&outputCtx->pb ,output ,AVIO_FLAG_READ_WRITE ,NULL ,NULL);
+	if (ret < 0){
+		av_log(NULL ,AV_LOG_ERROR ,"Ouput File %s Open Stream Failure\n" ,output);
+		goto end;
+	}
+	for (int i = 0 ; i < inputCtx[0]->nb_streams ; i++) {		
+		AVCodecContext* outputCodecCtx;
+		AVStream* stream = avformat_new_stream(outputCtx ,NULL);
+		if (!stream) {
+			av_log(NULL ,AV_LOG_ERROR ,"Ouput File %s Open Stream#%u Failure\n" ,output ,i);
+			
+			goto end;
+		}
+		AVCodec* codec = avcodec_find_encoder(inputCtx[0]->streams[i]->codecpar->codec_id);
+		if (!codec) {	
+			av_log(NULL ,AV_LOG_ERROR ,"Find Codec %s Open Stream#%u Failure\n" ,output ,i);
+			goto end;
+		}
+		outputCodecCtx = avcodec_alloc_context3(codec);
+		if (!outputCodecCtx) {	
+			av_log(NULL ,AV_LOG_ERROR ,"Find Codec Context %s Open Stream#%u Failure\n" ,output ,i);
+			ret = AVERROR(ENOMEM);
+			goto end;
+		}
+		if () {
+		
+		}
+		outputCtx -> flags |= AV_CODEC_FLAG_GLOBAL_HREADER;
+		ret = avcodec_open2(outputCodecCtx ,codec ,NULL);
+		if (ret < 0) {
+			av_log(NULL ,AV_LOG_ERROR ,"Open Codec Encoder %s Open Stream#%u Failure\n" ,output ,i);
+			ret = AVERROR(ENOMEM);
+			goto end;
+		}
+
+		ret = avcodec_parameters_from_context(stream->codecpar ,outputCodecCtx);
+		if (ret < 0) {
+			av_log(NULL ,AV_LOG_ERROR ,"Copy Codec Context %s Open Stream#%u Failure\n" ,output ,i);
+			ret = AVERROR(ENOMEM);
+			goto end;
+		}
+	}	
+	ret = avio_open(&outputCtx->pb ,output ,AVIO_FLAG_READ_WRITE);
+	if (ret < 0){
+		av_log(NULL ,AV_LOG_ERROR ,"Ouput File %s Open Stream Failure\n" ,output);
+		goto end;
+	}
+	ret = avformat_write_header(outputCtx ,NULL);
+	if (ret < 0){
+		av_log(NULL ,AV_LOG_ERROR ,"Write Header\n");
 		goto end;
 	}
 
