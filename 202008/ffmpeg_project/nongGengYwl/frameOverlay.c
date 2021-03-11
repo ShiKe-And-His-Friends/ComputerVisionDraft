@@ -117,10 +117,30 @@ int main (int argc ,char* argvs[] ) {
 			ret = AVERROR(ENOMEM);
 			goto end;
 		}
-		if () {
-		
+		if (outputCodecCtx->codec_type == AVMEDIA_TYPE_VIDEO) {
+			// Self Define Video Parameters
+			outputCodecCtx->gop_size  = 30;
+			outputCodecCtx->has_b_frames  = 0;
+			outputCodecCtx->max_b_frames  = 0;
+			outputCodecCtx->codec_id  = codec->id;	
+			outputCodecCtx->framerate = av_guess_frame_rate(inputCtx[0] ,stream ,NULL);
+			outputCodecCtx->time_base = av_inv_q(outputCodecCtx->framerate);
+			outputCodecCtx->pix_fmt  = inputCodecCtx[0]->pix_fmt;
+			outputCodecCtx->width  = inputCodecCtx[0]->width;
+			outputCodecCtx->height  = inputCodecCtx[0]->height;
+			outputCodecCtx->me_subpel_quality = 0;
+			outputCodecCtx->trellis = 0;
+				
+		} else if (outputCodecCtx->codec_type == AVMEDIA_TYPE_AUDIO) {
+			outputCodecCtx->sample_rate = inputCtx[0]->streams[i]->codecpar->sample_rate;
+			outputCodecCtx->channel_layout = inputCtx[0]->streams[i]->codecpar->channel_layout;
+			outputCodecCtx->channels = av_get_channel_layout_nb_channels(inputCtx[0]->streams[i]->codecpar->channel_layout);
+			outputCodecCtx->time_base = (AVRational){1 ,outputCodecCtx->sample_rate};
+		} else {
+			av_log(NULL ,AV_LOG_ERROR ,"Subtitle No Suppurt\n");
+			goto end;
 		}
-		outputCtx -> flags |= AV_CODEC_FLAG_GLOBAL_HREADER;
+		outputCtx -> flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 		ret = avcodec_open2(outputCodecCtx ,codec ,NULL);
 		if (ret < 0) {
 			av_log(NULL ,AV_LOG_ERROR ,"Open Codec Encoder %s Open Stream#%u Failure\n" ,output ,i);
