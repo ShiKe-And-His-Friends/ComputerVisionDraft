@@ -54,6 +54,7 @@ int main (int argc ,char* argvs[] ) {
 		av_log(NULL ,AV_LOG_ERROR ,"Open Output Codec For File %s Failure\n" ,input[0]);
 		goto end;
 	}
+	ret = avcodec_parameters_to_context(codec ,);
 
 	inputCtx[1] = avformat_alloc_context();
 	inputCtx[1]->interrupt_callback.callback = NULL;
@@ -117,21 +118,31 @@ int main (int argc ,char* argvs[] ) {
 			ret = AVERROR(ENOMEM);
 			goto end;
 		}
+		ret = avcodec_parameters_from_context(stream->codecpar ,outputCodecCtx);
+		if (ret < 0) {
+			av_log(NULL ,AV_LOG_ERROR ,"Copy Codec Context %s Open Stream#%u Failure\n" ,output ,i);
+			ret = AVERROR(ENOMEM);
+			goto end;
+		}
 		if (outputCodecCtx->codec_type == AVMEDIA_TYPE_VIDEO) {
 			// Self Define Video Parameters
+//			outputCodecCtx->framerate = av_guess_frame_rate(inputCtx[0] ,stream ,NULL);
 			outputCodecCtx->gop_size  = 30;
 			outputCodecCtx->has_b_frames  = 0;
 			outputCodecCtx->max_b_frames  = 0;
 			outputCodecCtx->codec_id  = codec->id;	
-			outputCodecCtx->framerate = av_guess_frame_rate(inputCtx[0] ,stream ,NULL);
+//			if (!codec->pix_fmts) {
+//				outputCodecCtx->pix_fmt  = codec->pix_fmts[0];
+//			} else {
+				outputCodecCtx->pix_fmt = inputCodecCtx[0]->pix_fmt;
+//			}
 			outputCodecCtx->time_base = av_inv_q(outputCodecCtx->framerate);
-			outputCodecCtx->pix_fmt  = inputCodecCtx[0]->pix_fmt;
 			outputCodecCtx->width  = inputCodecCtx[0]->width;
 			outputCodecCtx->height  = inputCodecCtx[0]->height;
 			outputCodecCtx->me_subpel_quality = 0;
 			outputCodecCtx->trellis = 0;
-				
 		} else if (outputCodecCtx->codec_type == AVMEDIA_TYPE_AUDIO) {
+			outputCodecCtx->sample_fmt = codec->sample_fmts[i];
 			outputCodecCtx->sample_rate = inputCtx[0]->streams[i]->codecpar->sample_rate;
 			outputCodecCtx->channel_layout = inputCtx[0]->streams[i]->codecpar->channel_layout;
 			outputCodecCtx->channels = av_get_channel_layout_nb_channels(inputCtx[0]->streams[i]->codecpar->channel_layout);
