@@ -87,7 +87,8 @@ int main (int argc ,char* argvs[] ) {
 		av_log(NULL ,AV_LOG_ERROR ,"Open Output Codec For File %s Failure\n" ,input[1]);
 		goto end;
 	}
-	
+	//TODO stream codec info
+
 	// Open Output File
 	ret = avformat_alloc_output_context2(&outputCtx ,NULL ,"mpegts" ,output);
 	if (ret < 0){
