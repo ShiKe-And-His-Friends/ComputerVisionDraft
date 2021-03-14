@@ -177,7 +177,11 @@ int main (int argc ,char* argvs[] ) {
 		av_log(NULL ,AV_LOG_ERROR ,"Write Header\n");
 		goto end;
 	}
-
+ret = avformat_write_header(outputCtx ,NULL);
+	if (ret < 0){
+		av_log(NULL ,AV_LOG_ERROR ,"Write Header\n");
+		goto end;
+	}
 	fprintf(stderr ,"\nFRAME OVERLAY SUCCESS\n");
 	return 0;
 end:
