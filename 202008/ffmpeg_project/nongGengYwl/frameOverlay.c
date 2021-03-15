@@ -1,6 +1,12 @@
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+#include <libavutil/opt.h>
 #include <stdio.h>
+
+typedef struct StreamContext {
+	AVCodecContext* dec_ctx;
+	AVCodecContext* enc_ctx;
+}StreamContext;
 
 int interrupt_cb(void* ctx) {
 	return 0;
@@ -13,6 +19,7 @@ int main (int argc ,char* argvs[] ) {
 	AVFormatContext* inputCtx[2];
 	AVFormatContext* outputCtx;
 	AVCodecContext* inputCodecCtx[2];
+	StreamContext* streamCtx = NULL;
 
 	if (argc != 4) {
 		fprintf(stderr ,"Input Format Error.\n %s <input_video_file> <input_picture_file> <output_video_file>\n" ,argvs[0]);
@@ -30,32 +37,50 @@ int main (int argc ,char* argvs[] ) {
 		av_log(NULL ,AV_LOG_ERROR ,"Open Input File %s Failure\n" ,input[0]);
 		goto end;
 	}
-	ret = avformat_find_stream_info(inputCtx[0] ,NULL);
+	streamCtx = av_mallocz_array(inputCtx[0]->nb_streams ,sizeof(streamCtx));
+	if (!streamCtx) {
+		av_log(NULL ,AV_LOG_ERROR ,"stream contxt copy failure.\n");
+		goto end;
+	}
 
+	ret = avformat_find_stream_info(inputCtx[0] ,NULL);
 	if (ret < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Find Info Input File %s Failure\n" ,input[0]);
 		goto end;
 	}
+	for (int i = 0; i < inputCtx[0]->nb_streams; i++) {
+		AVStream* stream = inputCtx[0]->streams[i];
+		AVCodec* codec = avcodec_find_decoder(stream->codecpar->codec_id);
+		if (!codec) {
+			av_log(NULL ,AV_LOG_ERROR ,"Input0 find codec stream#%d failure.\n" ,i);
+			ret = AVERROR_DECODER_NOT_FOUND;
+			goto end;
+		}
+		inputCodecCtx[0] = avcodec_alloc_context3(codec);
+		if (!inputCodecCtx[0]) {
+			av_log(NULL, AV_LOG_ERROR, "Find Decoder Context Input0 Stream#%d failure\n", i);
+			goto end;
+		}
+		ret = avcodec_parameters_to_context(inputCodecCtx[0] ,stream->codecpar);
+		if (ret < 0) {
+			av_log(NULL, AV_LOG_ERROR, "Copy Output Codec For File %s Failure\n", input[0]);
+			goto end;
+		}
+		if (inputCodecCtx[0]->codec_type == AVMEDIA_TYPE_AUDIO || inputCodecCtx[0]->codec_type == AVMEDIA_TYPE_VIDEO) {
+			//TODO set samplerate
+			
+			ret = avcodec_open2(inputCodecCtx[0], codec, NULL);
+			if (ret < 0) {
+				av_log(NULL, AV_LOG_ERROR, "Open Output Codec For File %s Failure\n", input[0]);
+				goto end;
+			}
+
+		}
+		streamCtx[i].dec_ctx = inputCodecCtx[0];
+	}
 	av_dump_format(inputCtx[0] ,0 ,input[0] ,0);
-	enum AVCodecID codecId = inputCtx[0]->streams[0]->codecpar->codec_id;
-	AVCodec* codec = avcodec_find_decoder(codecId);	
-	if (!codec) {
-		av_log(NULL ,AV_LOG_ERROR ,"Find Decoder Video# %d failure\n" ,codecId);
-		goto end;
-	}
-	inputCodecCtx[0] = avcodec_alloc_context3(codec);
-	if (!inputCodecCtx[0]) {	
-		av_log(NULL ,AV_LOG_ERROR ,"Find Decoder Context Video# %d failure\n" ,codecId);
-		goto end;
-	}
-	ret = avcodec_open2(inputCodecCtx[0] ,codec ,NULL);
-
-	if (ret < 0) {
-		av_log(NULL ,AV_LOG_ERROR ,"Open Output Codec For File %s Failure\n" ,input[0]);
-		goto end;
-	}
-	ret = avcodec_parameters_to_context(codec ,);
-
+	
+	
 	inputCtx[1] = avformat_alloc_context();
 	inputCtx[1]->interrupt_callback.callback = NULL;
 	ret = avformat_open_input(&inputCtx[1] ,input[1] ,NULL ,&format_opt);
@@ -177,11 +202,7 @@ int main (int argc ,char* argvs[] ) {
 		av_log(NULL ,AV_LOG_ERROR ,"Write Header\n");
 		goto end;
 	}
-ret = avformat_write_header(outputCtx ,NULL);
-	if (ret < 0){
-		av_log(NULL ,AV_LOG_ERROR ,"Write Header\n");
-		goto end;
-	}
+
 	fprintf(stderr ,"\nFRAME OVERLAY SUCCESS\n");
 	return 0;
 end:
