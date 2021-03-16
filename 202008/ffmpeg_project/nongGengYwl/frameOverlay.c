@@ -1,6 +1,9 @@
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+#include <libavfilter/buffersink.h>
+#include <libavfilter/buffersrc.h>
 #include <libavutil/opt.h>
+#include <libavutil/time.h>
 #include <stdio.h>
 
 typedef struct StreamContext {
@@ -68,7 +71,13 @@ int main (int argc ,char* argvs[] ) {
 		}
 		if (inputCodecCtx[0]->codec_type == AVMEDIA_TYPE_AUDIO || inputCodecCtx[0]->codec_type == AVMEDIA_TYPE_VIDEO) {
 			//TODO set samplerate
-			
+			if (inputCodecCtx[0]->codec_type == AVMEDIA_TYPE_VIDEO) {
+				inputCodecCtx[0]->framerate = av_guess_frame_rate(inputCtx[0] ,stream ,NULL);
+				inputCodecCtx[0]->time_base = av_inv_q(inputCodecCtx[0]->framerate);
+			}
+			if (inputCodecCtx[0]->codec_type == AVMEDIA_TYPE_AUDIO) {
+				inputCodecCtx[0]->time_base = (AVRational){1 ,inputCodecCtx[0]->sample_rate };
+			}
 			ret = avcodec_open2(inputCodecCtx[0], codec, NULL);
 			if (ret < 0) {
 				av_log(NULL, AV_LOG_ERROR, "Open Output Codec For File %s Failure\n", input[0]);
@@ -79,8 +88,7 @@ int main (int argc ,char* argvs[] ) {
 		streamCtx[i].dec_ctx = inputCodecCtx[0];
 	}
 	av_dump_format(inputCtx[0] ,0 ,input[0] ,0);
-	
-	
+		
 	inputCtx[1] = avformat_alloc_context();
 	inputCtx[1]->interrupt_callback.callback = NULL;
 	ret = avformat_open_input(&inputCtx[1] ,input[1] ,NULL ,&format_opt);
@@ -103,7 +111,7 @@ int main (int argc ,char* argvs[] ) {
 	}
 	inputCodecCtx[1] = avcodec_alloc_context3(codecPic);
 	if (!inputCodecCtx[1]) {	
-		av_log(NULL ,AV_LOG_ERROR ,"Find Decoder Context Video# %d failure\n" ,codecId);
+		av_log(NULL ,AV_LOG_ERROR ,"Find Decoder Context Video# %d failure\n" , codecPic);
 		goto end;
 	}
 	ret = avcodec_open2(inputCodecCtx[1] ,codecPic ,NULL);
@@ -112,96 +120,263 @@ int main (int argc ,char* argvs[] ) {
 		av_log(NULL ,AV_LOG_ERROR ,"Open Output Codec For File %s Failure\n" ,input[1]);
 		goto end;
 	}
-	//TODO stream codec info
 
 	// Open Output File
-	ret = avformat_alloc_output_context2(&outputCtx ,NULL ,"mpegts" ,output);
+	ret = avformat_alloc_output_context2(&outputCtx ,NULL ,NULL ,output);
 	if (ret < 0){
 		av_log(NULL ,AV_LOG_ERROR ,"Ouput File %s Open Failure\n" ,output);
 		goto end;
 	}
-	ret = avio_open2(&outputCtx->pb ,output ,AVIO_FLAG_READ_WRITE ,NULL ,NULL);
-	if (ret < 0){
-		av_log(NULL ,AV_LOG_ERROR ,"Ouput File %s Open Stream Failure\n" ,output);
-		goto end;
-	}
 	for (int i = 0 ; i < inputCtx[0]->nb_streams ; i++) {		
 		AVCodecContext* outputCodecCtx;
-		AVStream* stream = avformat_new_stream(outputCtx ,NULL);
-		if (!stream) {
+		AVCodecContext* inputCodecCtx;
+		AVStream* out_stream = avformat_new_stream(outputCtx ,NULL);
+		if (!out_stream) {
 			av_log(NULL ,AV_LOG_ERROR ,"Ouput File %s Open Stream#%u Failure\n" ,output ,i);
-			
+			ret = AVERROR_UNKNOWN;
 			goto end;
 		}
-		AVCodec* codec = avcodec_find_encoder(inputCtx[0]->streams[i]->codecpar->codec_id);
-		if (!codec) {	
-			av_log(NULL ,AV_LOG_ERROR ,"Find Codec %s Open Stream#%u Failure\n" ,output ,i);
+		AVStream* in_stream = inputCtx[0]->streams[i];
+		inputCodecCtx = streamCtx[i].dec_ctx;
+		if (inputCodecCtx->codec_type == AVMEDIA_TYPE_AUDIO || inputCodecCtx->codec_type == AVMEDIA_TYPE_VIDEO) {
+			AVCodec* codec = avcodec_find_encoder(inputCodecCtx->codec_id);
+			if (!codec) {
+				av_log(NULL, AV_LOG_ERROR, "Find Codec %s Open Stream#%u Failure\n", output, i);
+				goto end;
+			}
+			outputCodecCtx = avcodec_alloc_context3(codec);
+			if (!outputCodecCtx) {
+				av_log(NULL, AV_LOG_ERROR, "Find Codec Context %s Open Stream#%u Failure\n", output, i);
+				ret = AVERROR(ENOMEM);
+				goto end;
+			}
+			if (inputCodecCtx->codec_type == AVMEDIA_TYPE_VIDEO) {
+				outputCodecCtx->width = inputCodecCtx->width;
+				outputCodecCtx->height = inputCodecCtx->height;
+				outputCodecCtx->sample_aspect_ratio = inputCodecCtx->sample_aspect_ratio;
+				if (codec->pix_fmts) {
+					outputCodecCtx->pix_fmt = codec->pix_fmts[0];
+				}else {
+					outputCodecCtx->pix_fmt = inputCodecCtx->pix_fmt;
+				}
+				outputCodecCtx->framerate = inputCodecCtx->framerate;
+				outputCodecCtx->time_base = av_inv_q(inputCodecCtx->framerate);
+			} else {
+				outputCodecCtx->sample_rate = inputCodecCtx->sample_rate;
+				outputCodecCtx->channel_layout = inputCodecCtx->channel_layout;
+				outputCodecCtx->channels = av_get_channel_layout_nb_channels(inputCodecCtx->channel_layout);
+				outputCodecCtx->sample_fmt = codec->sample_fmts[0];
+				outputCodecCtx->time_base = (AVRational){1 ,outputCodecCtx->sample_rate };
+			}
+			if (outputCtx->oformat->flags & AVFMT_GLOBALHEADER) {
+				outputCtx->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
+			}
+			ret = avcodec_open2(outputCodecCtx, codec, NULL);
+			if (ret < 0) {
+				av_log(NULL, AV_LOG_ERROR, "Open Codec Encoder %s Open Stream#%u Failure\n", output, i);
+				ret = AVERROR(ENOMEM);
+				goto end;
+			}
+			ret = avcodec_parameters_from_context(out_stream->codecpar, outputCodecCtx);
+			if (ret < 0) {
+				av_log(NULL, AV_LOG_ERROR, "Copy Codec Context %s Open Stream#%u Failure\n", output, i);
+				ret = AVERROR(ENOMEM);
+				goto end;
+			}
+			out_stream->time_base = outputCodecCtx->time_base;
+			streamCtx[i].enc_ctx = outputCodecCtx;
+		
+		} else if (inputCodecCtx->codec_type == AVMEDIA_TYPE_UNKNOWN) {
+			ret = AVERROR_INVALIDDATA;
 			goto end;
-		}
-		outputCodecCtx = avcodec_alloc_context3(codec);
-		if (!outputCodecCtx) {	
-			av_log(NULL ,AV_LOG_ERROR ,"Find Codec Context %s Open Stream#%u Failure\n" ,output ,i);
-			ret = AVERROR(ENOMEM);
-			goto end;
-		}
-		ret = avcodec_parameters_from_context(stream->codecpar ,outputCodecCtx);
-		if (ret < 0) {
-			av_log(NULL ,AV_LOG_ERROR ,"Copy Codec Context %s Open Stream#%u Failure\n" ,output ,i);
-			ret = AVERROR(ENOMEM);
-			goto end;
-		}
-		if (outputCodecCtx->codec_type == AVMEDIA_TYPE_VIDEO) {
-			// Self Define Video Parameters
-//			outputCodecCtx->framerate = av_guess_frame_rate(inputCtx[0] ,stream ,NULL);
-			outputCodecCtx->gop_size  = 30;
-			outputCodecCtx->has_b_frames  = 0;
-			outputCodecCtx->max_b_frames  = 0;
-			outputCodecCtx->codec_id  = codec->id;	
-//			if (!codec->pix_fmts) {
-//				outputCodecCtx->pix_fmt  = codec->pix_fmts[0];
-//			} else {
-				outputCodecCtx->pix_fmt = inputCodecCtx[0]->pix_fmt;
-//			}
-			outputCodecCtx->time_base = av_inv_q(outputCodecCtx->framerate);
-			outputCodecCtx->width  = inputCodecCtx[0]->width;
-			outputCodecCtx->height  = inputCodecCtx[0]->height;
-			outputCodecCtx->me_subpel_quality = 0;
-			outputCodecCtx->trellis = 0;
-		} else if (outputCodecCtx->codec_type == AVMEDIA_TYPE_AUDIO) {
-			outputCodecCtx->sample_fmt = codec->sample_fmts[i];
-			outputCodecCtx->sample_rate = inputCtx[0]->streams[i]->codecpar->sample_rate;
-			outputCodecCtx->channel_layout = inputCtx[0]->streams[i]->codecpar->channel_layout;
-			outputCodecCtx->channels = av_get_channel_layout_nb_channels(inputCtx[0]->streams[i]->codecpar->channel_layout);
-			outputCodecCtx->time_base = (AVRational){1 ,outputCodecCtx->sample_rate};
 		} else {
-			av_log(NULL ,AV_LOG_ERROR ,"Subtitle No Suppurt\n");
-			goto end;
+			/** Must Remuxed */
+			ret = avcodec_parameters_copy(out_stream->codecpar ,in_stream->codecpar);
+			if (ret < 0) {
+				av_log(NULL, AV_LOG_ERROR, "Copy Codec Context %s Open Stream#%u Remuxed Failure\n", output, i);
+				ret = AVERROR(ENOMEM);
+				goto end;
+			}
+			out_stream->time_base = in_stream->time_base;
 		}
-		outputCtx -> flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
-		ret = avcodec_open2(outputCodecCtx ,codec ,NULL);
+	
+	}
+	av_dump_format(outputCtx, 0, output, 1);
+	if (!(outputCtx->oformat->flags & AVFMT_NOFILE)) {
+		ret = avio_open(&outputCtx->pb, output, AVIO_FLAG_READ_WRITE);
 		if (ret < 0) {
-			av_log(NULL ,AV_LOG_ERROR ,"Open Codec Encoder %s Open Stream#%u Failure\n" ,output ,i);
-			ret = AVERROR(ENOMEM);
+			av_log(NULL, AV_LOG_ERROR, "Ouput File %s Open Stream Failure\n", output);
 			goto end;
 		}
-
-		ret = avcodec_parameters_from_context(stream->codecpar ,outputCodecCtx);
-		if (ret < 0) {
-			av_log(NULL ,AV_LOG_ERROR ,"Copy Codec Context %s Open Stream#%u Failure\n" ,output ,i);
-			ret = AVERROR(ENOMEM);
-			goto end;
-		}
-	}	
-	ret = avio_open(&outputCtx->pb ,output ,AVIO_FLAG_READ_WRITE);
-	if (ret < 0){
-		av_log(NULL ,AV_LOG_ERROR ,"Ouput File %s Open Stream Failure\n" ,output);
-		goto end;
 	}
 	ret = avformat_write_header(outputCtx ,NULL);
 	if (ret < 0){
 		av_log(NULL ,AV_LOG_ERROR ,"Write Header\n");
 		goto end;
 	}
+
+	//Init Filter
+	const char* filterDescr = "overlay=100:100";
+
+	AVFrame* srcFrame[2];
+	AVFrame* inputFrame[2];
+	AVFrame* filterFrame;
+	AVFilterInOut* inputs;
+	AVFilterInOut* outputs;
+	AVFilterGraph* filterGraph = NULL;
+	AVFilterContext* inputFilterContext[2];
+	AVFilterContext* outputFilterContext = NULL;
+
+	srcFrame[0] = av_frame_alloc();
+	srcFrame[1] = av_frame_alloc();
+	inputFrame[0] = av_frame_alloc();
+	inputFrame[1] = av_frame_alloc();
+	filterFrame = av_frame_alloc();
+
+	filterGraph = avfilter_graph_alloc();
+	if (!filterGraph) {
+		av_log(NULL ,AV_LOG_ERROR ,"Filter Graph Alloc Fialure.\n");
+		ret = AVERROR(ENOMEM);
+		goto end;
+	}
+	avfilter_graph_parse2(filterGraph ,filterDescr ,&inputs ,&outputs);
+	char args[512];
+	memset(args ,0 ,sizeof(args));
+	AVFilterContext* padFIlterContext = inputs->filter_ctx;
+ 	const AVFilter* filter = avfilter_get_by_name("buffer");
+	AVCodecContext* codecContext = inputCtx[0]->streams[0]->codec;
+	sprintf_s(args ,sizeof(args),
+		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
+		codecContext->width ,codecContext->height ,codecContext->pix_fmt,
+		codecContext->time_base.num ,codecContext->time_base.den / codecContext->ticks_per_frame ,
+		codecContext->sample_aspect_ratio.num ,codecContext->sample_aspect_ratio.den);
+	ret = avfilter_graph_create_filter(&inputFilterContext[0] ,filter ,"MainFrame" ,args ,NULL ,filterGraph);
+	if (ret < 0) {
+		av_log(NULL ,AV_LOG_ERROR ,"Filter Config Main Frame Failure\n");
+		goto end;
+	}
+	ret = avfilter_link(inputFilterContext[0] ,0 ,padFIlterContext ,inputs->pad_idx);
+	if (ret < 0) {
+		av_log(NULL, AV_LOG_ERROR, "Filter Link Main Frame Failure\n");
+		goto end;
+	}
+
+	char padArgs[512];
+	memset(padArgs, 0, sizeof(padArgs));
+	AVFilterContext* padNextFilterContext = inputs->next->filter_ctx;
+	const AVFilter* nextFilter = avfilter_get_by_name("buffer");
+	AVCodecContext* padCodecContext = inputCtx[1]->streams[0]->codec;
+	sprintf_s(padArgs, sizeof(padArgs),
+		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
+		padCodecContext->width, padCodecContext->height, padCodecContext->pix_fmt,
+		padCodecContext->time_base.num, padCodecContext->time_base.den / padCodecContext->ticks_per_frame,
+		padCodecContext->sample_aspect_ratio.num, padCodecContext->sample_aspect_ratio.den);
+	ret = avfilter_graph_create_filter(&inputFilterContext[1], nextFilter, "OverlayFrame", padArgs, NULL, filterGraph);
+	if (ret < 0) {
+		av_log(NULL, AV_LOG_ERROR, "Filter Config Overlay Frame Failure\n");
+		goto end;
+	}
+	ret = avfilter_link(inputFilterContext[1], 0, padNextFilterContext, inputs->next->pad_idx);
+	if (ret < 0) {
+		av_log(NULL, AV_LOG_ERROR, "Filter Link Overlay Frame Failure\n");
+		goto end;
+	}
+
+	AVFilterContext* padOutputFilterContext = outputs->filter_ctx;
+	const AVFilter* outputFilter = avfilter_get_by_name("buffersink");
+	ret = avfilter_graph_create_filter(&outputFilterContext ,outputFilter ,"output" ,NULL ,NULL ,filterGraph);
+	if (ret < 0) {
+		av_log(NULL, AV_LOG_ERROR, "Filter Config Output Failure\n");
+		goto end;
+	}
+	ret = avfilter_link(padOutputFilterContext, outputs->pad_idx, outputFilterContext, 0);
+	if (ret < 0) {
+		av_log(NULL, AV_LOG_ERROR, "Filter Link Output Failure\n");
+		goto end;
+	}
+	avfilter_inout_free(&inputs->next);
+	avfilter_inout_free(&inputs);
+	avfilter_inout_free(&outputs);
+	ret = avfilter_graph_config(filterGraph ,NULL);
+	if (ret < 0) {
+		av_log(NULL, AV_LOG_ERROR, "Filter Graph Config Failure\n");
+		goto end;
+	}
+
+	// Deocde
+	int got_output = 0;
+	int64_t timeRecord = 0;
+	int64_t firstPacketTime = 0;
+	int64_t outLastTime = av_gettime();
+	int64_t inLastTime = av_gettime();
+	int64_t videoCount = 0;
+	AVPacket packet;
+
+	ret = 1;
+	
+	while (ret) {
+		packet.size = 0;
+		packet.data = NULL;
+		av_init_packet(&packet);
+		ret = av_read_frame(inputCtx[1] ,&packet);
+		int gotFrame = 0;
+		ret = avcodec_decode_video2(inputCodecCtx[1] ,srcFrame[1] ,&gotFrame ,&packet);
+		if (ret >= 0 && gotFrame != 0) {
+			srcFrame[1]->pts = packet.pts;
+			ret = 1;
+		}
+	}
+	av_packet_unref(&packet);
+
+	while (1) {
+		outLastTime = av_gettime();
+		packet.size = 0;
+		packet.data = NULL;
+		av_init_packet(&packet);
+		ret = av_read_frame(inputCtx[0], &packet);
+		if (ret < 0) {
+			av_log(NULL, AV_LOG_DEBUG, "\n\nPacket Deocde Done.\n");
+			break;
+		}
+		else {
+			int gotFrame = 0;
+			packet.size = 0;
+			packet.data = NULL;
+			av_init_packet(&packet);
+			ret = avcodec_encode_video2(streamCtx[0].enc_ctx, &packet, filterFrame, &gotFrame);
+			if (ret >= 0 && gotFrame != 0) {
+				srcFrame[0]->pts = packet.pts;
+			}
+			av_frame_ref(srcFrame[0], srcFrame[1]);
+			if (av_buffersrc_add_frame_flags(inputFilterContext[0], inputFrame[0], AV_BUFFERSRC_FLAG_PUSH) >= 0) {
+				srcFrame[1]->pts = srcFrame[0]->pts;
+				if (av_buffersrc_add_frame_flags(inputFilterContext[1], inputFrame[1], AV_BUFFERSRC_FLAG_PUSH) >= 0) {
+					packet.size = 0;
+					packet.data = NULL;
+					av_init_packet(&packet);
+
+					ret = avcodec_encode_video2(streamCtx[0].enc_ctx, &packet, filterFrame, &gotFrame);
+					if (ret >= 0 && gotFrame) {
+						ret = av_write_frame(outputCtx, &packet);
+					}
+				}
+				av_frame_unref(filterFrame);
+			}
+
+		}
+		av_packet_unref(&packet);
+	}
+	av_write_trailer(outputCtx);
+	if (inputCtx[0] != NULL){
+		avformat_close_input(&inputCtx[0]);
+	}
+	if (outputCtx != NULL) {
+		for (int i = 0; i < outputCtx->nb_streams; i++) {
+			avcodec_free_context(&streamCtx[i].enc_ctx);
+			avcodec_free_context(&streamCtx[i].dec_ctx);
+		}
+	}
+	avformat_close_input(&outputCtx);
 
 	fprintf(stderr ,"\nFRAME OVERLAY SUCCESS\n");
 	return 0;
