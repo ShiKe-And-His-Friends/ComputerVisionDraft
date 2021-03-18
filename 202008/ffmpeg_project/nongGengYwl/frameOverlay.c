@@ -90,7 +90,7 @@ int main (int argc ,char* argvs[] ) {
 	av_dump_format(inputCtx[0] ,0 ,input[0] ,0);
 		
 	inputCtx[1] = avformat_alloc_context();
-	inputCtx[1]->interrupt_callback.callback = NULL;
+	inputCtx[1]->interrupt_callback.callback = interrupt_cb;
 	ret = avformat_open_input(&inputCtx[1] ,input[1] ,NULL ,&format_opt);
 	if (ret < 0) {
 		av_log(NULL ,AV_LOG_ERROR ,"Open Input File %s Failure\n" ,input[1]);
@@ -103,21 +103,32 @@ int main (int argc ,char* argvs[] ) {
 		goto end;
 	}
 	av_dump_format(inputCtx[1] ,0 ,input[1] ,0);
-	enum AVCodecID codecIdPic = inputCtx[1]->streams[0]->codecpar->codec_id;
- 	AVCodec* codecPic = avcodec_find_decoder(codecIdPic);	
-	if (!codecPic) {
-		av_log(NULL ,AV_LOG_ERROR ,"Find Decoder Video# %d failure\n" ,codecIdPic);
+	
+	
+	AVStream* stream = inputCtx[1]->streams[0];
+	AVCodec* codec = avcodec_find_decoder(stream->codecpar->codec_id);
+	if (!codec) {
+		av_log(NULL, AV_LOG_ERROR, "Input1 find codec stream#0 failure.\n");
+		ret = AVERROR_DECODER_NOT_FOUND;
 		goto end;
 	}
-	inputCodecCtx[1] = avcodec_alloc_context3(codecPic);
-	if (!inputCodecCtx[1]) {	
-		av_log(NULL ,AV_LOG_ERROR ,"Find Decoder Context Video# %d failure\n" , codecPic);
+	inputCodecCtx[1] = avcodec_alloc_context3(codec);
+	if (!inputCodecCtx[1]) {
+		av_log(NULL, AV_LOG_ERROR, "Find Decoder Context Input1 Stream#0 failure\n");
 		goto end;
 	}
-	ret = avcodec_open2(inputCodecCtx[1] ,codecPic ,NULL);
-
+	ret = avcodec_parameters_to_context(inputCodecCtx[1], stream->codecpar);
 	if (ret < 0) {
-		av_log(NULL ,AV_LOG_ERROR ,"Open Output Codec For File %s Failure\n" ,input[1]);
+		av_log(NULL, AV_LOG_ERROR, "Copy Output Codec For File %s Failure\n", input[1]);
+		goto end;
+	}
+	if (inputCodecCtx[1]->codec_type == AVMEDIA_TYPE_VIDEO) {
+		inputCodecCtx[1]->framerate = av_guess_frame_rate(inputCtx[0], stream, NULL);
+		inputCodecCtx[1]->time_base = av_inv_q(inputCodecCtx[0]->framerate);
+	}
+	ret = avcodec_open2(inputCodecCtx[1], codec, NULL);
+	if (ret < 0) {
+		av_log(NULL, AV_LOG_ERROR, "Open Output Codec For File %s Failure\n", input[1]);
 		goto end;
 	}
 
@@ -244,7 +255,7 @@ int main (int argc ,char* argvs[] ) {
 	memset(args ,0 ,sizeof(args));
 	AVFilterContext* padFIlterContext = inputs->filter_ctx;
  	const AVFilter* filter = avfilter_get_by_name("buffer");
-	AVCodecContext* codecContext = inputCtx[0]->streams[0]->codec;
+	AVCodecContext* codecContext = streamCtx[0].dec_ctx;
 	sprintf_s(args ,sizeof(args),
 		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
 		codecContext->width ,codecContext->height ,codecContext->pix_fmt,
@@ -270,7 +281,7 @@ int main (int argc ,char* argvs[] ) {
 	memset(padArgs, 0, sizeof(padArgs));
 	AVFilterContext* padNextFilterContext = inputs->next->filter_ctx;
 	const AVFilter* nextFilter = avfilter_get_by_name("buffer");
-	AVCodecContext* padCodecContext = inputCtx[1]->streams[0]->codec;
+	AVCodecContext* padCodecContext = inputCodecCtx[1];
 	sprintf_s(padArgs, sizeof(padArgs),
 		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
 		padCodecContext->width, padCodecContext->height, padCodecContext->pix_fmt,
@@ -330,7 +341,7 @@ int main (int argc ,char* argvs[] ) {
 		ret = avcodec_decode_video2(inputCodecCtx[1] ,srcFrame[1] ,&gotFrame ,&packet);
 		if (ret >= 0 && gotFrame != 0) {
 			srcFrame[1]->pts = packet.pts;
-			ret = 1;
+			break;
 		}
 	}
 
@@ -362,20 +373,19 @@ int main (int argc ,char* argvs[] ) {
 			srcFrame[0]->pts = srcFrame[0]->best_effort_timestamp;
 			srcFrame[1]->pts = srcFrame[0]->pts;
 			//av_frame_ref(inputFrame[1], srcFrame[1]);
-			ret = av_buffersrc_add_frame_flags(inputFilterContext[1], srcFrame[0], AV_BUFFERSRC_FLAG_PUSH);
+			ret = av_buffersrc_add_frame_flags(inputFilterContext[1], srcFrame[1], AV_BUFFERSRC_FLAG_PUSH);
 			if (ret < 0) {
 				av_log(NULL, AV_LOG_ERROR, "Frame#1 Add Frame Failed.\n");
 				break;
 			}
-			else {
-				av_log(NULL, AV_LOG_ERROR, "Frame#1 Add Frame Success.\n");
-			}
-			/*
-			ret = av_buffersink_get_frame_flags(outputFilterContext ,filterFrame ,AV_BUFFERSINK_FLAG_NO_REQUEST);
+			ret = av_buffersink_get_frame_flags(outputFilterContext,filterFrame ,AV_BUFFERSINK_FLAG_NO_REQUEST);
 			if (ret < 0) {
 				av_log(NULL, AV_LOG_ERROR, "Frame#0 Output Frame Failed.\n");
 				av_frame_unref(filterFrame);
 				break;
+			}
+			else {
+				av_log(NULL, AV_LOG_ERROR, "Frame#0 Output Frame Success.\n");
 			}
 			packet.size = 0;
 			packet.data = NULL;
@@ -385,7 +395,7 @@ int main (int argc ,char* argvs[] ) {
 				ret = av_write_frame(outputCtx ,&packet);
 			}
 			av_frame_unref(filterFrame);
-			*/
+			
 		}
 
 		av_packet_unref(&packet);
