@@ -256,7 +256,7 @@ int main (int argc ,char* argvs[] ) {
 	AVFilterContext* padFIlterContext = inputs->filter_ctx;
  	const AVFilter* filter = avfilter_get_by_name("buffer");
 	AVCodecContext* codecContext = streamCtx[0].dec_ctx;
-	sprintf_s(args ,sizeof(args),
+	snprintf(args ,sizeof(args),
 		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
 		codecContext->width ,codecContext->height ,codecContext->pix_fmt,
 		codecContext->time_base.num ,codecContext->time_base.den / codecContext->ticks_per_frame ,
@@ -282,7 +282,7 @@ int main (int argc ,char* argvs[] ) {
 	AVFilterContext* padNextFilterContext = inputs->next->filter_ctx;
 	const AVFilter* nextFilter = avfilter_get_by_name("buffer");
 	AVCodecContext* padCodecContext = inputCodecCtx[1];
-	sprintf_s(padArgs, sizeof(padArgs),
+	snprintf(padArgs, sizeof(padArgs),
 		"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
 		padCodecContext->width, padCodecContext->height, padCodecContext->pix_fmt,
 		padCodecContext->time_base.num, padCodecContext->time_base.den / padCodecContext->ticks_per_frame,
@@ -327,7 +327,7 @@ int main (int argc ,char* argvs[] ) {
 	// Deocde
 	int gotFrame = 0;
 	int16_t streamIndex;
-	int16_t gotOutput;
+	int gotOutput;
 	AVPacket packet;
 
 	ret = 1;
@@ -363,7 +363,7 @@ int main (int argc ,char* argvs[] ) {
 		}
 		if (gotFrame) {
 			av_log(NULL ,AV_LOG_DEBUG ,"Push Decode Frame To Filters\n");
-			srcFrame[0]->pts = packet.pts;
+			//srcFrame[0]->pts = packet.pts;
 			av_frame_ref(inputFrame[0] ,srcFrame[0]);
 			ret = av_buffersrc_add_frame_flags(inputFilterContext[0] , srcFrame[0] ,AV_BUFFERSRC_FLAG_PUSH);
 			if (ret < 0) {
@@ -380,17 +380,13 @@ int main (int argc ,char* argvs[] ) {
 			}
 			ret = av_buffersink_get_frame_flags(outputFilterContext,filterFrame ,AV_BUFFERSINK_FLAG_NO_REQUEST);
 			if (ret < 0) {
-				av_log(NULL, AV_LOG_ERROR, "Frame#0 Output Frame Failed.\n");
 				av_frame_unref(filterFrame);
-				break;
-			}
-			else {
-				av_log(NULL, AV_LOG_ERROR, "Frame#0 Output Frame Success.\n");
+				continue;
 			}
 			packet.size = 0;
 			packet.data = NULL;
-			av_init_packet(&packet);
-			ret = avcodec_encode_video2(streamCtx[streamIndex].enc_ctx,&packet ,filterFrame ,gotOutput);
+			av_init_packet(&packet);		
+			ret = avcodec_encode_video2(streamCtx[streamIndex].enc_ctx,&packet ,filterFrame ,&gotOutput);
 			if (ret >=0 && gotOutput) {
 				ret = av_write_frame(outputCtx ,&packet);
 			}
