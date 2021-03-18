@@ -379,6 +379,7 @@ int main (int argc ,char* argvs[] ) {
 				break;
 			}
 			ret = av_buffersink_get_frame_flags(outputFilterContext,filterFrame ,AV_BUFFERSINK_FLAG_NO_REQUEST);
+			usleep(200);
 			if (ret < 0) {
 				av_frame_unref(filterFrame);
 				continue;
