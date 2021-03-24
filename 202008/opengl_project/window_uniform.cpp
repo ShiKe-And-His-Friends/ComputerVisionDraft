@@ -16,6 +16,7 @@ const char *vertexShaderSource ="#version 330 core\n"
     "void main()\n"
     "{\n"
     "   gl_Position = vec4(aPos, 1.0);\n"
+    "   gl_Position = vec4(aPos, 2.0);\n"
     "}\0";
 
 const char *fragmentShaderSource = "#version 330 core\n"
