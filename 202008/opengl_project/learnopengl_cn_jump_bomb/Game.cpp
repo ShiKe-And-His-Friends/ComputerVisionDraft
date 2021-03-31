@@ -1,5 +1,5 @@
 #include "Game.hpp"
-#incluide "ResourceManager.hpp"
+#include "resource_manager.hpp"
 
 Game::Game(GLuint width ,GLuint height):State(GAME_ACTIVE) ,Keys() ,Width(width) ,Height(height) {
 
