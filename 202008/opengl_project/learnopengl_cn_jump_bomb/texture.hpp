@@ -1,6 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
+
 #include <GL/eglew.h>
 
 class Texture2D {

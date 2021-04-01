@@ -4,6 +4,7 @@
 
 #include "Game.hpp"
 #include "resource_manager.hpp"
+#include <iostream>
 
 void key_callback(GLFWwindow* window ,int key ,int scancode ,int action ,int mode);
 
@@ -13,6 +14,9 @@ const GLuint SCREEN_HEIGHT = 600;
 Game Breakout(SCREEN_WIDTH ,SCREEN_HEIGHT);
 
 int main(int argc ,char* argv[]) {
+	fprintf(stderr, "shikeDebug 3333");
+	std::cout << "shikeDebug ERROR::SHADER:Compile-time TYPE:"<< std::endl;
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR ,3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
