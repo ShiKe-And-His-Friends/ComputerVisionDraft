@@ -7,6 +7,12 @@ Shader& Shader::Use() {
 }
 
 void Shader::Compile(const GLchar* vertexSource, const GLchar* fragmentSource, const GLchar* geometrySource) {
+	GLenum err = glewInit();
+	if (GLEW_OK != err){
+		std::cerr << "Error: " << glewGetErrorString(err) << std::endl;
+	}
+	std::cerr << "Status: Using GLEW " << glewGetString(GLEW_VERSION) << std::endl;
+	
 	GLuint sVertex, sFragment, gShader;
 	// Vertex Shader
 	sVertex = glCreateShader(GL_VERTEX_SHADER);
@@ -119,7 +125,7 @@ void Shader::checkCompileErrors(GLuint object ,std::string type) {
 		glGetProgramiv(object ,GL_LINK_STATUS ,&success);
 		if (!success) {
 			glGetProgramInfoLog(object ,1024 ,NULL ,info);
-			std::cout << "ERROR::SHADER:Compile-time TYPE:" << type << "\n"
+			std::cout << "ERROR::SHADER:PROGRAM::Compile-time TYPE:" << type << "\n"
 				<< info << "\n"
 				<< std::endl;
 		}

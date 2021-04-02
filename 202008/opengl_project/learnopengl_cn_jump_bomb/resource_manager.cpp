@@ -65,7 +65,7 @@ Shader ResourceManager::loadShaderFromFile(const GLchar *vShaderFile ,const GLch
 	const GLchar* fShaderCode = fragmentCode.c_str();
 	const GLchar* gShaderCode = geometryCode.c_str();
 	Shader shader;
-	shader.Compile(vShaderCode ,fShaderCode ,gShaderCode);
+	shader.Compile(vShaderCode ,fShaderCode , gShaderFile != nullptr ? gShaderCode : nullptr);
 	return shader;
 }
 

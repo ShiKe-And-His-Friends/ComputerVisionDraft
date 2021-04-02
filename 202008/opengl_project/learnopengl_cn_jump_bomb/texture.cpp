@@ -1,5 +1,5 @@
-#include "texture.hpp"
 #include <iostream>
+#include "texture.hpp"
 
 Texture2D::Texture2D() : Width(0) ,Height(0) 
 ,Internal_Format(GL_RG) ,Image_Format(GL_RGB) ,Wrap_S(GL_REPEAT) ,Wrap_T(GL_REPEAT) 
