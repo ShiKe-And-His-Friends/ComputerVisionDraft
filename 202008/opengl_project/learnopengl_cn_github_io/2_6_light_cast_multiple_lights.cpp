@@ -157,8 +157,8 @@ int main () {
 	glVertexAttribPointer(0 ,3 ,GL_FLOAT ,GL_FALSE ,8*sizeof(float) ,(void*)0);
 	glEnableVertexAttribArray(0);
 	
-	unsigned int diffuseMap = loadTexture("/home/shike/Documents/computerVisionDraft/202008/opengl_project/learnopengl_cn_github_io/drawable/container2.png");
-	unsigned int specularMap = loadTexture("/home/shike/Documents/computerVisionDraft/202008/opengl_project/learnopengl_cn_github_io/drawable/container2_specular.png");
+	unsigned int diffuseMap = loadTexture("drawable/container2.png");
+	unsigned int specularMap = loadTexture("drawable/container2_specular.png");
 	
 	lightingShader.use();
 	lightingShader.setInt("material.diffuse" ,0);
