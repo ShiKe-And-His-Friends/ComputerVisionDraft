@@ -2,7 +2,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "Game.hpp"
+#include "game_levels.hpp"
 #include "resource_manager.hpp"
 
 void key_callback(GLFWwindow* window ,int key ,int scancode ,int action ,int mode);
@@ -37,7 +37,7 @@ int main(int argc ,char* argv[]) {
 	GLfloat deltaTime = 0.0f;
 	GLfloat lastFrame = 0.0f;
 
-	Breakout.State = GAME_ACTIVE;
+	Breakout.States = GAME_ACTIVE;
 	while (!glfwWindowShouldClose(window)) {
 		GLfloat currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
