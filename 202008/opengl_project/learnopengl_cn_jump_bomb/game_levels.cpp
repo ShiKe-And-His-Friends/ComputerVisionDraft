@@ -54,6 +54,7 @@ void Game::Init() {
 
 void Game::Update(GLfloat dt) {
 	Ball->Move(dt ,this->Width);
+	this->DoCollisions();
 }
 
 void Game::ProcessInput(GLfloat dt) {
@@ -90,5 +91,25 @@ void Game::Render() {
 		this->Levels[this->Level].Draw(*Renderer);
 		Player->Draw(*Renderer);
 		Ball->Draw(*Renderer);
+	}
+}
+
+GLboolean CheckCollision(GameObject &one ,GameObject &two) {
+	bool collisionX = one.Position.x + one.Size.x >= two.Position.x
+		&&two.Position.x + two.Size.x >= one.Position.x;
+	bool collisionY = one.Position.y + one.Size.y >= two.Position.y
+		&& two.Position.y + two.Size.y >= one.Position.y;
+	return collisionX && collisionY;
+}
+
+void Game::DoCollisions() {
+	for (GameObject &box : this->Levels[this->Level].Bricks) {
+		if (!box.Destroyed) {
+			if (CheckCollision(*Ball ,box)) {
+				if (!box.IsSolid) {
+					box.Destroyed = GL_TRUE;
+				}
+			}
+		}
 	}
 }
