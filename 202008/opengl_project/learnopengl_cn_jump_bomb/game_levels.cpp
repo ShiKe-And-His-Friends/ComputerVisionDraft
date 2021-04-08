@@ -25,7 +25,7 @@ Game::~Game() {
 void Game::Init() {
 
 	ResourceManager::LoadShader("sprite.vs" ,"sprite.frag" ,nullptr ,"sprite");
-	ResourceManager::LoadShader("particle.vs", "particle.vs", nullptr, "particle");
+	ResourceManager::LoadShader("particle.vs", "particle.frag", nullptr, "particle");
 	glm::mat4 project = glm::ortho(0.0f ,static_cast<GLfloat>(this->Width) ,static_cast<GLfloat>(this->Height) ,0.0f ,-1.0f ,1.0f);
 	ResourceManager::GetShader("sprite").Use().SetInteger("sprite" ,0);
 	ResourceManager::GetShader("sprite").SetMatrix4("projection" ,project);
