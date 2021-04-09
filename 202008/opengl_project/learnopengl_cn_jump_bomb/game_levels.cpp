@@ -4,11 +4,14 @@
 #include "game_object.hpp"
 #include "ball_object_collision.hpp"
 #include "particle_generator.hpp"
+#include "post_process.hpp"
 
 SpriteRenderer* Renderer;
 GameObject* Player;
 BallObject* Ball;
 ParticleGenerator* Particles;
+PostProcessor* Effects;
+GLfloat ShakeTime = 0.0f;
 
 Game::Game(GLuint width ,GLuint height) : States(GAME_ACTIVE) ,Keys() ,Width(width) ,Height(height){
 	this->Width = width;
@@ -20,6 +23,7 @@ Game::~Game() {
 	delete Player;
 	delete Ball;
 	delete Particles;
+	delete Effects;
 }
 
 void Game::Init() {
