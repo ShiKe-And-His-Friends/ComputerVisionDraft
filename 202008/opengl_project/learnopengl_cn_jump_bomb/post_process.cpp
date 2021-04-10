@@ -6,14 +6,20 @@ PostProcessor::PostProcessor(Shader shader ,GLuint width ,GLuint height)
 	: PostProcessingShader(shader) ,Texture() ,Width(width) ,Height(height) ,Confus(GL_FALSE) ,Chaos(GL_FALSE) ,Shake(GL_FALSE){
 	glGenFramebuffers(1 ,&this->MSFBO);
 	glGenFramebuffers(1 ,&this->FBO);
-	glGenFramebuffers(1 ,&this->RBO);
+	glGenRenderbuffers(1 ,&this->RBO);
 
 	glBindFramebuffer(GL_FRAMEBUFFER ,this->MSFBO);
-	glBindFramebuffer(GL_RENDERBUFFER ,this->RBO);
+	glBindRenderbuffer(GL_RENDERBUFFER ,this->RBO);
 	glRenderbufferStorageMultisample(GL_RENDERBUFFER ,8 ,GL_RGB ,width ,height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER ,GL_COLOR_ATTACHMENT0 ,GL_RENDERBUFFER ,this->RBO);
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		std::cout << "ERROR:POSTPROCESSOR: Failed to initialize FBO" << std::endl;
+		std::cout << "ERROR:POSTPROCESSOR: Failed to initialize MSFBO" << std::endl;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER ,this->FBO);
+	this->Texture.Generate(width ,height ,NULL);
+	glFramebufferTexture2D(GL_FRAMEBUFFER ,GL_COLOR_ATTACHMENT0 ,GL_TEXTURE_2D ,this->Texture.ID ,0);
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+		std::cout << "ERROR::POSTPROCESSOR: Failed to initialize FBO" << std::endl;
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER ,0);
 
