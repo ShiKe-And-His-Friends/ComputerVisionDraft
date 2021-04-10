@@ -104,7 +104,7 @@ void Game::ProcessInput(GLfloat dt) {
 			}
 		}
 		if (this->Keys[GLFW_KEY_SPACE]) {
-			Ball->Stuck = false;
+			Ball->Stuck = GL_FALSE;
 		}
 	}
 }
@@ -155,6 +155,10 @@ void Game::DoCollisions(GLfloat dt) {
 			if (std::get<0>(collision)) {
 				if (!box.IsSolid) {
 					box.Destroyed = GL_TRUE;
+				}
+				else {
+					ShakeTime = 0.05f;
+					Effects->Shake = GL_TRUE;
 				}
 				Direction dir = std::get<1>(collision);
 				glm::vec2 diff_vector = std::get<2>(collision);
@@ -224,7 +228,7 @@ Collision CheckCollision(BallObject& one, GameObject& two) {
 Direction VectorDirection(glm::vec2 target) {
 	glm::vec2 compass[] = {
 		glm::vec2(0.0f ,1.0f),
-		glm::vec2(1.0f ,1.0f),
+		glm::vec2(1.0f ,0.0f),
 		glm::vec2(0.0f ,-1.0f),
 		glm::vec2(-1.0f ,0.0f)
 	};
