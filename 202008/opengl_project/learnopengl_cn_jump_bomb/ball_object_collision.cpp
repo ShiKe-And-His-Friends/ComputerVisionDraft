@@ -34,5 +34,7 @@ glm::vec2 BallObject::Move(GLfloat dt ,GLuint window_width) {
 void BallObject::Reset(glm::vec2 position ,glm::vec2 velocity) {
 	this->Position = position;
 	this->Velocity = velocity;
-	this->Stuck = true;
+	this->Stuck = GL_TRUE;
+	this->Sticky = GL_FALSE;
+	this->PassThrough= GL_FALSE;
 }
