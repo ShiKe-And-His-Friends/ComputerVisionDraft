@@ -153,6 +153,10 @@ void Game::ResetPlayer() {
 	Player->Size = PLAY_SIZE;
 	Player->Position = glm::vec2(this->Width /2 - PLAY_SIZE.x ,this->Height - PLAY_SIZE.y);
 	Ball->Reset(Player->Position + glm::vec2(PLAY_SIZE .x/2 - BALL_RADIUS ,-(BALL_RADIUS * 2)) , INITIAL_BALL_VELOCITY);
+	Effects->Chaos = Effects->Confus = GL_FALSE;
+	Ball->PassThrough = Ball->Sticky = GL_FALSE;
+	Player->Color = glm::vec3(1.0f);
+	Ball->Color = glm::vec3(1.0f);
 }
 
 
@@ -229,6 +233,19 @@ void Game::DoCollisions(GLfloat dt) {
 
 		}
 	}
+	for (PowerUp& powerUp : this->PowerUps) {
+		if (!powerUp.Destroyed) {
+			if (powerUp.Position.y >= this->Height) {
+				powerUp.Destroyed = GL_TRUE;
+			}
+			if (CheckCollision(*Player, powerUp)) {
+				ActivatePowerUp(powerUp);
+				powerUp.Destroyed = GL_TRUE;
+				powerUp.Activated = GL_TRUE;
+			}
+		}
+	}
+	
 	Collision result = CheckCollision(*Ball ,*Player);
 	if (!Ball->Stuck && std::get<0>(result)) {
 		GLfloat centerBoard = Player->Position.x + Player->Size.x / 2;
@@ -242,18 +259,7 @@ void Game::DoCollisions(GLfloat dt) {
 
 		Ball->Stuck = Ball->Sticky;
 	}
-	for (PowerUp & powerUp : this->PowerUps) {
-		if (!powerUp.Destroyed) {
-			if (powerUp.Position.y >= this->Height) {
-				powerUp.Destroyed = GL_TRUE;
-			}
-			if (CheckCollision(*Player ,powerUp)) {
-				ActivatePowerUp(powerUp);
-				powerUp.Destroyed = GL_TRUE;
-				powerUp.Activated = GL_TRUE;
-			}
-		}
-	}
+	
 }
 
 GLboolean CheckCollision(GameObject &one ,GameObject &two) {
@@ -357,7 +363,6 @@ void Game::UpdatePowerUp(GLfloat dt) {
 					if (!IsOtherPowerUpActive(this->PowerUps ,"pass-through")) {
 						Ball->PassThrough = GL_FALSE;
 						Ball->Color = glm::vec3(1.0f);
-
 					}
 				}
 				else if (powerUp.Type == "confuse") {
