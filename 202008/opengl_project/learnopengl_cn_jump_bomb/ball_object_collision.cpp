@@ -10,6 +10,7 @@ BallObject::BallObject(glm::vec2 pos, GLfloat radius ,glm::vec2 velocity ,Textur
 	this->Radius = radius;
 	this->Velocity = velocity;
 	this->Sprite = sprite;
+	this->Sprite = sprite;
 }
 
 glm::vec2 BallObject::Move(GLfloat dt ,GLuint window_width) {
