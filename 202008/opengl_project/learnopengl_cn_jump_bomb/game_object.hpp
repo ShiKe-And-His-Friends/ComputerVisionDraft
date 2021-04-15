@@ -9,7 +9,7 @@
 
 class GameObject {
 public:
-	glm::vec2 Position, Size, Velocity;
+	glm::vec2 Position, Size, Velocity ;
 	glm::vec3 Color;
 	GLfloat Rotation;
 	GLboolean IsSolid;

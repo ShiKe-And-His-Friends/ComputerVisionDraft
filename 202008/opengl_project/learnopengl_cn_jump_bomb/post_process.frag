@@ -16,9 +16,8 @@ void main() {
 	vec3 sample[9];
 	if (chaos || shake) {
 		for (int i = 0 ; i < 9 ; i++) {
-			color += vec4(sample[i] * edge_kernel[i] ,0.0f);
+			sample[i] = vec3(texture(scene ,TexCoords.st + offsets[i]));
 		}
-		color.a = 1.0f;
 	} 
 	
 	if (chaos) {
