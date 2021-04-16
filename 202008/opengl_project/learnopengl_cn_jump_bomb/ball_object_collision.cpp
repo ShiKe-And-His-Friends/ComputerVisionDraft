@@ -1,16 +1,16 @@
 #include "ball_object_collision.hpp"
 
-BallObject::BallObject() : GameObject() ,Radius(12.5f) ,Stuck(true){
+BallObject::BallObject() : GameObject() ,Radius(12.5f) ,Stuck(GL_TRUE), Sticky(GL_FALSE), PassThrough(GL_FALSE){
 
 }
 
 BallObject::BallObject(glm::vec2 pos, GLfloat radius ,glm::vec2 velocity ,Texture2D sprite)
-	:GameObject(pos ,glm::vec2(radius * 2 ,radius * 2) ,sprite ,glm::vec3(1.0f) ,velocity) ,Radius(radius) ,Stuck(true) {
+	:GameObject(pos ,glm::vec2(radius * 2 ,radius * 2) ,sprite ,glm::vec3(1.0f) ,velocity) ,Radius(radius), Stuck(GL_TRUE), Sticky(GL_FALSE), PassThrough(GL_FALSE) {
 	this->Position = pos;
 	this->Radius = radius;
 	this->Velocity = velocity;
 	this->Sprite = sprite;
-	this->Sprite = sprite;
+	
 }
 
 glm::vec2 BallObject::Move(GLfloat dt ,GLuint window_width) {

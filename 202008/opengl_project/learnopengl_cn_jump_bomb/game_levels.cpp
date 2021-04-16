@@ -13,6 +13,8 @@ ParticleGenerator* Particles;
 PostProcessor* Effects;
 GLfloat ShakeTime = 0.0f;
 
+using namespace std;
+
 Game::Game(GLuint width ,GLuint height) : States(GAME_ACTIVE) ,Keys() ,Width(width) ,Height(height){
 	this->Width = width;
 	this->Height = height;
@@ -75,6 +77,7 @@ void Game::Update(GLfloat dt) {
 	Ball->Move(dt ,this->Width);
 	this->DoCollisions(dt);
 	Particles->Update(dt ,*Ball ,2 ,glm::vec2(Ball->Radius /2));
+	this->UpdatePowerUp(dt);
 	if (ShakeTime > 0.0f) {
 		ShakeTime -= dt;
 		if (ShakeTime <= 0.0f) {
@@ -313,16 +316,16 @@ GLboolean ShouldSpawn(GLuint chance) {
 
 void Game::SpawnPowerUps(GameObject &block) {
 	// 1/ 75
-	if (ShouldSpawn(10)) {
+	if (ShouldSpawn(5)) {
 		this->PowerUps.push_back(PowerUp("speed" ,glm::vec3(0.5f ,0.5f ,1.0f) ,0.0f ,block.Position ,ResourceManager::GetTexture("powerup_speed")));
 	}
-	if (ShouldSpawn(10)) {
+	if (ShouldSpawn(5)) {
 		this->PowerUps.push_back(PowerUp("sticky" ,glm::vec3(1.0f ,0.5f ,1.0f) ,20.0f ,block.Position, ResourceManager::GetTexture("powerup_sticky")));
 	}
-	if (ShouldSpawn(10)) {
+	if (ShouldSpawn(5)) {
 		this->PowerUps.push_back(PowerUp("pass-through" ,glm::vec3(0.5f ,1.0f ,0.5f) ,10.0f ,block.Position, ResourceManager::GetTexture("powerup_passthrough")));
 	}
-	if (ShouldSpawn(10)) {
+	if (ShouldSpawn(5)) {
 		this->PowerUps.push_back(PowerUp("pad-size-increase" ,glm::vec3(1.0f ,0.6f ,0.4f) ,0.0f ,block.Position, ResourceManager::GetTexture("powerup_increase")));
 	}
 	// 1 / 15
