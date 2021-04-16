@@ -160,6 +160,10 @@ void Game::ResetPlayer() {
 	Ball->PassThrough = Ball->Sticky = GL_FALSE;
 	Player->Color = glm::vec3(1.0f);
 	Ball->Color = glm::vec3(1.0f);
+	vector<PowerUp>::iterator it;
+	for (it = PowerUps.begin(); it != PowerUps.end(); ) {
+		it = PowerUps.erase(it);
+	}
 }
 
 
