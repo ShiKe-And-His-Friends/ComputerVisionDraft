@@ -18,7 +18,11 @@ public:
 	GLboolean Activated;
 	PowerUp(std::string type ,glm::vec3 color ,GLfloat duration ,glm::vec2 position ,Texture2D texture) 
 		: GameObject(position , SIZE_POWER_UP,texture ,color , VELOCITY_POWER_UP) ,Type(type) ,Duration(duration) ,Activated(){
-	
+		this->Type = type;
+		this->Color = color;
+		this->Duration = duration;
+		this->Position = position;
+		this->Sprite = texture;
 	}
 };
 
