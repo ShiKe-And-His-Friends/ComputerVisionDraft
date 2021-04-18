@@ -5,6 +5,7 @@
 #include "ball_object_collision.hpp"
 #include "particle_generator.hpp"
 #include "post_process.hpp"
+#include <irrklang/irrKlang.h>
 
 SpriteRenderer* Renderer;
 GameObject* Player;
