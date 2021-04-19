@@ -6,6 +6,7 @@
 
 #include "game_level.hpp"
 #include "power_up.hpp"
+#include <irrKlang.h>
 
 enum GameState {
 	GAME_ACTIVE,
