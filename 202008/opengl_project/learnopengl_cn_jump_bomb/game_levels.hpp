@@ -7,6 +7,8 @@
 #include "game_level.hpp"
 #include "power_up.hpp"
 #include <irrKlang.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 enum GameState {
 	GAME_ACTIVE,
