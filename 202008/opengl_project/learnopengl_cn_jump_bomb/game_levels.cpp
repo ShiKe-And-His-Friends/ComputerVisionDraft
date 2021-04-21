@@ -1,3 +1,4 @@
+#include <sstream>
 #include "game_levels.hpp"
 #include "resource_manager.hpp"
 #include "sprite_renderer.hpp"
@@ -5,6 +6,7 @@
 #include "ball_object_collision.hpp"
 #include "particle_generator.hpp"
 #include "post_process.hpp"
+#include "text_render.hpp"
 
 SpriteRenderer* Renderer;
 GameObject* Player;
@@ -17,8 +19,9 @@ using namespace std;
 using namespace irrklang;
 
 ISoundEngine* SoundEngine = createIrrKlangDevice();
+TextRenderer* Text;
 
-Game::Game(GLuint width ,GLuint height) : States(GAME_ACTIVE) ,Keys() ,Width(width) ,Height(height){
+Game::Game(GLuint width ,GLuint height) : States(GAME_MENU) ,Keys() ,Width(width) ,Height(height) ,Level(0) ,Lives(3){
 	this->Width = width;
 	this->Height = height;
 }
@@ -29,6 +32,7 @@ Game::~Game() {
 	delete Ball;
 	delete Particles;
 	delete Effects;
+	delete Text;
 	SoundEngine->drop();
 }
 
@@ -59,6 +63,8 @@ void Game::Init() {
 	Renderer = new SpriteRenderer(ResourceManager::GetShader("sprite"));
 	Particles = new ParticleGenerator(ResourceManager::GetShader("particle") , ResourceManager::GetTexture("particle") ,500);
 	Effects = new PostProcessor(ResourceManager::GetShader("postprocessing"), this->Width, this->Height);
+	Text = new TextRenderer(this->Width ,this->Height);
+	Text->Load("arial.ttf" ,24);
 
 	GameLevel one, two, three, four;
 	one.load("one.lvl" ,this->Width ,this->Height * 0.5);
@@ -90,12 +96,50 @@ void Game::Update(GLfloat dt) {
 		}
 	}
 	if (Ball->Position.y >= this->Height) {
+		--this->Lives;
+		if (this->Lives == 0) {
+			this->ResetLevel();
+			this->States == GAME_MENU;
+		}
+		this->ResetPlayer();
+	}
+	if (this->States == GAME_ACTIVE && this->Levels[this->Level].IsCompleted()) {
 		this->ResetLevel();
 		this->ResetPlayer();
+		Effects->Chaos = GL_TRUE;
+		this->States = GAME_WIN;
 	}
 }
 
 void Game::ProcessInput(GLfloat dt) {
+	if (this->States == GAME_MENU) {
+		if (this->States == GAME_MENU) {
+			if (this->Keys[GLFW_KEY_ENTER] && !this->KeysProcessed[GLFW_KEY_ENTER]) {
+				this->States = GAME_ACTIVE;
+				this->KeysProcessed[GLFW_KEY_ENTER] = GL_TRUE;
+			}
+			if (this->Keys[GLFW_KEY_W] && !this->KeysProcessed[GLFW_KEY_W]) {
+				this->Level = (this->Level + 1) % 4;
+				this->KeysProcessed[GLFW_KEY_W] = GL_TRUE;
+			}
+			if (this->Keys[GLFW_KEY_S] && !this->KeysProcessed[GLFW_KEY_S]) {
+				if (this->Level > 0) {
+					--this->Level;
+				}
+				else {
+					this->Level = 3;
+				}
+				this->KeysProcessed[GLFW_KEY_S] = GL_TRUE;
+			}
+		}
+	}
+	if (this->States == GAME_WIN) {
+		if (this->Keys[GLFW_KEY_ENTER]) {
+			this->KeysProcessed[GLFW_KEY_ENTER] = GL_TRUE;
+			Effects->Chaos = GL_FALSE;
+			this->States = GAME_MENU;
+		}
+	}
 	if (this->States == GAME_ACTIVE) {
 		GLfloat velocity = PLAYER_BELOCITY * dt;
 		if (this->Keys[GLFW_KEY_A]) {
@@ -124,7 +168,7 @@ void Game::ProcessInput(GLfloat dt) {
 }
 
 void Game::Render() {
-	if (this->States == GAME_ACTIVE) {
+	if (this->States == GAME_ACTIVE || this->States == GAME_MENU || this->States == GAME_WIN) {
 		Effects->BeginRender();
 		Renderer->DrawSprite(ResourceManager::GetTexture("background") ,glm::vec2(0 ,0) ,glm::vec2(this->Width ,this->Height) ,0.0f);
 		this->Levels[this->Level].Draw(*Renderer);
@@ -138,6 +182,17 @@ void Game::Render() {
 		Ball->Draw(*Renderer);
 		Effects->EndRender();
 		Effects->Render(glfwGetTime());
+		std::stringstream ss;
+		ss << this->Lives;
+		Text->RenderText("Lives:" + ss.str() ,5.0f ,5.0f ,1.0f);
+	}
+	if (this->States == GAME_MENU) {
+		Text->RenderText("Press ENTEr to start" ,250.0f ,this->Height /2 ,1.0f);
+		Text->RenderText("Press W or S to select level" ,245.0f ,this->Height /2 + 20.0f ,0.75f);
+	}
+	if (this->States == GAME_WIN) {
+		Text->RenderText("You WON!!" ,320.f ,this->Height /2 -20.0f ,1.0f ,glm::vec3(0.0f ,1.0f ,0.0f));
+		Text->RenderText("Press ENTER to retry or ESC to quit" ,130.0f ,this->Height /2 ,1.0f ,glm::vec3(1.0f ,1.0f ,1.0f));
 	}
 }
 
@@ -154,7 +209,7 @@ void Game::ResetLevel() {
 	else if (this->Level == 3) {
 		this->Levels[3].load("four.lvl", this->Width, this->Height * 0.5);
 	}
-
+	this->Lives = 3;
 }
 
 void Game::ResetPlayer() {

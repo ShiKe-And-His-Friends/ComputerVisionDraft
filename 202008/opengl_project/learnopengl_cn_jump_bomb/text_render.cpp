@@ -57,7 +57,46 @@ void TextRenderer::Load(std::string font ,GLuint fontSize) {
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		Character characters = {
 			texture
-			,
+			,glm::ivec2(face->glyph->bitmap.width ,face->glyph->bitmap.rows)
+			,glm::ivec2(face->glyph->bitmap_left ,face->glyph->bitmap_top)
+			,face->glyph->advance.x
 		};
+		Characters.insert(std::pair<GLchar ,Character>(c , characters));
 	}
+	glBindTexture(GL_TEXTURE_2D ,0);
+	FT_Done_Face(face);
+	FT_Done_FreeType(ft);
+}
+
+void TextRenderer::RenderText(std::string text ,GLfloat x ,GLfloat y ,GLfloat scale ,glm::vec3 color) {
+	this->TextShader.Use();
+	this->TextShader.SetVector3f("textColor" ,color);
+	glActiveTexture(GL_TEXTURE0);
+	glBindVertexArray(this->VAO);
+
+	std::string::const_iterator c;
+	for (c = text.begin(); c != text.end(); c++) {
+		Character ch = Characters[*c];
+		GLfloat xpos = x + ch.Breaking.x * scale;
+		GLfloat ypos = y + (this->Characters['H'].Breaking.y - ch.Breaking.y) * scale;
+		GLfloat w = ch.Size.x * scale;
+		GLfloat h = ch.Size.y * scale;
+		GLfloat vertices[6][4] = {
+			{xpos	,ypos+h	,0.0	,1.0},
+			{xpos+w	,ypos	,1.0	,0.0},
+			{xpos	,ypos	,0.0	,0.0},
+
+			{xpos	,ypos+h	,0.0	,1.0},
+			{xpos+w	,ypos+h	,1.0	,1.0},
+			{xpos+w	,ypos	,1.0	,0.0}
+		};
+		glBindTexture(GL_TEXTURE_2D ,ch.TextureID);
+		glBindBuffer(GL_ARRAY_BUFFER ,this->VBO);
+		glBufferSubData(GL_ARRAY_BUFFER ,0 ,sizeof(vertices),vertices);
+		glBindBuffer(GL_ARRAY_BUFFER ,0);
+		glDrawArrays(GL_TRIANGLES ,0 ,6);
+		x += (ch.Advance >> 6) * scale;
+	}
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D ,0);
 }
