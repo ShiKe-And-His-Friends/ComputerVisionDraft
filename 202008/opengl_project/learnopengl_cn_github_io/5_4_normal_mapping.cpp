@@ -1,20 +1,9 @@
 #include <string>
 
-// GLEW
-#define GLEW_STATIC
-#include <GL/glew.h>
-
-// GLFW
-#include <GLFW/glfw3.h>
 
 // GL includes
-#include <learnopengl/shader.h>
-#include <learnopengl/camera.h>
-
-// GLM Mathemtics
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "./raw/shader_s_2.h"
+#include "./raw/camera_2.h"
 
 // Other Libs
 #include <SOIL.h>
@@ -71,13 +60,13 @@ int main()
     Shader shader("normal_mapping.vs", "normal_mapping.frag");
 
     // Load textures
-    GLuint diffuseMap = loadTexture("../../../resources/textures/brickwall.jpg");
-    GLuint normalMap = loadTexture("../../../resources/textures/brickwall_normal.jpg");
+    GLuint diffuseMap = loadTexture("./drawable/brickwall.jpg");
+    GLuint normalMap = loadTexture("./drawable/brickwall_normal.jpg");
 
     // Set texture units 
-    shader.Use();
-    glUniform1i(glGetUniformLocation(shader.Program, "diffuseMap"), 0);
-    glUniform1i(glGetUniformLocation(shader.Program, "normalMap"), 1);
+    shader.use();
+    glUniform1i(glGetUniformLocation(shader.ID, "diffuseMap"), 0);
+    glUniform1i(glGetUniformLocation(shader.ID, "normalMap"), 1);
 
     // Light position
     glm::vec3 lightPos(0.5f, 1.0f, 0.3f);
@@ -99,17 +88,17 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Configure view/projection matrices
-        shader.Use();
+        shader.use();
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(camera.Zoom, (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "view"), 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "view"), 1, GL_FALSE, glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
         // Render normal-mapped quad
         glm::mat4 model;
         model = glm::rotate(model, (GLfloat)glfwGetTime() * -10, glm::normalize(glm::vec3(1.0, 0.0, 1.0))); // Rotates the quad to show normal mapping works in all directions
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
-        glUniform3fv(glGetUniformLocation(shader.Program, "lightPos"), 1, &lightPos[0]);
-        glUniform3fv(glGetUniformLocation(shader.Program, "viewPos"), 1, &camera.Position[0]);
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniform3fv(glGetUniformLocation(shader.ID, "lightPos"), 1, &lightPos[0]);
+        glUniform3fv(glGetUniformLocation(shader.ID, "viewPos"), 1, &camera.Position[0]);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseMap);
         glActiveTexture(GL_TEXTURE1);
@@ -120,7 +109,7 @@ int main()
         model = glm::mat4();
         model = glm::translate(model, lightPos);
         model = glm::scale(model, glm::vec3(0.1f));
-        glUniformMatrix4fv(glGetUniformLocation(shader.Program, "model"), 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(shader.ID, "model"), 1, GL_FALSE, glm::value_ptr(model));
         RenderQuad();
 
         // Swap the buffers
@@ -258,13 +247,13 @@ void Do_Movement()
 {
     // Camera controls
     if (keys[GLFW_KEY_W])
-        camera.ProcessKeyboard(FORWARD, deltaTime);
+        camera.ProcessKeyBoard(FORWARD, deltaTime);
     if (keys[GLFW_KEY_S])
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
+        camera.ProcessKeyBoard(BACKWARD, deltaTime);
     if (keys[GLFW_KEY_A])
-        camera.ProcessKeyboard(LEFT, deltaTime);
+        camera.ProcessKeyBoard(LEFT, deltaTime);
     if (keys[GLFW_KEY_D])
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+        camera.ProcessKeyBoard(RIGHT, deltaTime);
 }
 
 // Is called whenever a key is pressed/released via GLFW
