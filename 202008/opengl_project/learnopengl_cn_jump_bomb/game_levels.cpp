@@ -81,7 +81,7 @@ void Game::Init() {
 
 	glm::vec2 ballPos = playerPos + glm::vec2(PLAY_SIZE.x /2 - BALL_RADIUS ,-BALL_RADIUS * 2);
 	Ball = new BallObject(ballPos ,BALL_RADIUS ,INITIAL_BALL_VELOCITY ,ResourceManager::GetTexture("face"));
-	SoundEngine->play2D("irrklang/breakout.mp3" ,GL_FALSE);
+	SoundEngine->play2D("irrklang/breakout.mp3" ,GL_TRUE);
 }
 
 void Game::Update(GLfloat dt) {
