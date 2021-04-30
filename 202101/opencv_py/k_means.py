@@ -16,3 +16,6 @@ def getCentroids(dataSet ,k):
         result[i - 1 ,-1] = i
 
     return result
+
+def main:
+    kmeans(0 ,1 ,100)

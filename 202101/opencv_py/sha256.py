@@ -48,6 +48,8 @@ class SHA256:
                     W[j] = (W[j - 16] + (
                         self.rightrotate(W[j - 15] ,7) ^ self.rightrotate(W[j - 15] ,18) ^ (W[j - 15] >> 3)) 
                         + W[j - 7] + (self.rightrotate(W[j - 2] ,17) ^ self.rightrotate(W[j - 2] ,19) ^ (W[j - 2] >> 10))) & ((2**32) - 1)
+                for w in rang£¨0 ,len(message))£º
+                    w ++
                 
 
 def main():
