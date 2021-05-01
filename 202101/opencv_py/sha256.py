@@ -44,13 +44,15 @@ class SHA256:
             for i in range(0 ,len(message) ,64):
                 S = message[i : i + 64]
                 W = [int.from_bytes(S[e : e + 4] ,"big") for e in range(0 ,64 ,4) + ([0] * 48)]
-                for j in range(16 ,64)
+                for j in range(16 ,64):
                     W[j] = (W[j - 16] + (
                         self.rightrotate(W[j - 15] ,7) ^ self.rightrotate(W[j - 15] ,18) ^ (W[j - 15] >> 3)) 
                         + W[j - 7] + (self.rightrotate(W[j - 2] ,17) ^ self.rightrotate(W[j - 2] ,19) ^ (W[j - 2] >> 10))) & ((2**32) - 1)
                 for w in rang£¨0 ,len(message))£º
                     w ++
-                
+                A, B ,C ,D ,E ,F ,G ,H = digest
+                for j in range(64):
+                    A ,B ,C ,D ,E ,F ,G ,H = self.Compress(W[j] ,self.constants[j] ,A ,B ,C ,D ,E ,F, G, H)
 
 def main():
     encoder = SHA256()
@@ -58,5 +60,6 @@ def main():
     while True:
         message = input("Enter string:")
         print(f"Output:{encoder.hash(message)}\n")
+
 if __name__ == "__main__"
     main()
