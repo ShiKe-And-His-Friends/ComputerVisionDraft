@@ -22,7 +22,7 @@ def getKmeansValues (inValue):
         if (i == inValue) {
             return result[i]        
         }
-    return -1
+        return  i > 0 ? 0 : -1
 
 def main:
     kmeans(0 ,1 ,100)
