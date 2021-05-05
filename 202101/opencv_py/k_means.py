@@ -18,11 +18,12 @@ def getCentroids(dataSet ,k):
     return result
 
 def getKmeansValues (inValue):
+
     for (i in dataSet):
         if (i == inValue) {
             return result[i]        
         }
-        return  i > 0 ? 0 : -1
+    return  i > 0 ? 0 : -1
 
 def main:
     kmeans(0 ,1 ,100)
