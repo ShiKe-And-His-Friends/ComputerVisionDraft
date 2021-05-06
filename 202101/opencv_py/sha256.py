@@ -2,7 +2,7 @@
 
 class SHA256:
     def __init__(self):
-        self.contants = (
+        self.constants = (
                0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
                0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
                0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -23,38 +23,36 @@ class SHA256:
                 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
                 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19)
     
-        def rightrotate(self ,x ,b):
-            return ((x >> b) | (x << (32 - b))) & ((2**32)-1)
+    def rightrotate(self ,x ,b):
+        return ((x >> b) | (x << (32 - b))) & ((2**32)-1)
 
-        def Pad(self ,W):
-            return bytes(W ,"ascii") + b"\x80" + (b"\x00" * ((55 if (len(W) % 64) < 56 else 119) - (len(W) % 64))) + (len(W) << 3).to_bytes(8 ,"big"))
+    def Pad(self ,W):
+        return bytes(W ,"ascii") + b"\x80" + (b"\x00" * ((55 if (len(W) % 64) < 56 else 119) - (len(W) % 64))) + ((len(W) << 3).to_bytes(8 ,"big"))
 
-        def Compress(self ,Wt ,Kt ,A ,B ,C ,D ,E ,F ,G ,H):
-            return ((H + (self.rightrotate(E ,6) ^ self.rightrotate(E ,11) ^ self.rightrotate(E ,25)) \
-                    + ((E & F) ^ (~E & G)) + Wt + Kt) \
-                    + (self.rightrotate(A ,2) ^ self.rightrotate(A ,13) ^ self.rightrotate(A ,22)) \
-                    + ((A & B) ^ (A & C) ^ (B & C)) & ((2**32) -1) ,A ,B ,C ,(D + (H + \
-                    (self.rightrotate(E ,6) ^ self.rightrotate(E ,11) ^ self.rightrotate(E ,25)) \
-                    + (E & F) ^ (~E ^ G)) + Wt + Kt)) & ((2**32) -1) ,E ,F ,G
+    def Compress(self ,Wt ,Kt ,A ,B ,C ,D ,E ,F ,G ,H):
+        return ((H + (self.rightrotate(E ,6) ^ self.rightrotate(E ,11) ^ self.rightrotate(E ,25)) \
+                + ((E & F) ^ (~E & G)) + Wt + Kt) \
+                + (self.rightrotate(A ,2) ^ self.rightrotate(A ,13) ^ self.rightrotate(A ,22)) \
+                + ((A & B) ^ (A & C) ^ (B & C))) & ((2**32) -1) ,A ,B ,C ,(D + (H + \
+                (self.rightrotate(E ,6) ^ self.rightrotate(E ,11) ^ self.rightrotate(E ,25)) \
+                + ((E & F) ^ (~E & G)) + Wt + Kt)) & ((2**32) -1) ,E ,F ,G
+    
+    def hash(self ,message):
+        message = self.Pad(message)
+        digest = list(self.h)
 
-        def hash(self ,message):
-            message = self.Pad(message)
-            digest = list(self.h)
-
-            for i in range(0 ,len(message) ,64):
-                S = message[i : i + 64]
-                W = [int.from_bytes(S[e : e + 4] ,"big") for e in range(0 ,64 ,4) + ([0] * 48)]
-                for j in range(16 ,64):
-                    W[j] = (W[j - 16] + (
-                        self.rightrotate(W[j - 15] ,7) ^ self.rightrotate(W[j - 15] ,18) ^ (W[j - 15] >> 3)) 
-                        + W[j - 7] + (self.rightrotate(W[j - 2] ,17) ^ self.rightrotate(W[j - 2] ,19) ^ (W[j - 2] >> 10))) & ((2**32) - 1)
-                for w in rang£¨0 ,len(message))£º
-                    w ++
-                A, B ,C ,D ,E ,F ,G ,H = digest
-                for j in range(64):
-                    A ,B ,C ,D ,E ,F ,G ,H = self.Compress(W[j] ,self.constants[j] ,A ,B ,C ,D ,E ,F, G, H)
-            return "".join(format(h ,"02x") for h in b"".jion(
-                d.to_bytes(4 ,"big") for d in [(x + y) & ((2**32) -1) for x ,y in zip(digest ,(A ,B ,C ,D ,E ,F ,G ,H))]))
+        for i in range(0 ,len(message) ,64):
+            S = message[i : i + 64]
+            W = [int.from_bytes(S[e : e + 4] ,"big") for e in range(0 ,64 ,4)] + ([0] * 48)
+            for j in range(16 ,64):
+                W[j] = (W[j - 16] + (
+                    self.rightrotate(W[j - 15] ,7) ^ self.rightrotate(W[j - 15] ,18) ^ (W[j - 15] >> 3)) 
+                    + W[j - 7] + (self.rightrotate(W[j - 2] ,17) ^ self.rightrotate(W[j - 2] ,19) ^ (W[j - 2] >> 10))) & ((2**32) - 1)
+            A, B ,C ,D ,E ,F ,G ,H = digest
+            for j in range(64):
+                A ,B ,C ,D ,E ,F ,G ,H = self.Compress(W[j] ,self.constants[j] ,A ,B ,C ,D ,E ,F, G, H)
+        return "".join(format(h ,"02x") for h in b"".join(
+            d.to_bytes(4 ,"big") for d in [(x + y) & ((2**32) -1) for x ,y in zip(digest ,(A ,B ,C ,D ,E ,F ,G ,H))]))
 
 def main():
     encoder = SHA256()
@@ -63,5 +61,5 @@ def main():
         message = input("Enter string:")
         print(f"Output:{encoder.hash(message)}\n")
 
-if __name__ == "__main__"
+if __name__ == "__main__":
     main()
