@@ -53,6 +53,8 @@ class SHA256:
                 A, B ,C ,D ,E ,F ,G ,H = digest
                 for j in range(64):
                     A ,B ,C ,D ,E ,F ,G ,H = self.Compress(W[j] ,self.constants[j] ,A ,B ,C ,D ,E ,F, G, H)
+            return "".join(format(h ,"02x") for h in b"".jion(
+                d.to_bytes(4 ,"big") for d in [(x + y) & ((2**32) -1) for x ,y in zip(digest ,(A ,B ,C ,D ,E ,F ,G ,H))]))
 
 def main():
     encoder = SHA256()
