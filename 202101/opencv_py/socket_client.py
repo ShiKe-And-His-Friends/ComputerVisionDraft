@@ -1,18 +1,18 @@
 #!/usr/bin/python3
 import socket
+import ssl
 
-class client_class:
+class client_ssl:
     def send_hello(self):
-        client_socket = socket.socket(socket.AF_INET ,socket.SOCK_STREAM)
-        client_socket.connect(('127.0.0.1' ,55222))
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        context.load_verify_locations('cert/ca.crt')
 
-        msg = "did i connect with server?".encode("utf-8")
-        client_socket.send(msg)
-        
-        msg = client_socket.recv(1024).decode('utf-8')
-        print(f"receive msg from server:{msg}")
-        client_socket.close()
+        with socket.create_connection(('127.0.0.1' ,55222)) as sock:
+            with context.warp_socket(sock ,server_hostname = '127.0.0.1') as ssock:
+                msg = "Do i connect ssl with server?".encode("utf-8")
+                print(f"receive msg from server:{msg}")
+                ssock.close()
 
 if __name__ == "__main__":
-    client = client_class()
+    client = client_ssl()
     client.send_hello()
