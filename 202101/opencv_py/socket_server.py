@@ -17,6 +17,10 @@ class server_ssl:
                     msg = f"Yes ,you got ssl content with server.\r\n".encode("utf-8")
                     client_socket.send(msg)
                     client_socket.close()
+
+'''
+    ssl 
+'''
         
 if __name__ == "__main__":
     #win10 netstat -ano | findstr55222
