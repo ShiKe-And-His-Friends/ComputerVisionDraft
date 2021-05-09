@@ -60,6 +60,8 @@ def main():
     while True:
         message = input("Enter string:")
         print(f"Output:{encoder.hash(message)}\n")
+       
+    print(f"End\n")
 
 if __name__ == "__main__":
     main()
