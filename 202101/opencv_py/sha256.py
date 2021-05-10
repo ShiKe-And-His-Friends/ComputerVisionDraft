@@ -55,6 +55,7 @@ class SHA256:
             d.to_bytes(4 ,"big") for d in [(x + y) & ((2**32) -1) for x ,y in zip(digest ,(A ,B ,C ,D ,E ,F ,G ,H))]))
 
 def main():
+    print(f"Start\n")
     encoder = SHA256()
 
     while True:
