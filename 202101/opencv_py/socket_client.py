@@ -7,8 +7,8 @@ class client_ssl:
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.load_verify_locations('cert/ca.crt')
 
-        with socket.create_connection(('127.0.0.1' ,55222)) as sock:
-            with context.wrap_socket(sock ,server_hostname = '127.0.0.1') as ssock:
+        with socket.create_connection(('192.168.1.82' ,8082)) as sock:
+            with context.wrap_socket(sock ,server_hostname = '192.168.1.82') as ssock:
                 msg = "Do i connect ssl with server?".encode("utf-8")
                 ssock.send(msg)
                 msg = ssock.recv(1024).decode("utf-8")
