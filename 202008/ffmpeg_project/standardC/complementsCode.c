@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #define MAX 255
 
 int compoments_codes() {
@@ -20,9 +21,19 @@ int death_loop() {
 	return 0;
 }
 
-int main() {
+int compolemt_codes_add() {
 	char a = -128;
 	char b = 128;
 	printf("a=%u ,b=%u" ,a ,b);
+	return 0;
+}
+
+int main() {
+	char a[1000];
+	int i;
+	for (i = 0; i < 1000; i++) {
+		a[i] = -1 - i;
+	}
+	printf("%d" ,strlen(a));
 	return 0;
 }
