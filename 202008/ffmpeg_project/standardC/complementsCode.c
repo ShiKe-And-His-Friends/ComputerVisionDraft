@@ -9,7 +9,7 @@ int compoments_codes() {
 	return 0;
 }
 
-int main() {
+int death_loop() {
 	unsigned char a[MAX], i;
 	for (i = 0; i < MAX ; i++) {
 		a[i] = i;
@@ -17,5 +17,12 @@ int main() {
 			printf("%d ",a[i]);
 		}
 	}
+	return 0;
+}
+
+int main() {
+	char a = -128;
+	char b = 128;
+	printf("a=%u ,b=%u" ,a ,b);
 	return 0;
 }
