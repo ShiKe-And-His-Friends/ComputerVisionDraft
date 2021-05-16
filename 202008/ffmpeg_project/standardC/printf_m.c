@@ -3,7 +3,7 @@
 #include <assert.h>
 
 int printf_m(const char *format , ...) {
-	asserts(foramt);
+	asserts(format);
 	va_list arg;		
 	va_start(arg, format);
 	char *p = format;
