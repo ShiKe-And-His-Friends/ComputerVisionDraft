@@ -74,12 +74,43 @@ void reverse(int *a ,int size) {
 	}
 }
 
-int main() {
+int bit_xor_exchange_number() {
 	int a[10] = {1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,0};
 	int size = sizeof(a) / sizeof(a[0]);
 	reverse(a ,size);
 	for (int i = 0; i < size; i++) {
 		printf("%d ",a[i]);
+	}
+	return 0;
+}
+
+void bubble_sort(int *a ,int size) {
+	assert(a);
+	int *start = a;
+	int *end = a + size - 1;
+	while (end > a) {
+		int flag = 0;
+		for (start = a; start < end; start++) {
+			if (*start > *(start + 1)) {
+				*start ^= *(start + 1);
+				*(start + 1) ^= *(start);
+				*(start) ^= *(start + 1);
+				flag = 1;
+			}
+		}
+		if (flag == 0) {
+			break;
+		}
+		end--;
+	}
+}
+
+int main() {
+	int a[10] = {2 ,3 ,1 ,5 ,4 ,34 ,7 ,8 ,6 ,6};
+	int size = sizeof(a) / sizeof(a[0]);
+	bubble_sort(a ,size);
+	for (int i = 0; i < size; i ++) {
+		printf("%d " ,a[i]);
 	}
 	return 0;
 }
