@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int main() {
+int pointer_foot_long() {
 	int n = 10;
 	char* pc = (char*)&n; //pointer to int lower byte address
 	int* pi = &n;
@@ -9,6 +9,20 @@ int main() {
 	printf("%p\n", pc + 1);
 	printf("%p\n", pi);
 	printf("%p\n", pi + 1);
+
+	return 0;
+}
+
+int main() {
+	int n = 0x11223344;
+	char* pc = (char*)&n;
+	int *pi = &n;
+	*pc = 0x55;
+	printf("%p\n" ,pc);
+	printf("%x\n", n);
+	*pi = 0;
+	printf("%p\n", pi);
+	printf("%x\n", n);
 
 	return 0;
 }
