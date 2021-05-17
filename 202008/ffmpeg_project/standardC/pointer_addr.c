@@ -13,7 +13,7 @@ int pointer_foot_long() {
 	return 0;
 }
 
-int main() {
+int pointer_soft_value() {
 	int n = 0x11223344;
 	char* pc = (char*)&n;
 	int *pi = &n;
@@ -23,6 +23,20 @@ int main() {
 	*pi = 0;
 	printf("%p\n", pi);
 	printf("%x\n", n);
+
+	return 0;
+}
+
+int main() {
+	int a = 10;
+	int *pa = &a;
+	int **ppa = &pa;
+	printf("%p\n" ,&pa);
+	printf("%x\n", ppa);
+
+	**ppa = 30;
+	printf("%x\n", a);
+	printf("%x\n", ppa);
 
 	return 0;
 }
