@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <assert.h>
 
 int pointer_foot_long() {
 	int n = 10;
@@ -27,7 +28,7 @@ int pointer_soft_value() {
 	return 0;
 }
 
-int main() {
+int pointer_to_pointer_add_value() {
 	int a = 10;
 	int *pa = &a;
 	int **ppa = &pa;
@@ -38,5 +39,47 @@ int main() {
 	printf("%x\n", a);
 	printf("%x\n", ppa);
 
+	return 0;
+}
+
+#define N 5
+int clear_arrray() {
+	float f[N];
+	float* p;
+	for (p = &f[0]; p < &f[N];) {
+		*p++ = 0;
+	}
+}
+
+int clear_byte_array() {
+	float f[N];
+	float* p;
+	for (p = &f[N - 1]; p >= &f[0]; p--) {
+		*p = 0;
+	}
+	return 0;
+}
+
+void reverse(int *a ,int size) {
+	assert(a);
+	int* start = a;
+	int* end = a + size - 1;
+	while (start < end) {
+		// a != b
+		*start ^= *end;
+		*end ^= *start;
+		*start ^= *end;
+		start++;
+		end--;
+	}
+}
+
+int main() {
+	int a[10] = {1 ,2 ,3 ,4 ,5 ,6 ,7 ,8 ,9 ,0};
+	int size = sizeof(a) / sizeof(a[0]);
+	reverse(a ,size);
+	for (int i = 0; i < size; i++) {
+		printf("%d ",a[i]);
+	}
 	return 0;
 }
