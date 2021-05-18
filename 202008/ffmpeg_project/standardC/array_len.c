@@ -55,6 +55,26 @@ int main() {
 	printf("array bytes address size is %d\n" ,sizeof(p));
 	printf("array second bytes address size is %d\n", sizeof(p + 1));
 	printf("first member address size is %d\n", sizeof(*p));
+	printf("first member size is %d\n", sizeof(p[0]));
+	printf("pointer-to-pointer adddress size is %d\n", sizeof(&p));
+	printf("pointer-to-pointer next adddress size is %d\n", sizeof(&p + 1));
+	printf("array second bytes address size is %d\n", sizeof(&p[0] + 1));
+	printf("string length array is %d\n" ,strlen(p));
+	printf("string length array from second member is %d\n", strlen(p + 1));
+	printf("string length array from second array is %d(random)\n", strlen(&p + 1));
+	printf("string length array from second member is %d\n", strlen(&p[0] + 1));
 
+	printf("\Two Vexter Array:\n");
+
+	int aa[3][4] = {0};
+
+	printf("arrays bytes size is %d\n" ,sizeof(aa));
+	printf("first member size is %d\n", sizeof(aa[0][0]));
+	printf("first line size is %d\n" ,sizeof(aa[0]));
+	printf("second member size is %d\n", sizeof(aa[0] + 1));
+	printf("second member in first array size is %d\n", sizeof(aa + 1));
+	printf("second member in array size is %d\n", sizeof(&aa[0] + 1));
+	printf("arrays size is %d\n", sizeof(*aa));
+	printf("last arrays size is %d(EOF)\n", sizeof(aa[3]));
 	return 0;
 }
