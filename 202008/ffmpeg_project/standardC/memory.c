@@ -5,12 +5,15 @@ void* my_memcpy(void *dest ,const void *str ,int size) {
 	assert(dest);
 	assert(str);
 	assert(size > 0);
+	void* result = NULL;
+	result = dest;
 	while (size --) {
 		*(char *)dest = *(char *)str;
 		(char *)dest = (char *)dest + 1;
 		(char *)str = (char *)str + 1;
 	}
-	return dest;
+	// except '\0'
+	return result;
 }
 
 
