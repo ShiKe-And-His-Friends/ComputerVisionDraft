@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <malloc.h>
 #include <assert.h>
+
+#define N_SPACE_NUMBER 1024
 
 void* my_memcpy(void *dest ,void *str ,int size) {
 	// dest = str + 1 ; crash
@@ -27,14 +30,14 @@ void* my_memmove(void *dest ,void *str ,int size) {
 	void* result = dest;
 
 	if (dest <= str || (char*)dest >= (char*)str + size) {
-		printf("From header coverage.\n", size);
+		printf("From header coverage.\n");
 		while (size --) {
 			*(char *)dest = *(char *)str;
 			(char *)dest = (char *)dest + 1;
 			(char *)str = (char *)str + 1;
 		}
 	} else {
-		printf("From tailer coverage.\n", size);
+		printf("From tailer coverage.\n");
 		dest = (char *)dest + size - 1;
 		str = (char*)str + size - 1;
 		while (size--) {
@@ -59,7 +62,7 @@ void* mymemchr(const void *dest ,char c, int size) {
 	return 0;
 }
 
-int main() {
+int my_mem() {
 	char* p = NULL;
 	char* q = NULL;
 	char data[10] = { "asdfghjkl" };
@@ -87,5 +90,31 @@ int main() {
 
 	q = mymemchr(q, 'k' ,len);
 	printf("letter is %c\n" ,*q);
+	return 0;
+}
+
+int continuous_space() {
+	int* ptr = NULL;
+	ptr = (int*)malloc(N_SPACE_NUMBER * sizeof(int));
+	assert(ptr);
+	for (int i = 0; i < N_SPACE_NUMBER; i++) {
+		*(ptr + i) = 0;
+	}
+	// do something
+	*(ptr + 1) = -1;
+	*(ptr + 2) = 1;
+	printf("%p\n" ,ptr);
+	printf("%d\n" ,ptr[0]);
+	printf("%d\n" ,*(ptr + 1));
+	printf("%X\n", *(ptr + 1));
+	printf("%d\n" ,*(&ptr[0] + 2));
+	
+	free(ptr);
+	ptr = NULL;
+	return 0;
+}
+
+int main() {
+	continuous_space();
 	return 0;
 }
