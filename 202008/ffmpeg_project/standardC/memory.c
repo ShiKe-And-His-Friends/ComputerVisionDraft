@@ -114,7 +114,26 @@ int continuous_space() {
 	return 0;
 }
 
+void test_realloc() {
+	int* p = malloc(100);
+	assert(p);
+	if (p) {
+
+	}
+	// OOM
+	p = realloc(p , N_SPACE_NUMBER);
+	
+	int ptr = NULL;
+	ptr = realloc(p , N_SPACE_NUMBER);
+	assert(ptr);
+	if (ptr) {
+		p = ptr;
+	}
+	free(p);
+	p = NULL;
+}
+
 int main() {
-	continuous_space();
+	test_realloc();
 	return 0;
 }
