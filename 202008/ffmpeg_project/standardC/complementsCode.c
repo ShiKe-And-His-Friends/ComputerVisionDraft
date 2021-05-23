@@ -45,3 +45,8 @@ int unsigned_byte_overflow() {
 	}
 	return 0;
 }
+
+int main() {
+	unsigned_byte_overflow();
+	return 0;
+}
