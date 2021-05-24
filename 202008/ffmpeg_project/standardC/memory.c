@@ -53,6 +53,17 @@ void* mymemchr(const void *dest ,char c, int size) {
 	assert(dest);
 	assert(size > 0);
 	while (size && *(char *)dest) {
+		*(char *)dest = (char) c;
+		((char*)dest)++;
+		size--;
+	}
+	return 0;
+}
+
+void* yourMemchr(const void *dest ,char c, int size) {
+	assert(dest);
+	assert(size > 0);
+	while (size && *(char *)dest) {
 		if (*(char *)dest == (char) c) {
 			return (char *)dest;
 		}
