@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <pthread.h>
 
+// Vs2019 netGet pthread
+
 int sharedi = 0;
 void increase_num(void);
 

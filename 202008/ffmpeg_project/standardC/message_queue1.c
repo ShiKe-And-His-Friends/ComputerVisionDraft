@@ -1,4 +1,3 @@
-#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +16,7 @@ int main () {
 	printf("ENTER \"end\" to exit program...\n");
 
 	int msg_id ,ret;
-	pid_t pid;
+	int pid;
 	struct msg_buf buf;
 	msg_id = msgget(KEY ,IPC_CREAT | IPC_EXCL);
 	if (msg_id == -1) {
