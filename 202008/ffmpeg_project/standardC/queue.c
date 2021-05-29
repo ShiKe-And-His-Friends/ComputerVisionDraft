@@ -88,3 +88,12 @@ void QueueDestroy(Queue* pq) {
 	}
 	pq->_head = pq->_tail = NULL;
 }
+
+int main() {
+	Queue* queue;
+	queue = (Queue *)malloc(sizeof(Queue));
+	QueueInit(queue);
+
+	queue = null;
+	return 0;
+}
