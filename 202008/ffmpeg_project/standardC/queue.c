@@ -94,6 +94,15 @@ int main() {
 	queue = (Queue *)malloc(sizeof(Queue));
 	QueueInit(queue);
 
-	queue = null;
+	QDataType type = 2;
+	for (int i = 0; i < 25; i++) {
+		QueuePush(queue,type);
+	}
+	for (int i = 0; i < QueueSize(queue); i++) {
+		QDataType type = QueueFront(queue);
+		printf("queue %d type is %d\n" ,i ,type);
+		QueuePop(queue);
+	}
+
 	return 0;
 }
