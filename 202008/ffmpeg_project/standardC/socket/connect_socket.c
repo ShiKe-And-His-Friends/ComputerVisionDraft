@@ -1,22 +1,47 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <WinSock2.h>
+#define WIN_32_SOCK_H
+#ifdef WIN_32_SOCK_H
+	#include <WinSock2.h>
+	#pragma  comment(lib,"ws2_32.lib")
+#endif
 
-#pragma  comment(lib,"ws2_32.lib")
-
-#define MY_PORT 4428
+#define MY_PORT 4483
 #define QUEUE 20
 #define BUFFER_SIZE 1024
 
-//netstat - na | findstr "4482"
+//netstat -ano | findstr "4483"
 
 int main() {
+
+#ifdef WIN_32_SOCK_H
+	// init socket win32
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+	wVersionRequested = MAKEWORD(1, 1);
+
+	err = WSAStartup(wVersionRequested, &wsaData);
+	if (err != 0) {
+		printf("socket init failure 1.\n");
+		return;
+	}
+
+	if (LOBYTE(wsaData.wVersion) != 1 ||
+		HIBYTE(wsaData.wVersion) != 1) {
+		WSACleanup();
+		printf("socket init failure 2.\n");
+		return;
+	}
+	printf("socket init success.\n");
+#endif
+	
 	int server_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	struct sockaddr_in server_sockaddr;
 	server_sockaddr.sin_family = AF_INET;
 	server_sockaddr.sin_port = htons(MY_PORT);
-	server_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	server_sockaddr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
 	if (bind(server_sockfd, (struct sockaddr *)&server_sockaddr, sizeof(server_sockaddr)) == -1) {
 		printf("Server bind port failure.\n");
@@ -29,6 +54,9 @@ int main() {
 		printf("Server listen failure.\n");
 		exit(-1);
 	}
+	else {
+		printf("Server listen success.\n");
+	}
 
 	char buffer[BUFFER_SIZE];
 	struct sockaddr_in client_addr;
@@ -38,6 +66,9 @@ int main() {
 	if (conn < 0) {
 		printf("Server accept failure.\n");
 		exit(-1);
+	}
+	else {
+		printf("Server accept success.\n");
 	}
 
 	while (1) {
@@ -53,6 +84,11 @@ int main() {
 
 	close(conn);
 	close(server_sockfd);
-
+#ifdef WIN_32_SOCK_H
+	// finalize socket win32
+	closesocket(server_sockfd);
+	WSACleanup();
+#endif
+	printf("Server realsea sources.\n");
 	return 0;
 }
