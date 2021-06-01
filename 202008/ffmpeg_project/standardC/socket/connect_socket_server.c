@@ -77,13 +77,13 @@ int main() {
 		if (strcmp(buffer ,"exit\n") == 0) {
 			printf("Server break flag.\n");
 			break;
-			fputs(buffer ,stdout);
-			send(conn ,buffer ,len ,0);
 		}
+		fputs(buffer, stdout);
+		//TODO handle data
+		buffer[len + 1] = '\0';
+		send(conn, buffer, len + 1, 0);
 	}
 
-	close(conn);
-	close(server_sockfd);
 #ifdef WIN_32_SOCK_H
 	// finalize socket win32
 	closesocket(server_sockfd);
