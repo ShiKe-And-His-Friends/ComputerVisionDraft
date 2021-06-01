@@ -78,8 +78,13 @@ int main() {
 			printf("Server break flag.\n");
 			break;
 		}
-		fputs(buffer, stdout);
+		//fputs(buffer, stdout);
 		//TODO handle data
+		int i = 0;
+		for (i = 0; i < len; i++) {
+			buffer[i] += 1;
+			printf("%d", buffer[i]);
+		}
 		buffer[len + 1] = '\0';
 		send(conn, buffer, len + 1, 0);
 	}

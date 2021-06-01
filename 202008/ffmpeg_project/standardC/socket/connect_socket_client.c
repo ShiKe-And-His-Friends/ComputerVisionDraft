@@ -51,19 +51,32 @@ int main() {
 	else {
 		printf("client connect success.\n");
 	}
-	char sendbuf[BUFFER_SIZE] = "safewwe2145";
+	char cmd_line[BUFFER_SIZE];
+	char sendbuf[BUFFER_SIZE];
 	char recvbuf[BUFFER_SIZE];
-	while (fgets(sendbuf ,sizeof(sendbuf) ,stdin) != NULL) {
+	while (fgets(cmd_line, sizeof(cmd_line), stdin) != NULL) {
 		//TODO handle send data
+		int i = 0;
+		for (i = 0; i < BUFFER_SIZE - 1; i++) {
+			sendbuf[i] = rand();
+			printf("%d" ,sendbuf[i]);
+		}
+		printf("\n\n");
+
 		send(sock_cli ,sendbuf ,strlen(sendbuf) ,0);
-		if (strcmp(sendbuf ,"exit\n") == 0) {
+		if (strcmp(cmd_line,"exit\n") == 0) {
 			printf("client connect close.\n");
 			break;
 		}
 		//TODO handle receive data
 		recv(sock_cli ,recvbuf ,sizeof(recvbuf) ,0);
-		fputs(recvbuf ,stdout);
-
+		//fputs(recvbuf ,stdout);
+		for (i = 0; i < BUFFER_SIZE - 1; i++) {
+			printf("%d", recvbuf[i]);
+		}
+		printf("\n");
+		
+		memset(cmd_line, 0, sizeof(cmd_line));
 		memset(sendbuf ,0 ,sizeof(sendbuf));
 		memset(recvbuf, 0, sizeof(recvbuf));
 	}
