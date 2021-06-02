@@ -57,22 +57,28 @@ int main() {
 	while (fgets(cmd_line, sizeof(cmd_line), stdin) != NULL) {
 		//TODO handle send data
 		int i = 0;
-		for (i = 0; i < BUFFER_SIZE - 1; i++) {
+		for (i = 0; i < BUFFER_SIZE ; i++) {
 			sendbuf[i] = rand();
-			printf("%d" ,sendbuf[i]);
+			printf("%d " ,sendbuf[i]);
 		}
 		printf("\n\n");
-
-		send(sock_cli ,sendbuf ,strlen(sendbuf) ,0);
-		if (strcmp(cmd_line,"exit\n") == 0) {
+		if (strcmp(cmd_line, "exit\n") == 0) {
+			sendbuf[0] = 'e';
+			sendbuf[1] = 'x';
+			sendbuf[2] = 'i';
+			sendbuf[3] == 't';
+		}
+		send(sock_cli ,sendbuf ,BUFFER_SIZE,0);
+		if (strcmp(cmd_line, "exit\n") == 0) {
 			printf("client connect close.\n");
 			break;
 		}
+
 		//TODO handle receive data
 		recv(sock_cli ,recvbuf ,sizeof(recvbuf) ,0);
 		//fputs(recvbuf ,stdout);
-		for (i = 0; i < BUFFER_SIZE - 1; i++) {
-			printf("%d", recvbuf[i]);
+		for (i = 0; i < BUFFER_SIZE ; i++) {
+			printf("%d ", recvbuf[i]);
 		}
 		printf("\n");
 		

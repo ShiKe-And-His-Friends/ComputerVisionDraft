@@ -74,19 +74,34 @@ int main() {
 	while (1) {
 		memset(buffer ,0 ,sizeof(buffer));
 		int len = recv(conn ,buffer ,sizeof(buffer) ,0);
-		if (strcmp(buffer ,"exit\n") == 0) {
+		
+		if (len <= 0) {
+			printf("Server break flag %d.\n" ,len);
+			break;
+		}
+
+		if (buffer[0] == 'e' && buffer[1] == 'x' 
+			&& buffer[2] == 'i' && buffer[3] == 't') {
 			printf("Server break flag.\n");
 			break;
 		}
 		//fputs(buffer, stdout);
+		
 		//TODO handle data
+		if (len > BUFFER_SIZE) {
+			len = BUFFER_SIZE;
+		}
 		int i = 0;
+
+		for (i = 0; i < len; i++) {
+			printf("%d ", buffer[i]);
+		}
+		printf("\n\n");
 		for (i = 0; i < len; i++) {
 			buffer[i] += 1;
-			printf("%d", buffer[i]);
+			printf("%d ", buffer[i]);
 		}
-		buffer[len + 1] = '\0';
-		send(conn, buffer, len + 1, 0);
+		send(conn, buffer, len, 0);
 	}
 
 #ifdef WIN_32_SOCK_H
