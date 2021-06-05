@@ -9,11 +9,16 @@
 #include "RtpEnc.h"
 #include "Utils.h"
 
-int main() {
+int main(int argc ,char** argv) {
 	uint8_t* stream = NULL;
 	uint32_t length;
 	uint32_t result;
-	const char* fileName = "sugar.h264";
+	char* fileName = "sugar.h264";
+	if (argc != 2) {
+		printf("Input Format Error!\n %s input_h264_file" ,argv[0]);
+		return 0;
+	}
+	fileName = argv[1];
 
 	printf("Rtp program start.\n");
 
@@ -26,7 +31,7 @@ int main() {
 	result = readFile(&stream ,&length ,fileName);
 	if (result) {
 		printf("Read file Error\n");
-		exit(-1);
+		return -1;
 	}
 
 	printf("Rtp program stop.\n");
