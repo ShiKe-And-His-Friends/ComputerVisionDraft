@@ -5,7 +5,7 @@
 
 int readFile(uint8_t **stream ,int *len ,const char *file) {
 	FILE* fp = NULL;
-	long size = 0;
+	size_t size = 0;
 	uint8_t* buf;
 	printf("read file %s\n" ,file);
 	fp = fopen(file ,"r");
@@ -26,9 +26,9 @@ int readFile(uint8_t **stream ,int *len ,const char *file) {
         printf("allocate %p failure.\n", buf);
         return -1;
     }
-    memset(buf ,0 ,size);
+    memset(buf ,0 ,(size_t)size);
 
-	long mysize = fread(buf, size, 1, fp);
+	long mysize = fread(buf, 1 ,size, fp);
 	if (mysize != size) {
 		printf("read space %d done %d.\n" ,size ,mysize);
         if (feof(fp)) {

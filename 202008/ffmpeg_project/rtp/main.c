@@ -33,7 +33,14 @@ int main(int argc ,char** argv) {
 		printf("Read file Error\n");
 		return -1;
 	}
+	const char* name = "C\:\\Users\\Dcfr-186\\新建文件夹\\_idcv0518_-20210607012222";
+	FILE* fp = NULL;
+	fp = fopen(name, "w");
+	fwrite(stream ,1 ,length,fp);
+	fclose(fp);
+	printf("file rewrite %d\n" ,length);
 
+	free(stream);
 	printf("Rtp program stop.\n");
 	return 0;
 }
