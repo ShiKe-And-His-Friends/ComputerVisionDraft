@@ -25,5 +25,19 @@ void rtpSend(RtpContext* ctx, UdpContext* udp, const uint8_t* buf, int size) {
 	r1 = ff_avc_find_startcode(buf ,end);
 	printf("\nindex = %p start = %p end = %p \n\n" ,r1 ,r ,end);
 
+	uint32_t times = 0;
+
+	while (r1 < end) {
+		uint8_t* r2;
+		while (!*(r1++)) {
+			//skip current start codes
+		}
+		r2 = ff_avc_find_startcode(r1 ,end);
+		//send a NALU rtp data
+		printf("\n%d index1 = %p index2 = %p start = %p end = %p \n\n",times ++, r1 ,r2 ,r , end);
+
+		r1 = r2;
+	}
+
 	printf("rtp send stop \n");
 }
