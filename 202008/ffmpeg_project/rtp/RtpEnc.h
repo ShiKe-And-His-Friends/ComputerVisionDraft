@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "typedef.h"
 #include "Network.h"
 

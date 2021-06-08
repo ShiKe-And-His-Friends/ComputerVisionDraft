@@ -46,6 +46,10 @@ int main(int argc ,char** argv) {
 		printf("udp init success.\n");
 	}
 
+	initRtpContext(&rtpContext);
+
+	rtpSend(&rtpContext ,&udpContext ,stream ,length);
+
 	udpFinalize(&udpContext);
 	free(stream);
 	printf("rtp program stop.\n");
