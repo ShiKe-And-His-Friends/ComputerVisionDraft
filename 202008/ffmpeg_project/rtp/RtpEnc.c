@@ -33,9 +33,12 @@ void rtpSend(RtpContext* ctx, UdpContext* udp, const uint8_t* buf, int size) {
 			//skip current start codes
 		}
 		r2 = ff_avc_find_startcode(r1 ,end);
+		
 		//send a NALU rtp data
 		printf("\n%d index1 = %p index2 = %p start = %p end = %p \n\n",times ++, r1 ,r2 ,r , end);
 
+		Sleep(1000 / H264_FRAME_RATE);
+		ctx->timestamp += (90000.0 / H264_FRAME_RATE);
 		r1 = r2;
 	}
 

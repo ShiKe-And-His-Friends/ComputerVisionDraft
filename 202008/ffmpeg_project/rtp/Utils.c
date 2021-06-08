@@ -64,4 +64,3 @@ int readFile(uint8_t **stream ,int *len ,const char *file) {
 	fclose(fp);
 	return 0;
 }
-
