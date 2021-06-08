@@ -15,32 +15,39 @@ int main(int argc ,char** argv) {
 	uint32_t result;
 	char* fileName = "sugar.h264";
 	if (argc != 2) {
-		printf("Input Format Error!\n %s input_h264_file" ,argv[0]);
+		printf("input format error!\n %s input_h264_file" ,argv[0]);
 		return 0;
 	}
 	fileName = argv[1];
 
-	printf("Rtp program start.\n");
+	printf("rtp program start.\n");
 
 	RtpContext rtpContext;
 	UdpContext udpContext = {
 		.dstIp = "127.0.0.1",
-		.dstPort = "4483"
+		.dstPort = 4483
 	};
 
 	result = readFile(&stream ,&length ,fileName);
 	if (result) {
-		printf("Read file Error\n");
+		printf("read file error\n");
 		return -1;
 	}
-	const char* name = "C\:\\Users\\Dcfr-186\\Videos\\Captures\\sample_copy.h264";
-	FILE* fp = NULL;
-	fp = fopen(name, "wb+");
-	fwrite(stream ,1 ,length,fp);
-	fclose(fp);
-	printf("file rewrite %d\n" ,length);
+	else {
+		printf("read file success\n");
+	}
 
+	result = udpInit(&udpContext);
+	if (result) {
+		printf("udp init failure.\n");
+		return -1;
+	}
+	else {
+		printf("udp init success.\n");
+	}
+
+	udpFinalize(&udpContext);
 	free(stream);
-	printf("Rtp program stop.\n");
+	printf("rtp program stop.\n");
 	return 0;
 }

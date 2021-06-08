@@ -32,12 +32,16 @@ int udpInit(UdpContext* udp) {
 	}
 	udp->addr.sin_family = AF_INET;
 	udp->addr.sin_port = htons(udp->dstPort);
-	udp->addr.sin_addr.s_addr = htonl(udp->dstIp);
+	// udp->addr.sin_addr.s_addr = htonl(udp->dstIp);
+	udp->addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
 	int num = (int)sendto(udp->socket ,"" ,1 ,0 ,(struct sockaddr *)&udp->addr ,sizeof(udp->addr));
 	if (num != 1) {
-		printf("udp init sendto test err, %d" ,num);
+		int errorNo = WSAGetLastError();
+		printf("udp init sendto test err, %d  %d\n" ,num ,errorNo);
+		return -1;
 	}
+	printf("socket test success.\n");
 	return 0;
 }
 
@@ -54,8 +58,9 @@ int udpSend(const UdpContext* udp, const uint8_t* data, uint32_t len) {
 	return len;
 }
 
-void finalizeInit(UdpContext* udp) {
+void udpFinalize(UdpContext* udp) {
 	// finalize socket win32
 	closesocket(udp->socket);
 	WSACleanup();
+	printf("udp finalize success.\n");
 }
