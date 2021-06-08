@@ -12,12 +12,54 @@ int initRtpContext(RtpContext* context) {
 	return 0;
 }
 
+/*
+*
+*    0                   1                   2                   3
+*    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+*   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+*   |V=2|P|X|  CC   |M|     PT      |       sequence number         |
+*   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+*   |                           timestamp                           |
+*   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+*   |           synchronization source (SSRC) identifier            |
+*   +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+
+*   |            contributing source (CSRC) identifiers             |
+*   :                             ....                              :
+*   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+*
+**/
 static void rtpSendData(RtpContext* ctx ,const uint8_t *buf ,int len ,int last) {
+	int res = 0;
+	// build rtp header
+	uint8_t* pos = ctx->cache;
+	pos[0] = (RTP_VERSION << 6) & 0xff; // V P X CC
+	pos[1] = (uint8_t)((RTP_H264 & 0x07f) | (last & 0x01) << 7); // M PayloadType
+	Load16(&pos[2] ,(uint16_t)ctx->seq);
+	Load32(&pos[4] ,ctx->timestamp);
+	Load32(&pos[8] ,ctx->ssrc);
+
+	//copy audio/video data
+	memcpy(&pos[12] ,buf ,len);
+
+	// send socket udp stream
+	res = udpSend(ctx ,ctx->cache ,(uint32_t)(len + 12));
+	
+	// debug print
+	printf("\nrtp sned data cache [%d]:" ,res);
+	for (int i = 0; i < 20; i++) {
+		printf("%.2X", ctx->cache[i]);
+	}
+	printf("\n");
+
+	// clear buffer
+	memset(ctx->cache ,0 ,RTP_PAYLOAD_MAX + 10);
+
 	ctx->buf_ptr = ctx->buf;
+	ctx->seq = (ctx->seq + 1) & 0xffff;
 }
 
 static void rtpSenNAL(RtpContext* ctx, const uint8_t* nal, int size, int last) {
-	printf("rtp send nal len = %d\n" ,size);
+	//printf("rtp send nal len = %d\n" ,size);
 	if (size <= RTP_PAYLOAD_MAX) {
 		// Aggregation Packets
 		if (ctx->aggregation) {

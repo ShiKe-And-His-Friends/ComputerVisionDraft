@@ -9,6 +9,10 @@
 
 #define RTP_PAYLOAD_MAX 1400
 
+#define RTP_VERSION 2
+#define RTP_H264 96
+#define RTP_H264_SELF 107
+
 typedef struct {
 	uint8_t cache[RTP_PAYLOAD_MAX + 12]; //packet = RTP header + payload
 	uint8_t buf[RTP_PAYLOAD_MAX]; //NAL: header + body
