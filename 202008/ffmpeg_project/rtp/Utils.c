@@ -8,7 +8,7 @@ int readFile(uint8_t **stream ,int *len ,const char *file) {
 	size_t size = 0;
 	uint8_t* buf;
 	printf("read file %s\n" ,file);
-	fp = fopen(file ,"r");
+	fp = fopen(file ,"rb");
 	if (!fp) {
 		printf("read file failed.\n");
 		return -1;
