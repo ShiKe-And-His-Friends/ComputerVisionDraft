@@ -17,7 +17,7 @@ const uint8_t* ff_avc_find_startcode_internal(const uint8_t* p, const uint8_t* e
 				if (p[0] == 0 && p[2] == 1) { // 0 0 1 x
 					return p;
 				}
-				if (p[2] == 0 && p[3] == 0) { // x 0 0 1
+				if (p[2] == 0 && p[3] == 1) { // x 0 0 1
 					return p + 1;
 				}
 			}
@@ -37,7 +37,7 @@ const uint8_t* ff_avc_find_startcode_internal(const uint8_t* p, const uint8_t* e
 			return p;
 		}
 	}
-	return p + 3; // no NALU data in array return end index
+	return end + 3; // no NALU data in array return end index
 }
 
 const uint8_t* ff_avc_find_startcode(const uint8_t* p, const uint8_t* end) {

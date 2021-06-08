@@ -5,7 +5,7 @@
 #ifndef RTP_ENC_H
 #define RTP_ENC_H
 
-#define H264_FRAME_RATE 25
+#define H264_FRAME_RATE 30
 
 #define RTP_PAYLOAD_MAX 1400
 
