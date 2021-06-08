@@ -13,7 +13,7 @@ int initRtpContext(RtpContext* context) {
 }
 
 static void rtpSendData(RtpContext* ctx ,const uint8_t *buf ,int len ,int last) {
-
+	ctx->buf_ptr = ctx->buf;
 }
 
 static void rtpSenNAL(RtpContext* ctx, const uint8_t* nal, int size, int last) {
