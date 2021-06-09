@@ -50,7 +50,7 @@ int udpSend(const UdpContext* udp, const uint8_t* data, uint32_t len) {
 		printf("socket send failure.\n");
 		return -1;
 	}
-	int num = (int)sendto(udp->socket, data, len, 0, (struct sockaddr*)&udp->addr, sizeof(udp->addr));
+	uint32_t num = sendto(udp->socket, data, len, 0, (struct sockaddr*)&udp->addr, sizeof(udp->addr));
 	if (num != len) {
 		printf("%s sendto err. %d %d\n", udp->dstIp ,num ,len);
 		return -1;

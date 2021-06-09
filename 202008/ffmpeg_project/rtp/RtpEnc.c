@@ -2,6 +2,8 @@
 #include "Utils.h"
 #include "AVC.h"
 
+static UdpContext* gUdpContext;
+
 int initRtpContext(RtpContext* context) {
 	context->seq = 0;
 	context->timestamp = 0;
@@ -33,7 +35,7 @@ static void rtpSendData(RtpContext* ctx ,const uint8_t *buf ,int len ,int last) 
 	// build rtp header
 	uint8_t* pos = ctx->cache;
 	pos[0] = (RTP_VERSION << 6) & 0xff; // V P X CC
-	pos[1] = (uint8_t)((RTP_H264 & 0x07f) | (last & 0x01) << 7); // M PayloadType
+	pos[1] = (uint8_t)((RTP_H264 & 0x07f) | ((last & 0x01) << 7)); // M PayloadType
 	Load16(&pos[2] ,(uint16_t)ctx->seq);
 	Load32(&pos[4] ,ctx->timestamp);
 	Load32(&pos[8] ,ctx->ssrc);
@@ -42,9 +44,9 @@ static void rtpSendData(RtpContext* ctx ,const uint8_t *buf ,int len ,int last) 
 	memcpy(&pos[12] ,buf ,len);
 
 	// send socket udp stream
-	res = udpSend(ctx ,ctx->cache ,(uint32_t)(len + 12));
+	res = udpSend(gUdpContext ,ctx->cache ,(uint32_t)(len + 12));
 	
-	// debug print
+	// debug print	
 	printf("\nrtp sned data cache [%d]:" ,res);
 	for (int i = 0; i < 20; i++) {
 		printf("%.2X", ctx->cache[i]);
@@ -110,7 +112,7 @@ static void rtpSenNAL(RtpContext* ctx, const uint8_t* nal, int size, int last) {
 		int headerSize;
 		uint8_t* buf = ctx->buf;
 		uint8_t type = nal[0] & 0x1f;
-		uint8_t nri = nal[0] & 60;
+		uint8_t nri = nal[0] & 0x60;
 
 		// set NAL slice A
 		buf[0] = 28; // slice type FU-A
@@ -144,6 +146,7 @@ void rtpSend(RtpContext* ctx, UdpContext* udp, const uint8_t* buf, int size) {
 
 	const uint8_t* r = buf;
 	const uint8_t* end = buf + size;
+	gUdpContext = udp;
 
 	r = ff_avc_find_startcode(buf ,end);
 	printf("\nindex = %p start = %p end = %p \n\n" ,r ,r ,end);

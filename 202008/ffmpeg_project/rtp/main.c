@@ -25,7 +25,7 @@ int main(int argc ,char** argv) {
 	RtpContext rtpContext;
 	UdpContext udpContext = {
 		.dstIp = "127.0.0.1",
-		.dstPort = 4483
+		.dstPort = 1234
 	};
 
 	result = readFile(&stream ,&length ,fileName);
