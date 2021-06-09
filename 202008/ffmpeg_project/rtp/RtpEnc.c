@@ -8,7 +8,7 @@ int initRtpContext(RtpContext* context) {
 	context->seq = 0;
 	context->timestamp = 0;
 	context->ssrc = 0x12340000; // random number
-	context->aggregation = 1;
+	context->aggregation = 0;
 	context->buf_ptr = context->buf;
 	context->payload_type = 0; // 0 H.264/AVC  1 HECV/H.265
 	return 0;
