@@ -44,7 +44,11 @@ static void rtpSendData(RtpContext* ctx ,const uint8_t *buf ,int len ,int last) 
 	memcpy(&pos[12] ,buf ,len);
 
 	// send socket udp stream
-	res = udpSend(gUdpContext ,ctx->cache ,(uint32_t)(len + 12));
+	if (ctx != NULL && gUdpContext != NULL) {
+		res = udpSend(gUdpContext ,ctx->cache ,(uint32_t)(len + 12));	
+	} else {
+		printf("rtp socket error.\n");
+	}
 	
 	// debug print	
 	printf("\nrtp sned data cache [%d]:" ,res);
