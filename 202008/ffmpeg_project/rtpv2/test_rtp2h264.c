@@ -98,20 +98,20 @@ int main(int argc, char **argv)
     }
 
     input_fp = fopen(argv[1], "r");
+	output_fp = fopen(argv[2], "wb");
     if (!input_fp) {
         perror("fopen");
         exit(1);
-    }
-
-    output_fp = fopen(argv[2], "wb");
-    if (!output_fp) {
+    } else (!output_fp) {
         perror("fopen");
         exit(1);
-    }
+    } else {
+		
+		while (copy_nal_from_file(input_fp, nal_buf, &len) != -1) {
 
-    while (copy_nal_from_file(input_fp, nal_buf, &len) != -1) {
-
-    }
+		}
+	}
+   
 
     fclose(input_fp);
     fclose(output_fp);
