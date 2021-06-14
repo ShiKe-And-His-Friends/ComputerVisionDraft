@@ -23,4 +23,24 @@ void add_client(linklist client_ip_list ,char*  ipaddr) {
 	}
 }
 
-static int copy_nal_from_file(FILE *p ,uint8_t *buf ,int *len);
+static int copy_nal_from_file(FILE* p, uint8_t* buf, int* len) {
+	char tmpbuf[4];
+	char tmpbuf2[1];
+	int flag = 0;
+	int ret;
+
+#if 0
+	ret = fread(tmpbuf ,4 ,1 fp);
+	if (!ret) {
+		return 0;
+	}
+#endif
+	do {
+		ret = fread(tmpbuf2, 1, 1, fp);
+		if (!ret) {
+			return -1;
+		}
+	
+	} while (1);
+
+}
