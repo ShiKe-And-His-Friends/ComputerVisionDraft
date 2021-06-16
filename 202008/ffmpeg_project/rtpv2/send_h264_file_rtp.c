@@ -14,6 +14,18 @@ uint16_t DEST_PORT;
 linklist CLIENT_IP_LIST;
 uint8_t nal_buf[NAL_BUF_SIZE];
 
+static void add_client_list(linklist client_ip_list ,char* ipaddr) {
+	struct sockaddr_in server_c;
+	pnode pnode_tmp;
+	const int on = 1;
+
+	insert_nodulp_node();
+}
+
+static int h264nal2rtp_send(int frameRate ,uint8_t* pstStream ,int nalu_len ,linklist client_ip_list) {
+	
+}
+
 void add_client(linklist client_ip_list ,char*  ipaddr) {
 	
 }
@@ -67,13 +79,13 @@ int main(int argc ,char** argv) {
 	fprintf(stderr ,"DEST_PORT is %d \n" ,DEST_PORT);
 
 	while (copy_nal_from_file(fp ,nal_buf ,&len) != -1) {
-		ret = h264naltortp_send(25 ,nal_buf ,len ,CLIENT_IP_LIST);
+		ret = h264nal2rtp_send(25 ,nal_buf ,len ,CLIENT_IP_LIST);
 		if (ret != -1){
 			Sleep(20);
 		}
 	}
 
-	debug_print();
+	//debug_print();
 
 	fclose(fp_test);
 	fclose(fp);
