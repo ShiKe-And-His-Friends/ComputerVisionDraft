@@ -2,13 +2,13 @@
 * Thanks for https://github.com/hmgle/h264_to_rtp
 * Copy from it.
 */
-
+static int max;
 #include <stdio.h>
 #include <stdlib.h>
 #include "send_h264_file_rtp.h"
 
 #define DEFAULT_DEST_PORT 1234
-#define NAL_BUF_SIZE 1500 * 50
+#define NAL_BUF_SIZE 1500 * 500
 
 uint16_t DEST_PORT;
 linklist CLIENT_IP_LIST;
@@ -69,28 +69,88 @@ static void add_client_list(linklist client_ip_list ,char* ipaddr) {
 }
 
 static int h264nal2rtp_send(int frameRate ,uint8_t* pstStream ,int nalu_len ,linklist client_ip_list) {
-	
+	memset(pstStream ,sizeof(pstStream) ,0);
 }
 
 void add_client(linklist client_ip_list ,char*  ipaddr) {
 	
 }
 
-static int copy_nal_from_file(FILE* p, uint8_t* buf, int* len) {
+static int copy_nal_from_file(FILE* fp, uint8_t* buf, int* len) {
 	char tmpbuf[4];
 	char tmpbuf2[1];
 	int flag = 0;
 	int ret;
 
-#if 0
-	ret = fread(tmpbuf ,4 ,1 fp);
-	if (!ret) {
-		return 0;
-	}
-#endif
+	*len = 0;
 	do {
-	} while (1);
+		ret = fread(tmpbuf2, 1, 1, fp);
+		if (!ret) {
+			return -1;
+		}
+		if (!flag && tmpbuf2[0] != 0x00) {
+			//printf("buf index %d\n", *len);
+			if (*len > max) {
+				max = *len;
+				printf("max index %d\n", *len);
+			}
+			buf[*len] = tmpbuf2[0];
+			(*len)++;
+		}
+		else if (!flag && tmpbuf2[0] == 0x00) {
+			flag = 1;
+			tmpbuf[0] = tmpbuf2[0];
+		}
+		else if (flag) {
+			switch (flag) {
+				case 1:
+					if (tmpbuf2[0] == 0x00) {
+						flag++;
+						tmpbuf[1] = tmpbuf2[0];
+					}
+					else {
+						flag = 0;
+						buf[*len] = tmpbuf[0];
+						(*len)++;
+						buf[*len] = tmpbuf2[0];
+						(*len)++;
+					}
+					break;
 
+				case 2:
+					if (tmpbuf2[0] == 0x0) {
+						flag++;
+						tmpbuf[2] = tmpbuf2[0];
+					}
+					else if (tmpbuf2[0] == 0x1) {
+						flag = 0;
+						return *len;
+					}
+					else {
+						flag = 0;
+						buf[*len] = tmpbuf[0];
+						(*len)++;
+						buf[*len] = tmpbuf[1];
+						(*len)++;
+						buf[*len] = tmpbuf2[0];
+						(*len)++;
+					}
+					break;
+
+				case 3:
+					if (tmpbuf2[0] == 0x1) {
+						flag = 0;
+						//printf("len is %d\n" ,*len);
+						return *len;
+					}
+					else {
+						flag = 0;
+						break;
+					}
+			}
+		}
+	} while (1);
+	return *len;
 }
 
 int main(int argc ,char** argv) {
