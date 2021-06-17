@@ -14,12 +14,54 @@ uint16_t DEST_PORT;
 linklist CLIENT_IP_LIST;
 uint8_t nal_buf[NAL_BUF_SIZE];
 
+void init_windows_socket(void) {
+	// init socket win32
+	WORD wVersionRequested;
+	WSADATA wsaData;
+	int err;
+	wVersionRequested = MAKEWORD(1, 1);
+
+	err = WSAStartup(wVersionRequested, &wsaData);
+	if (err != 0) {
+		printf("socket init failure 1.\n");
+		return -1;
+	}
+
+	if (LOBYTE(wsaData.wVersion) != 1 ||
+		HIBYTE(wsaData.wVersion) != 1) {
+		WSACleanup();
+		printf("socket init failure 2.\n");
+		return -1;
+	}
+	printf("socket init success.\n");
+}
+
+void finalize_windows_socket(void) {
+	WSACleanup();
+	printf("udp finalize success.\n");
+}
+
 static void add_client_list(linklist client_ip_list ,char* ipaddr) {
 	struct sockaddr_in server_c;
 	pnode pnode_tmp;
 	const int on = 1;
+	int ret = insert_nodulp_node(client_ip_list ,ipaddr);
+	pnode_tmp = search_node(CLIENT_IP_LIST ,ipaddr);
+	server_c.sin_family = AF_INET;
+	server_c.sin_port = htons(DEST_PORT);
+	server_c.sin_addr.s_addr = inet_addr(ipaddr);
+	pnode_tmp->sned_fail_n = 0;
+	pnode_tmp->node_info.socket_c = socket(AF_INET ,SOCK_DGRAM ,0);
 
-	insert_nodulp_node();
+	if (setsockopt(pnode_tmp->node_info.socket_c ,SOL_SOCKET ,SO_BROADCAST ,&on ,sizeof(on) < 0)){
+		fprintf(stderr ,"initSvr:Socket options set error.\n");
+		exit(errno);
+	}
+
+	if ((connect(pnode_tmp->node_info.socket_c ,(const struct sockaddr *)&server_c ,sizeof(struct sockaddr_in))) == -1) {
+		perror("connect");
+		exit(-1);
+	}
 }
 
 static int h264nal2rtp_send(int frameRate ,uint8_t* pstStream ,int nalu_len ,linklist client_ip_list) {

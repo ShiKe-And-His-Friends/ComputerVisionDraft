@@ -33,6 +33,8 @@ linklist delete_node(linklist llist ,const char* ipaddr);
 
 pnode delete_this_node(linklist llist ,pnode this_pnode);
 
+pnode search_node(linklist llist ,const char* ipaddr);
+
 int num_node(linklist llist);
 
 int insert_nodulp_node(linklist llist ,const char* ipaddr);

@@ -4,7 +4,14 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <windows.h>
+#define WIN_32_SOCK_H
+#ifdef WIN_32_SOCK_H
+
+#include <WinSock2.h>
+#pragma  comment(lib,"ws2_32.lib")
+
+#endif
+
 
 #include "llist.h"
 
@@ -65,6 +72,10 @@ struct func_para {
 	size_t len_sendbuf;
 	linklist iplist;
 };
+
+void init_windows_socket(void);
+
+void finalize_windows_socket(void);
 
 int h264naltortp_send(int framerate ,uint8_t* pstStream ,int nalu_len ,void (*deal_func)(void* p) ,void *deal_func_para);
 
