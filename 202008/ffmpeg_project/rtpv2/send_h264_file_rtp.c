@@ -49,18 +49,22 @@ static void add_client_list(linklist client_ip_list ,char* ipaddr) {
 	pnode_tmp = search_node(CLIENT_IP_LIST ,ipaddr);
 	server_c.sin_family = AF_INET;
 	server_c.sin_port = htons(DEST_PORT);
-	server_c.sin_addr.s_addr = inet_addr(ipaddr);
+	//TODO windows/linux set ip
+	//server_c.sin_addr.s_addr = inet_addr(ipaddr);
+	server_c.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	pnode_tmp->sned_fail_n = 0;
 	pnode_tmp->node_info.socket_c = socket(AF_INET ,SOCK_DGRAM ,0);
 
 	if (setsockopt(pnode_tmp->node_info.socket_c ,SOL_SOCKET ,SO_BROADCAST ,&on ,sizeof(on) < 0)){
 		fprintf(stderr ,"initSvr:Socket options set error.\n");
-		exit(errno);
+		//TODO check loop
+		//exit(errno);
 	}
 
 	if ((connect(pnode_tmp->node_info.socket_c ,(const struct sockaddr *)&server_c ,sizeof(struct sockaddr_in))) == -1) {
 		perror("connect");
-		exit(-1);
+		//TODO check tcp
+		//exit(-1);
 	}
 }
 
@@ -98,12 +102,12 @@ int main(int argc ,char** argv) {
 	if (argc < 3) {
 		fprintf(stderr ,"usage : %s <input_file> <dstip> [:dest_port]\n" ,argv[0]);
 	}
-	fp = fopen(argv[1] ,"r");
+	fp = fopen(argv[1] ,"rb");
 	if (!fp) {
 		perror("fopen");
 		exit(errno);
 	}
-	fp_test = fopen("file_test.h264" ,"w");
+	fp_test = fopen("file_test.h264" ,"wb+");
 	if (!fp_test) {
 		perror("fopen");
 		exit(errno);
