@@ -2,16 +2,21 @@
 * Thanks for https://github.com/hmgle/h264_to_rtp
 * Copy from it.
 */
-static int max;
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "send_h264_file_rtp.h"
 
+#define RTP_PAYLOAD_MAX_SIZE 1400
+#define SSRC_NUM 44
+#define SEND_BUF_SIZE 1500
 #define DEFAULT_DEST_PORT 1234
-#define NAL_BUF_SIZE 1500 * 500
+#define NAL_BUF_SIZE 1500 * 150
 
+static int max;
 uint16_t DEST_PORT;
 linklist CLIENT_IP_LIST;
+uint8_t SENDBUFFER[SEND_BUF_SIZE];
 uint8_t nal_buf[NAL_BUF_SIZE];
 
 void init_windows_socket(void) {
@@ -68,8 +73,145 @@ static void add_client_list(linklist client_ip_list ,char* ipaddr) {
 	}
 }
 
+static void send_data_to_client_list(uint8_t* send_buf, size_t len_sendbuf, linklist client_ip_list) {
+
+}
+
 static int h264nal2rtp_send(int frameRate ,uint8_t* pstStream ,int nalu_len ,linklist client_ip_list) {
-	memset(pstStream ,sizeof(pstStream) ,0);
+	uint8_t* nalu_buf;
+	nalu_buf = pstStream;
+	static uint32_t ts_current = 0;
+	static uint16_t seq_num = 0;
+	rtp_header_t* rtp_hdr;
+	nalu_header_t* nalu_hdr;
+	fu_indicator_t* fu_ind;
+	fu_header_t* fu_hdr;
+	size_t len_sendbuf;
+
+	int fu_pack_num; //nal num
+	int last_fu_pack_size; //last slice size
+	int fu_seq; //fu-a 
+
+	ts_current += (90000 / frameRate);
+
+	if (nalu_len < 1) {
+		return -1;
+	}
+
+	if (nalu_len <= RTP_PAYLOAD_MAX_SIZE) {
+		memset(SENDBUFFER ,0 ,SEND_BUF_SIZE);
+		rtp_hdr = (rtp_header_t*)SENDBUFFER;
+		rtp_hdr->csrc_len = 0;
+		rtp_hdr->extension = 0;
+		rtp_hdr->padding = 0;
+		rtp_hdr->version = 2;
+		rtp_hdr->payload_type = H264;
+		rtp_hdr->seq_no = htons(++seq_num % UINT16_MAX);
+		rtp_hdr->timestamp = htonl(ts_current);
+		rtp_hdr->ssrc = htonl(SSRC_NUM);
+		
+		nalu_hdr = (nalu_header_t*)&SENDBUFFER[12];
+		nalu_hdr->f = (nalu_buf[0] & 0x80) >> 7;
+		nalu_hdr->nri = (nalu_buf[0] & 0x60) >> 5;
+		nalu_hdr->type = (nalu_buf[0] & 0x1f);
+
+		memcpy(SENDBUFFER + 13 ,nalu_buf + 1 ,nalu_len - 1);
+
+		len_sendbuf = 12 + nalu_len;
+		send_data_to_client_list(SENDBUFFER ,len_sendbuf ,client_ip_list);
+	}
+	else {
+		// cut fu-a
+
+		fu_pack_num = nalu_len % RTP_PAYLOAD_MAX_SIZE ? (nalu_len / RTP_PAYLOAD_MAX_SIZE + 1) : nalu_len / RTP_PAYLOAD_MAX_SIZE;
+		last_fu_pack_size = nalu_len % RTP_PAYLOAD_MAX_SIZE ? nalu_len % RTP_PAYLOAD_MAX_SIZE : RTP_PAYLOAD_MAX_SIZE;
+		fu_seq = 0;
+		for (fu_seq = 0; fu_seq < fu_pack_num;fu_seq ++) {
+			memset(SENDBUFFER ,0 ,SEND_BUF_SIZE);
+			if (fu_seq == 0) {
+				rtp_hdr = (rtp_header_t*)SENDBUFFER;
+				rtp_hdr->csrc_len = 0;
+				rtp_hdr->extension = 0;
+				rtp_hdr->padding = 0;
+				rtp_hdr->version = 2;
+				rtp_hdr->payload_type = H264;
+				rtp_hdr->marker = 0;
+				rtp_hdr->seq_no = htons(++seq_num % UINT16_MAX);
+				rtp_hdr->timestamp = htonl(ts_current);
+				rtp_hdr->ssrc = htonl(SSRC_NUM);
+
+				fu_ind = (fu_indicator_t*)&SENDBUFFER[12];
+				fu_ind->f = (nalu_buf[0] & 0x80) >> 7;
+				fu_ind->nri = (nalu_buf[0] & 0x60) >> 5;
+				fu_ind->type = 28;
+
+				fu_hdr = (fu_header_t*)&SENDBUFFER[13];
+				fu_hdr->s = 1;
+				fu_hdr->e = 0;
+				fu_hdr->r = 0;
+				fu_hdr->type = nalu_buf[0] & 0x1f;
+
+				memcpy(SENDBUFFER + 14 ,nalu_buf + 1 ,RTP_PAYLOAD_MAX_SIZE - 1);
+
+				len_sendbuf = 12 + 2 + (RTP_PAYLOAD_MAX_SIZE - 1);
+				send_data_to_client_list(SENDBUFFER ,len_sendbuf ,client_ip_list);
+			}
+			else if (fu_seq < fu_pack_num - 1){
+				rtp_hdr = (rtp_header_t*)SENDBUFFER;
+				rtp_hdr->csrc_len = 0;
+				rtp_hdr->extension = 0;
+				rtp_hdr->padding = 0;
+				rtp_hdr->version = 2;
+				rtp_hdr->payload_type = H264;
+				rtp_hdr->marker = 0;
+				rtp_hdr->seq_no = htons(++seq_num % UINT16_MAX);
+				rtp_hdr->timestamp = htonl(ts_current);
+				rtp_hdr->ssrc = htonl(SSRC_NUM);
+
+				fu_ind = (fu_indicator_t*)&SENDBUFFER[12];
+				fu_ind->f = (nal_buf[0] & 0x80) >> 7;
+				fu_ind->nri = (nal_buf[0] & 0x60) >> 5;
+				fu_ind->type = 28;
+
+				fu_hdr = (fu_header_t*)&SENDBUFFER[13];
+				fu_hdr->s = 0;
+				fu_hdr->e = 0;
+				fu_hdr->r = 0;
+				fu_hdr->type = nalu_buf[0] & 0x1f;
+
+				memcpy(SENDBUFFER + 14 ,nalu_buf + RTP_PAYLOAD_MAX_SIZE * fu_seq ,RTP_PAYLOAD_MAX_SIZE);
+				len_sendbuf = 12 + 2 + RTP_PAYLOAD_MAX_SIZE;
+			}
+			else {
+				rtp_hdr = (rtp_header_t*)SENDBUFFER;
+				rtp_hdr->csrc_len = 0;
+				rtp_hdr->extension = 0;
+				rtp_hdr->padding = 0;
+				rtp_hdr->version = 2;
+				rtp_hdr->payload_type = H264;
+				rtp_hdr->marker = 1;
+				rtp_hdr->seq_no = htons(++seq_num % UINT16_MAX);
+				rtp_hdr->timestamp = htonl(ts_current);
+				rtp_hdr->ssrc = htonl(SSRC_NUM);
+
+				fu_ind = (fu_indicator_t*)&SENDBUFFER[12];
+				fu_ind->f = (nalu_buf[0] & 0x80) >> 7;
+				fu_ind->nri = (nalu_buf[0] & 0x60) >> 5;
+				fu_ind->type = 28;
+
+				fu_hdr = (fu_header_t*)&SENDBUFFER[13];
+				fu_hdr->s = 0;
+				fu_hdr->e = 1;
+				fu_hdr->r = 0;
+				fu_hdr->type = nalu_buf[0] & 0x1f;
+
+				memcpy(SENDBUFFER + 14 ,nalu_buf + RTP_PAYLOAD_MAX_SIZE * fu_seq ,last_fu_pack_size);
+				len_sendbuf = 12 + 2 + last_fu_pack_size;
+				send_data_to_client_list(SENDBUFFER ,len_sendbuf ,client_ip_list);
+			}
+		}
+	}
+	return 0;
 }
 
 void add_client(linklist client_ip_list ,char*  ipaddr) {
@@ -92,7 +234,7 @@ static int copy_nal_from_file(FILE* fp, uint8_t* buf, int* len) {
 			//printf("buf index %d\n", *len);
 			if (*len > max) {
 				max = *len;
-				printf("max index %d\n", *len);
+				//printf("max index %d\n", *len);
 			}
 			buf[*len] = tmpbuf2[0];
 			(*len)++;
