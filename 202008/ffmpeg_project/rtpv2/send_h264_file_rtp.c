@@ -74,7 +74,23 @@ static void add_client_list(linklist client_ip_list ,char* ipaddr) {
 }
 
 static void send_data_to_client_list(uint8_t* send_buf, size_t len_sendbuf, linklist client_ip_list) {
-
+	int ret;
+	pnode pnode_tmp0;
+	pnode_tmp0 = client_ip_list->next;
+	while (pnode_tmp0) {
+		if ((ret = send(pnode_tmp0->node_info.socket_c ,send_buf ,len_sendbuf ,0)) < 0) {
+			fprintf(stderr ,"---- send fail error is %d ----\n" ,errno);
+			if (errno > 0) {
+				pnode_tmp0->sned_fail_n++;
+			}
+			if (pnode_tmp0->sned_fail_n > MAX_SEND_FAIL_N) {
+				close(pnode_tmp0->node_info.socket_c);
+				//pnode_tmp0 = delete_this_node(client_ip_list ,pnode_tmp0);
+			}
+		}
+		pnode_tmp0 = pnode_tmp0->next;
+	}
+	return;
 }
 
 static int h264nal2rtp_send(int frameRate ,uint8_t* pstStream ,int nalu_len ,linklist client_ip_list) {
