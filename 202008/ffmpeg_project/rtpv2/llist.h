@@ -12,6 +12,7 @@
 typedef struct _client_info {
 	char ipaddr[16];
 	int socket_c;
+	int socket_s;
 } client_info;
 
 struct node {
