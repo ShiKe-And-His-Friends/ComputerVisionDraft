@@ -77,6 +77,8 @@ def plot_value_array(i ,predictions_array ,true_label):
     thisplot[predicted_label].set_color('red')
     thisplot[true_label].set_color('blue')
 
+'''
+print("Predict arrays:")
 num_rows = 5
 num_cols = 5
 num_images = num_rows * num_cols
@@ -88,6 +90,17 @@ for i in range(num_images):
     plot_value_array(i ,predictions[i] ,test_labels)
 plt.tight_layout()
 plt.show()
+'''
+print("Predict one")
+img = test_images[1]
+img = (np.expand_dims(img ,0))
+print(img.shape)
+predictions_single = probality_model.predict(img)
+print(predictions_single)
+plot_value_array(1 ,predictions_single[0] ,test_labels)
+_ = plt.xticks(range(10) ,class_names ,rotation = 45)
+predicted_single_value = np.argmax(predictions_single[0])
+print(predicted_single_value)
 
 print("compile fashion mnist model done")
 
