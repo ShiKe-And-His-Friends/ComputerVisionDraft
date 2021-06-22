@@ -17,40 +17,40 @@ class MyModel(Model):
     def __init__(self):
         super(MyModel ,self).__init__()
         self.conv1 = Conv2D(32 ,3 ,activation = 'relu')
-        self.flattern = Flattern()
+        self.flatten = Flatten()
         self.d1 = Dense(128 ,activation = 'relu')
         self.d2 = Dense(10 ,activation = 'softmax')
     def call(self ,x):
         x = self.conv1(x)
-        x = self.flattern(x)
+        x = self.flatten(x)
         x = self.d1(x)
         return self.d2(x)
 
 model = MyModel()
 
-loss_object = tf.kera.losses.SparseCategoricalCrossentropy()
+loss_object = tf.keras.losses.SparseCategoricalCrossentropy()
 optimizer = tf.keras.optimizers.Adam()
 
-train_loss = tf.keras.metrices.Mean(name = 'train_loss')
-train_accuracy = tf.keras.metrices.SparseCategoricalAccuracy(name = 'train_accuracy')
+train_loss = tf.keras.metrics.Mean(name = 'train_loss')
+train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = 'train_accuracy')
 
-test_loss = tf.keras.metrices.Mean(name = 'test_loss')
-test_accuracy = tf.keras.metrices.SparseCategoricalAccuracy(name = 'test_accuracy')
+test_loss = tf.keras.metrics.Mean(name = 'test_loss')
+test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = 'test_accuracy')
 
 @tf.function
 def train_step(images ,labels):
     with tf.GradientTape() as tape:
-        predictions = model(iamges)
-        loss = loss_object(labels ,predications)
+        predictions = model(images)
+        loss = loss_object(labels ,predictions)
     gradients = tape.gradient(loss ,model.trainable_variables)
     optimizer.apply_gradients(zip(gradients ,model.trainable_variables))
 
     train_loss(loss)
-    train_accuracy(labels ,predications)
+    train_accuracy(labels ,predictions)
 
 @tf.function
 def test_step(images ,labels):
-    predictions = model(iamges)
+    predictions = model(images)
     t_loss = loss_object(labels ,predictions)
 
     test_loss(t_loss)
@@ -67,7 +67,7 @@ for epoch in range(EPOCHS):
         train_step(images ,labels)
 
     for test_images ,test_labels in test_ds:
-        test_step(test_iamges ,test_labels)
+        test_step(test_images ,test_labels)
 
     template = 'Epoch {}, Loss:{} ,Accuracy:{} ,Test Loss:{} ,Test Accuracy:{}'
     print(template.format(epoch + 1,
