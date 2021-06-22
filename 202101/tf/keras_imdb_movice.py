@@ -37,4 +37,30 @@ print("After prepare one baseline length:{},two baseline length:{}".format(len(t
 prepare_text1 = decode_review(train_data[0])
 print(prepare_text1)
 
+# contribute model
+vocab_size = 10000
+model = keras.Sequential()
+model.add(keras.layers.Embedding(vocab_size ,16))
+model.add(keras.layers.GlobalAveragePooling1D())
+model.add(keras.layers.Dense(16 ,activation = 'relu'))
+model.add(keras.layers.Dense(1 ,activation = 'sigmoid'))
+model.summary()
+
+model.compile(optimizer = 'adam',
+        loss = 'binary_crossentropy',
+        metrics = ['accuracy'])
+
+x_val = train_data[:10000]
+partial_x_train = train_data[10000:]
+y_val = train_labels[:10000]
+partial_y_train = train_labels[10000:]
+
+# train model
+history = model.fit(partial_x_train ,
+        partial_y_train,
+        epochs = 40,
+        batch_size = 512,
+        validation_data = (x_val ,y_val),
+        verbose = 1)
+
 print("\nTrain IMDB movice model done.")
