@@ -31,7 +31,7 @@ google/tf2-preview/gnews-swivel-20dim-with-oov/1
 google/tf2-preview/nnlm-en-dim50/1
 google/tf2-preview/nnlm-en-dim128/1
 '''
-embedding = "https://hub.tensorflow.google.cn/google/tf2-preview/gnews-swivel-20dim/1"
+embedding = "https://hub.tensorflow.google.cn/google/tf2-preview/nnlm-en-dim128/1"
 hub_layer = hub.KerasLayer(embedding ,input_shape = [],
         dtype = tf.string ,trainable = True)
 print(hub_layer(train_examples_batch[:3]))
