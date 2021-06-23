@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
+import matplotlib.pyplot as plt
 
 print(tf.__version__)
 
@@ -62,5 +63,37 @@ history = model.fit(partial_x_train ,
         batch_size = 512,
         validation_data = (x_val ,y_val),
         verbose = 1)
+
+# evaluate model
+result = model.evaluate(test_data ,test_labels ,verbose = 2)
+print("\nEvaluate model:{}\n".format(result))
+
+history_dict = history.history
+history_dict.keys()
+
+#dict_keys(['loss' ,'accuracy' ,'val_loss' ,'val_accuracy'])
+acc = history_dict['accuracy']
+val_acc = history_dict['val_accuracy']
+loss = history_dict['loss']
+val_loss = history_dict['val_loss']
+
+epochs = range(1 ,len(acc) + 1)
+
+plt.plot(epochs ,loss ,'bo' ,label = 'Training loss')
+plt.plot(epochs ,val_loss ,'b' ,label = 'Validation loss')
+plt.title('Training and validation loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+plt.clf()
+plt.plot(epochs ,acc ,'bo' ,label = 'Training acc')
+plt.plot(epochs ,val_acc ,'b' ,label = 'Validation acc')
+plt.title('Training and validation accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.show()
 
 print("\nTrain IMDB movice model done.")
