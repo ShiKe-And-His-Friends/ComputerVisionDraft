@@ -95,6 +95,7 @@ tiny_model = tf.keras.Sequential([
     layers.Dense(1)
 ])
 size_histories['Tiny'] = compile_and_fit(tiny_model ,'sizes/Tiny')
+'''
 # test2. small model
 small_model = tf.keras.Sequential([
     layers.Dense(16 ,activation = 'elu' ,input_shape = (FEATURES,)),
@@ -119,7 +120,9 @@ large_model = tf.keras.Sequential([
     layers.Dense(1)
 ])
 size_histories['large'] = compile_and_fit(large_model ,"sizes/large")
-
+'''
+# draw 
+# tensorboard --logdir {logdir}/size
 plotter = tfdocs.plots.HistoryPlotter(metric = 'binary_crossentropy' ,smoothing_std = 10)
 plotter.plot(size_histories)
 a = plt.xscale('log')
@@ -127,14 +130,81 @@ plt.xlim([5 ,max(plt.xlim())])
 plt.ylim([0.5 ,0.7])
 plt.xlabel("Epochs [Log Scale]")
 plt.show()
-# draw 
 
 # strategies 
+shutil.rmtree(logdir/'regularizers/Tiny', ignore_errors=True)
+shutil.copytree(logdir/'sizes/Tiny' ,logdir/'regularizers/Ting')
 
 # regularize
+regularizer_histories = {}
+regularizer_histories['Tiny'] = size_histories['Tiny']
+l2_model = tf.keras.Sequential([
+    layers.Dense(
+        512 ,
+        activation = 'elu',
+        kernel_regularizer = regularizers.l2(0.001),
+        input_shape = (FEATURES,)),
+    layers.Dense(
+        512 ,
+        activation = 'elu',
+        kernel_regularizer = regularizers.l2(0.001)),
+    layers.Dense(
+        512 ,
+        activation = 'elu',
+        kernel_regularizer = regularizers.l2(0.001)),
+    layers.Dense(
+        512 ,
+        activation = 'elu',
+        kernel_regularizer = regularizers.l2(0.001)),
+    layers.Dense(1)
+])
+regularizer_histories['l2'] = compile_and_fit(l2_model ,"regularizers/l2")
+result = l2_model(features)
+regularizers_loss = tf.add_n(l2_model.losses)
 
 # dropout 
+dropout_model = tf.keras.Sequential([
+    layers.Dense(512 ,activation = 'elu' ,input_shape = (FEATURES,)),
+    layers.Dropout(0.5),
+    layers.Dense(512 ,activation = 'elu'),
+    layers.Dropout(0.5),
+    layers.Dense(512 ,activation = 'elu'),
+    layers.Dropout(0.5),
+    layers.Dense(512 ,activation = 'elu'),
+    layers.Dropout(0.5),
+    layers.Dense(1)
+])
+regularizer_histories['dropout'] = compile_and_fit(dropout_model ,"regularizers/dropout")
+
+combined_model = tf.keras.Sequential([
+    layers.Dense(
+        512 ,
+        kernel_regularizer = regularizers.l2(0.001),
+        activation = 'elu',
+        input_shape = (FEATURES,)),
+    layers.Dropout(0.5),
+    layers.Dense(
+        512 ,
+        kernel_regularizer = regularizers.l2(0.001),
+        activation = 'elu'),
+    layers.Dropout(0.5),
+    layers.Dense(
+        512 ,
+        kernel_regularizer = regularizers.l2(0.001),
+        activation = 'elu'),
+    layers.Dropout(0.5),
+    layers.Dense(
+        512 ,
+        kernel_regularizer = regularizers.l2(0.001),
+        activation = 'elu'),
+    layers.Dropout(0.5),
+    layers.Dense(1)
+])
+regularizer_histories['combined'] = compile_and_fit(combined_model ,"regularizers/combined")
 
 # draw
+plotter.plot(regularizer_histories)
+plt.ylim([0.5 ,0.7])
+plt.show()
 
 print("\nRegularize overfit done.\n")
