@@ -94,6 +94,30 @@ model = create_model()
 model.load_weights('./checkpoints/my_checkpoint')
 loss ,acc = model.evaluate(test_images ,test_labels ,verbose = 2)
 print("Restored local model ,accuracy: {:5.2f}%".format(100 * acc))
+model = create_model()
+model.fit(
+    train_images,
+    train_labels,
+    epochs = 5
+)
+model.save("./save_model/my_model")
+print(os.listdir("./save_model/my_model"))
+new_model = tf.keras.models.load_model("./save_model/my_model")
+print(new_model.summary())
+loss ,acc = model.evaluate(test_images ,test_labels ,verbose = 2)
+print("Restored entity model ,accuracy: {:5.2f}%".format(100 * acc))
+print(new_model.predict(test_images).shape)
 
+model = create_model()
+model.fit(
+    train_images,
+    train_labels,
+    epochs = 5
+)
+model.save('my_model.h5')
+new_model = tf.keras.models.load_model('my_model.h5')
+print(new_model.summary())
+loss ,acc = model.evaluate(test_images ,test_labels ,verbose = 2)
+print("Restored HDF5 model ,accuracy: {:5.2f}%".format(100 * acc))
 
 print("Save and restore model done.")
