@@ -125,6 +125,9 @@ print(ds)
 # hub model
 mobile_net = tf.keras.applications.MobileNetV2(input_shape = (192 ,192 ,3) ,include_top = False)
 mobile_net.trainable = False
-help(mobile_net.preprocess_input)
+# help(keras_applications.mobilenet_v2.preprocess_input) # ?
+def change_range(image ,label):
+    return 2 * image - 1 ,label
+keras_ds = ds.map(change_range)
 
 print("input picture done.")
