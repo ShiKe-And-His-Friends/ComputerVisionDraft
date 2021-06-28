@@ -50,5 +50,37 @@ norm_abalone_model.fit(
     epochs = 10
 )
 
+# predict tatanic survivy
+titanic = pd.read_csv("https://storage.googleapis.com/tf-datasets/titanic/train.csv")
+print(titanic.head())
+titanic_features = titanic.copy()
+titanic_labels = titanic_features.pop("survived")
+mInput = tf.keras.Input(shape =() ,dtype = tf.float32)
+result = 2 * mInput + 1
+print(result)
+calc = tf.keras.Model(inputs = mInput ,outputs = result)
+print(calc(1).numpy())
+print(calc(2).numpy())
+
+inputs = {}
+for name ,column in titanic_features.items():
+    dtype = column.dtype
+    if type == object:
+        dtype = tf.string
+    else:
+        dtype = tf.float32
+
+    inputs[name] = tf.keras.Input(shape = (1 ,) ,name = name ,dtype = dtype)
+print(inputs)
+numeric_inputs = {name:mInput for name ,mInput in inputs.items()
+    if mInput.dtype == tf.float32}
+x = layers.Concatenate()(list(numeric_inputs.values()))
+norm = preprocessing.Normalization()
+norm.adapt(np.array(titanic[numeric_inputs.keys()]).astype('float32'))
+# norm.adapt(titanic_features)
+all_numeric_inputs = norm(x)
+print(all_numeric_inputs)
+preprocessed_inputs = [all_numeric_inputs]
+
 print("\nInput CVS data done.\n")
 
