@@ -45,7 +45,6 @@ val_ds = tf.keras.preprocessing.image_dataset_from_directory(
 )
 class_name = train_ds.class_names
 print(class_name)
-'''
 plt.figure(figsize = (10 ,10))
 for images ,labels in train_ds.take(1):
     for i in range(9):
@@ -64,15 +63,13 @@ normalization_ds = train_ds.map(lambda x ,y : (normalization_layer(x) ,y))
 image_batch ,labels_batch = next(iter(normalization_ds))
 first_image = image_batch[0]
 print(np.min(first_image) ,np.max(first_image))
-'''
-
 
 # train model
 AUTOTUNE = tf.data.AUTOTUNE
 # train_ds = train_ds.cache().prefetch(buffer_size = AUTOTUNE)
 # val_ds = val_ds.cache().prefetch(buffer_size = AUTOTUNE)
-# train_ds = train_ds.take(AUTOTUNE).cache().repeat()
-# val_ds = val_ds.take(AUTOTUNE).cache().repeat()
+train_ds = train_ds.take(AUTOTUNE).cache().repeat()
+val_ds = val_ds.take(AUTOTUNE).cache().repeat()
 
 num_classes = 5
 model = tf.keras.Sequential([
