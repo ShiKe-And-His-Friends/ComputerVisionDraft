@@ -1,4 +1,3 @@
-@no compile
 import tensorflow as tf
 import numpy as np
 import os
@@ -153,7 +152,7 @@ plt.figure(figsize = (10 ,10))
 for i in range(9):
     ax = plt.subplot(3 ,3 , i+1)
     plt.imshow(image_batch[i].numpy().astype("uint8"))
-    plt.title(class_names[labels[i]])
+    plt.title(class_names[label])
     plt.axis("off")
 # plt.show()
 
@@ -163,9 +162,9 @@ model.fit(
     epochs = 3
 )
 
-(train_ds ,val_ds) ,metadata = tfds.load(
+(train_ds ,val_ds ,test_ds) ,metadata = tfds.load(
     'tf_flowers',
-    split = ['train[:80%]' ,'train[80%:90%]' ,'train[90%]'],
+    split = ['train[:80%]' ,'train[80%:90%]' ,'train[90%:]'],
     with_info = True,
     as_supervised = True,
 )
@@ -176,6 +175,7 @@ get_label_name = metadata.features['label'].int2str
 image ,label = next(iter(train_ds))
 plt.imshow(image)
 plt.title(get_label_name(label))
+plt.show()
 
 train_ds = configure_for_performance(train_ds)
 val_ds = configure_for_performance(val_ds)
