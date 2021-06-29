@@ -245,6 +245,19 @@ for n in range(9):
 plt.show()
 
 # basic level functions
+text = pathlib.Path(titanic_file_path).read_text()
+lines = text.split('\n')[1:-1]
+all_strings = [str()]*10
+print(all_strings)
+features = tf.io.decode_csv(lines ,record_defaults = all_strings)
+for f in features:
+    print(f"type: {f.dtype.name} ,shape:{f.shape}")
+print(lines[0])
+titanic_types = [int() ,str() ,float() ,int() ,int() ,float() ,str() ,str() ,str() ,str()]
+print(titanic_types)
+features = tf.io.decode_csv(lines ,record_defaults = titanic_types)
+for f in features:
+    print(f"type:{f.dtype.name}, shape{f.shape}")
 
 
 print("\nInput CVS data done.\n")
