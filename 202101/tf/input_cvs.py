@@ -258,6 +258,73 @@ print(titanic_types)
 features = tf.io.decode_csv(lines ,record_defaults = titanic_types)
 for f in features:
     print(f"type:{f.dtype.name}, shape{f.shape}")
+simple_titanic = tf.data.experimental.CsvDataset(titanic_file_path ,record_defaults = titanic_types ,header = True)
+for example in simple_titanic.take(1):
+    print([e.numpy() for e in example])
+def decode_titanic_line(line):
+    return tf.io.decode_csv(line ,titanic_types)
+manual_titanic = (
+    tf.data.TextLineDataset(titanic_file_path)
+    .skip(1)
+    .map(decode_titanic_line)
+)
+for example in manual_titanic.take(1):
+    print([e.numpy() for e in example])
+font_lines = pathlib.Path(font_csvs[0]).read_text().splitlines()[1]
+print(font_lines)
+num_font_features = font_lines.count(',')+1
+font_column_types = [str() ,str()] + [float()] * (num_font_features - 2)
+print(font_csvs[0])
+simple_font_ds = tf.data.experimental.CsvDataset(
+    font_csvs,
+    record_defaults = font_column_types,
+    header = True
+)
+for row in simple_font_ds.take(10):
+    print(row[0].numpy())
+font_files = tf.data.Dataset.list_files("fonts/*.csv")
+print('Epoch 1:')
+for f in list(font_files)[:5]:
+    print("   ",f.numpy())
+print('    ...')
+print()
+print('Epoch 2:')
+for f in list(font_files)[:5]:
+    print("   ",f.numpy())
+print('    ...')
+print()
 
+def make_font_csv_ds(path):
+    return tf.data.experimental.CsvDataset(
+        path,
+        record_defaults = font_column_types,
+        header = True
+    )
+font_rows = font_files.interleave(make_font_csv_ds ,cycle_length = 3)
+fonts_dict = {'font_name':[] ,'character':[]}
+for row in font_rows.take(10):
+    fonts_dict['font_name'].append(row[0].numpy().decode())
+    fonts_dict['character'].append(chr(row[2].numpy()))
+pd.DataFrame(fonts_dict)
+
+BATCH_SIZE = 2048
+font_ds = tf.data.experimental.make_csv_dataset(
+    file_pattern = "fonts/*.csv",
+    batch_size = BATCH_SIZE,
+    num_epochs = 1,
+    num_parallel_reads = 100
+)
+for i ,batch in enumerate(fonts_ds.take(20)):
+    print('.' ,end = '')
+print()
+fonts_files = tf.data.Dataset.list_files("fonts/*.csv")
+fonts_lines = fonts_files.interleave(
+    lambda fname:tf.data.TextLineDataset(fname).skip(1),
+    cycle_length = 100
+).batch(BATCH_SIZE)
+fonts_fast = fonts_lines.map(lambda x: tf.io.decode_csv(x ,record_defaults =font_column_types))
+for i ,batch in enumerate(fonts_fast.take(20)):
+    print('.' ,end='')
+print()
 
 print("\nInput CVS data done.\n")
