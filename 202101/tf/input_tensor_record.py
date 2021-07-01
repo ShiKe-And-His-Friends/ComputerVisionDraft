@@ -44,8 +44,8 @@ def serialize_example(feature0 ,feature1 ,feature2 ,feature3):
     example_proto = tf.train.Example(features = tf.train.Features(feature = features))
     return example_proto.SerializeToString()
 example_observation = []
-serialize_example = serialize_example(False ,4 ,b'goat' ,0.9876)
-print(serialize_example)
+serialized_example = serialize_example(False ,4 ,b'goat' ,0.9876)
+print(serialized_example)
 example_proto = tf.train.Example.FromString(serialize_example)
 print(example_proto)
 tf.data.Dataset.from_tensor_slices(feature1)
@@ -56,5 +56,15 @@ for f0 ,f1 ,f2 ,f3 in features_dataset.take(1):
     print(f1)
     print(f2)
     print(f3)
+
+def tf_serialize_example(f0 ,f1 ,f2 ,f3):
+    tf_string = tf.py_function(
+        serialize_example,
+        (f0 ,f1 ,f2 ,f3),
+        tf.string)
+    )
+    return tf.reshape(tf_string ,())
+tf_serialize_example(f0 ,f1 ,f2 ,f3)
+
 
 print("Input tensor format data done.")
