@@ -35,36 +35,37 @@ def serialize_example(feature0 ,feature1 ,feature2 ,feature3):
     """
     Create a tf.train.Example message ready to written to a file.
     """
-    features = {
+    feature = {
         'feature0' : _int64_feature(feature0),
         'feature1' : _int64_feature(feature1),
         'feature2' : _bytes_feature(feature2),
         'feature3' : _float_feature(feature3),
     }
-    example_proto = tf.train.Example(features = tf.train.Features(feature = features))
+    example_proto = tf.train.Example(features = tf.train.Features(feature = feature))
     return example_proto.SerializeToString()
 example_observation = []
-serialized_example = serialize_example(False ,4 ,b'goat' ,0.9876)
+serialized_example = serialize_example(False ,4 ,b'goat' ,0.966)
 print(serialized_example)
-example_proto = tf.train.Example.FromString(serialize_example)
+example_proto = tf.train.Example.FromString(serialized_example)
 print(example_proto)
-tf.data.Dataset.from_tensor_slices(feature1)
 features_dataset = tf.data.Dataset.from_tensor_slices((feature0 ,feature1 ,feature2 ,feature3))
 print(features_dataset)
-for f0 ,f1 ,f2 ,f3 in features_dataset.take(1):
+
+def tf_serialize_example(f0,f1,f2,f3):
+    tf_string = tf.py_function(
+        serialize_example,
+        (f0, f1, f2, f3),
+        tf.string
+    )
+    return tf.reshape(tf_string, ())
+
+for f0 ,f1 ,f2 ,f3 in features_dataset.take(0):
     print(f0)
     print(f1)
     print(f2)
     print(f3)
-
-def tf_serialize_example(f0 ,f1 ,f2 ,f3):
-    tf_string = tf.py_function(
-        serialize_example,
-        (f0 ,f1 ,f2 ,f3),
-        tf.string)
-    )
-    return tf.reshape(tf_string ,())
-tf_serialize_example(f0 ,f1 ,f2 ,f3)
-
+    tf_serialize_example(f0 ,f1 ,f2 ,f3)
+    serialized_features_dataset = features_dataset.map(tf_serialize_example)
+    print(serialized_features_dataset)
 
 print("Input tensor format data done.")
