@@ -91,4 +91,12 @@ int_train_ds = raw_train_ds.map(int_vectorize_text)
 int_val_ds = raw_val_ds.map(int_vectorize_text)
 int_test_ds = raw_test_ds.map(int_vectorize_text)
 
+AUTOTUNE = tf.data.AUTOTUNE
+def configure_dataset(dataset):
+    return dataset.cache().prefetch(buffer_size = AUTOTUNE)
+binary_train_ds = configure_dataset(binary_train_ds)
+binary_val_ds = configure_dataset(binary_val_ds)
+binary_train_ds = configure_dataset(binary_test_ds)
+int_tiran
+
 print("Input text codes")
