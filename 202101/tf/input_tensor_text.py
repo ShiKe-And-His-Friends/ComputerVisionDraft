@@ -90,5 +90,16 @@ binary_test_ds = raw_test_ds.map(binary_vectorize_text)
 int_train_ds = raw_train_ds.map(int_vectorize_text)
 int_val_ds = raw_val_ds.map(int_vectorize_text)
 int_test_ds = raw_test_ds.map(int_vectorize_text)
+binary_model = tf.keras.Sequential([layers.Dense(4)])
+binary_model.compile(
+    loss = losses.SparseCategoricalCrossentropy(from_logits = True),
+    optimizer = 'adam',
+    metrices = ['accuuracy']
+)
+history = binary_model.fit(
+    binary_train_ds,
+    validation_data = binary_val_ds,
+    epochs = 10
+)
 
 print("Input text codes")
