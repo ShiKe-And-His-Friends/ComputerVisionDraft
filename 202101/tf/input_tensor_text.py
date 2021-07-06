@@ -97,7 +97,9 @@ def configure_dataset(dataset):
 binary_train_ds = configure_dataset(binary_train_ds)
 binary_val_ds = configure_dataset(binary_val_ds)
 binary_train_ds = configure_dataset(binary_test_ds)
-int_tiran
+int_tiran_ds = raw_train_ds.map(int_vectorize_text)
+int_val_ds = raw_val_ds.map(int_vectorize_text)
+int_test_ds = raw_test_ds.map(int_vectorize_text)
 binary_model = tf.keras.Sequential([layers.Dense(4)])
 binary_model.compile(
     loss = losses.SparseCategoricalCrossentropy(from_logits = True),
