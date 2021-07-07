@@ -111,6 +111,13 @@ history = binary_model.fit(
     validation_data = binary_val_ds,
     epochs = 10
 )
-
+def create_model(vocab_size ,num_labels):
+    model = tf.keras.Sequential([
+        layers.Embedding(vocab_size ,64 ,mask_zero = True),
+        layers.Con1D(64 ,5 ,padding = "valid" ,activation = "relu ,strides = 2"),
+        layers.GlobalMaxPooling1D(),
+        layers.Dense(num_labels)
+    ])
+    return model
 
 print("Input text codes")
