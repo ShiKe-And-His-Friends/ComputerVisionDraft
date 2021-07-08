@@ -97,14 +97,14 @@ def configure_dataset(dataset):
 binary_train_ds = configure_dataset(binary_train_ds)
 binary_val_ds = configure_dataset(binary_val_ds)
 binary_train_ds = configure_dataset(binary_test_ds)
-int_tiran_ds = raw_train_ds.map(int_vectorize_text)
-int_val_ds = raw_val_ds.map(int_vectorize_text)
-int_test_ds = raw_test_ds.map(int_vectorize_text)
+int_tiran_ds = configure_dataset(int_train_ds)
+int_val_ds = configure_dataset(int_val_ds)
+int_test_ds = configure_dataset(int_test_ds)
 binary_model = tf.keras.Sequential([layers.Dense(4)])
 binary_model.compile(
     loss = losses.SparseCategoricalCrossentropy(from_logits = True),
     optimizer = 'adam',
-    metrics = ['accuuracy']
+    metrics = ['accuracy']
 )
 history = binary_model.fit(
     binary_train_ds,
@@ -114,10 +114,25 @@ history = binary_model.fit(
 def create_model(vocab_size ,num_labels):
     model = tf.keras.Sequential([
         layers.Embedding(vocab_size ,64 ,mask_zero = True),
-        layers.Con1D(64 ,5 ,padding = "valid" ,activation = "relu ,strides = 2"),
+        layers.Conv1D(64 ,5 ,padding = "valid" ,activation = "relu" ,strides = 2),
         layers.GlobalMaxPooling1D(),
         layers.Dense(num_labels)
     ])
     return model
+int_model = create_model(vocab_size = VOCAB_SIZE + 1 ,num_labels = 4)
+int_model.compile(
+    loss = losses.SparseCategoricalCrossentropy(from_logits = True),
+    optimizer = 'adam',
+    metrics = ['accuracy']
+)
+history = int_model.fit(
+    int_train_ds,
+    validation_data = int_val_ds,
+    epochs = 5
+)
+print("Linear model on binary vectorized data:")
+print(binary_model.summary())
+print("ConvNet model on int vectorized data:")
+print(int_model.summary())
 
 print("Input text codes")
