@@ -300,10 +300,11 @@ train_ds = tfds.load(
 val_ds = tfds.load(
     'imdb_reviews',
     split = 'train[80%:]',
+    batch_size = BATCH_SIZE,
     shuffle_files = True,
     as_supervised = True
 )
-for review_batch ,label_batch in val_ds.take(0):
+for review_batch ,label_batch in val_ds.take(1):
     for i in range(5):
         print("Review:" ,review_batch[i].numpy())
         print("Label:" ,label_batch[i].numpy())
