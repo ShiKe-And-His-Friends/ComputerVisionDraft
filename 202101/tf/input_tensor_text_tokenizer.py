@@ -41,8 +41,9 @@ print(pt_vocab[100:110])
 print(pt_vocab[1000:1010])
 print(pt_vocab[-10:])
 def write_vocab_file(file_path ,vocab):
-    with open(file_path ,"w" ,encoding = 'UTF-8') as f:
+    with open(file_path ,"w" ,encoding = 'utf-8' ) as f:
         for token in vocab:
+            # token = token.encode( encoding='utf-8')
             print(token ,file = f)
 write_vocab_file(u'pt_vocab.txt' ,pt_vocab)
 en_vocab = bert_vocab.bert_vocab_from_dataset(
@@ -88,7 +89,7 @@ words = en_tokenizer.detokenize(add_start_end(token_batch))
 text_type =  tf.strings.reduce_join(words ,separator = ' ' ,axis = -1)
 print(text_type)
 def cleanup_text(reserved_tokens ,token_txt):
-    bad_tokens = [re.escape[tok] for tok in reserved_tokens if tok != "[UNK]"]
+    bad_tokens = [re.escape(tok) for tok in reserved_tokens if tok != "[UNK]"]
     bad_tokens_re = "|".join(bad_tokens)
     bad_cells = tf.strings.regex_full_match(token_txt ,bad_tokens_re)
     result = tf.ragged.boolean_mask(token_txt ,~bad_cells)
@@ -101,11 +102,13 @@ print(words)
 print(cleanup_text(reserved_tokens ,words).numpy())
 
 class CustomTokenizer(tf.Module):
-    def __int__(self ,reserved_tokens ,vocab_path):
+    def __init__(self ,reserved_tokens ,vocab_path):
         self.tokenizer = text.BertTokenizer(vocab_path ,lower_case = True)
         self._reserved_tokens = reserved_tokens
         self._vocab_path = tf.saved_model.Asset(vocab_path)
-        vocab = pathlib.Path(vocab_path).read_text().splitlines()
+        file_data = pathlib.Path(vocab_path)
+        file_text = file_data.read_text()
+        vocab = file_text.splitlines()
         self.vocab = tf.Variable(vocab)
         # create signature for export
         self.tokenize.get_concrete_function(
