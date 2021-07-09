@@ -39,9 +39,14 @@ for row in elements:
     for value in row:
         value_lengths.append(len(value))
 max_width = max(value_lengths)
-print('[%s]' % '\n'.join(
-    '[%s]' % ','.join(value.rjust(max_width) for value in row)
-    for row in elements))
+print(
+    '[%s]' % '\n'.join(
+        '[%s]' % ','.join(
+            value.rjust(max_width) for value in row
+        )
+        for row in elements
+    )
+)
 text_type = tf.strings.unicode_encode(
     [[99, 97, 116], [100, 111, 103], [99, 111, 119]],
     output_encoding = 'UTF-8'
@@ -49,6 +54,65 @@ text_type = tf.strings.unicode_encode(
 print(text_type)
 text_type = tf.strings.unicode_encode(batch_chars_ragged ,output_encoding = 'UTF-8')
 print(text_type)
+text_type = tf.strings.unicode_encode(
+    tf.RaggedTensor.from_sparse(batch_chars_sparse),
+    output_encoding = 'UTF-8'
+)
+print(text_type)
+text_type = tf.strings.unicode_encode(
+    tf.RaggedTensor.from_tensor(batch_chars_padded ,padding = -1),
+    output_encoding = 'UTF-8'
+)
+print(text_type)
 
+thanks = u'Thanks ŒıŒÈŒıŒÈ'.encode('UTF-8')
+num_bytes = tf.strings.length(thanks).numpy()
+num_chars = tf.strings.length(thanks ,unit='UTF8_CHAR').numpy()
+print('{} bytes; {} UTF-8 characters'.format(num_bytes ,num_chars))
+text_type = tf.strings.substr(thanks ,pos = 7 ,len = 1).numpy()
+print(text_type)
+print(tf.strings.substr(thanks ,pos = 7 ,len = 1 ,unit = 'UTF8_CHAR').numpy())
+print(tf.strings.unicode_split(thanks ,'UTF-8').numpy())
+codepoints ,offsets = tf.strings.unicode_decode_with_offsets(u'ŒıŒÈŒıŒÈŒıŒÈŒıŒÈŒıŒÈŒıŒÈ' ,'UTF-8')
+for (codepoint ,offset) in zip(codepoints.numpy() ,offsets.numpy()):
+    print('At byte offsets {}: codepoint {}.'.format(offset ,codepoint))
+uscript = tf.strings.unicode_script([33464 ,1041])
+print(uscript.numpy())
+print(tf.strings.unicode_script(batch_chars_ragged))
+sentence_texts = [u'Hello, world.', u' ¿ΩÁ§≥§Û§À§¡§œ']
+sentence_char_codepoint = tf.strings.unicode_decode(sentence_texts ,'UTF-8')
+print(sentence_char_codepoint)
+sentence_char_script = tf.strings.unicode_script(sentence_char_codepoint)
+print(sentence_char_script)
+sentence_char_starts_word = tf.concat(
+    [
+        tf.fill([sentence_char_script.nrows() ,1] ,True),
+        tf.not_equal(
+            sentence_char_script[: , 1:],
+            sentence_char_script[: , :-1]
+        )
+    ],
+    axis = 1
+)
+word_starts = tf.squeeze(
+    tf.where(sentence_char_starts_word.values),
+    axis = 1
+)
+print(word_starts)
+word_char_codepoint = tf.RaggedTensor.from_row_starts(
+    values = sentence_char_codepoint.values,
+    row_starts = word_starts
+)
+print(word_char_codepoint)
+sentence_num_words = tf.reduce_sum(
+    tf.cast(sentence_char_starts_word ,tf.int64),
+    axis = 1
+)
+sentence_word_char_codepoint = tf.RaggedTensor.from_row_lengths(
+    values = word_char_codepoint,
+    row_lengths = sentence_num_words
+)
+print(sentence_word_char_codepoint)
+tf.strings.unicode_encode(sentence_word_char_codepoint ,'UTF-8').to_list()
 
 print("Input text unicodes type done.")
