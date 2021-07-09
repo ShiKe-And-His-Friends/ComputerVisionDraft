@@ -1,3 +1,5 @@
+en_vocab.txt
+pt_vocab.txt
 images.tfrecord
 test.tfrecord
 fonts
