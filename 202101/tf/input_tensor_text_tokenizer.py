@@ -66,7 +66,7 @@ for ex in token_batch.to_list():
     print(ex)
 txt_tokens = tf.gather(en_vocab ,token_batch)
 tf.strings.reduce_join(
-    txt_tokens ,
+    txt_tokens,
     separator = ' ' ,
     axis = -1
 )
@@ -76,5 +76,106 @@ tf.strings.reduce_join(
     separator = ' ',
     axis = -1
 )
+
+START = tf.argmax(tf.constant(reserved_tokens) == "[START]")
+END = tf.argmax(tf.constant(reserved_tokens) == "[END]")
+def add_start_end(ragged):
+    count = ragged.bounding_shape()[0]
+    starts = tf.fill([count ,1] ,START)
+    ends = tf.fill([count ,1] ,END)
+    return tf.concat([starts ,ragged ,ends] ,axis = 1)
+words = en_tokenizer.detokenize(add_start_end(token_batch))
+text_type =  tf.strings.reduce_join(words ,separator = ' ' ,axis = -1)
+print(text_type)
+def cleanup_text(reserved_tokens ,token_txt):
+    bad_tokens = [re.escape[tok] for tok in reserved_tokens if tok != "[UNK]"]
+    bad_tokens_re = "|".join(bad_tokens)
+    bad_cells = tf.strings.regex_full_match(token_txt ,bad_tokens_re)
+    result = tf.ragged.boolean_mask(token_txt ,~bad_cells)
+    result = tf.strings.reduce_join(result ,separator = ' ' ,axis = -1)
+    return result
+print(en_examples.numpy())
+token_batch = en_tokenizer.tokenize(en_examples).merge_dims(-2 ,-1)
+words = en_tokenizer.detokenize(token_batch)
+print(words)
+print(cleanup_text(reserved_tokens ,words).numpy())
+
+class CustomTokenizer(tf.Module):
+    def __int__(self ,reserved_tokens ,vocab_path):
+        self.tokenizer = text.BertTokenizer(vocab_path ,lower_case = True)
+        self._reserved_tokens = reserved_tokens
+        self._vocab_path = tf.saved_model.Asset(vocab_path)
+        vocab = pathlib.Path(vocab_path).read_text().splitlines()
+        self.vocab = tf.Variable(vocab)
+        # create signature for export
+        self.tokenize.get_concrete_function(
+            tf.TensorSpec(
+                shape = [None],
+                dtype = tf.string
+            )
+        )
+        self.detokenize.get_concrete_function(
+            tf.TensorSpec(
+                shape = [None ,None],
+                dtype = tf.int64
+            )
+        )
+        self.detokenize.get_concrete_function(
+            tf.RaggedTensorSpec(
+                shape = [None ,None],
+                dtype = tf.int64
+            )
+        )
+        self.lookup.get_concrete_function(
+            tf.TensorSpec(
+                shape = [None ,None],
+                dtype = tf.int64
+            )
+        )
+        self.lookup.get_concrete_function(
+            tf.RaggedTensorSpec(
+                shape = [None ,None],
+                dtype = tf.int64
+            )
+        )
+        self.get_vocab_size.get_concrete_function()
+        self.get_vocab_path.get_concrete_function()
+        self.get_reserved_tokens.get_concrete_function()
+
+    @tf.function
+    def tokenize(self ,strings):
+        enc = self.tokenizer.tokenize(strings)
+        enc = enc.merge_dims(-2 ,-1)
+        enc = add_start_end(enc)
+        return enc
+    @tf.function
+    def detokenize(self ,tokenized):
+        words = self.tokenizer.detokenize(tokenized)
+        return cleanup_text(self._reserved_tokens ,words)
+    @tf.function
+    def lookup(self ,token_ids):
+        return tf.gather(self.vocab ,token_ids)
+    @tf.function
+    def get_vocab_size(self):
+        return tf.shape(self.vocab)[0]
+    @tf.function
+    def get_vocab_path(self):
+        return self._vocab_path
+    @tf.function
+    def get_reserved_tokens(self):
+        return tf.constant(self._reserved_tokens)
+tokenizers = tf.Module()
+tokenizers.pt = CustomTokenizer(reserved_tokens ,"pt_vocab.txt")
+tokenizers.en = CustomTokenizer(reserved_tokens ,"en_vocab.txt")
+model_name = "ted_hrlr_translate_pt_en_converter"
+tf.saved_model.save(tokenizers ,model_name)
+reloaded_tokenizers = tf.saved_model.load(model_name)
+reloaded_tokenizers.en.get_vocab_size().numpy()
+tokens = reloaded_tokenizers.en.tokenize(['Hello Tensor Flows'])
+print(tokens.numpy())
+text_tokens = reloaded_tokenizers.en.lookup(tokens)
+print(text_tokens)
+round_trip = reloaded_tokenizers.en.detokenize(tokens)
+print(round_trip.numpy()[0].decode('utf-8'))
 
 print("Input text tokenizer done.")
