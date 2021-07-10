@@ -107,7 +107,7 @@ class CustomTokenizer(tf.Module):
         self._reserved_tokens = reserved_tokens
         self._vocab_path = tf.saved_model.Asset(vocab_path)
         file_data = pathlib.Path(vocab_path)
-        file_text = file_data.read_text()
+        file_text = file_data.read_text(encoding='utf-8')
         vocab = file_text.splitlines()
         self.vocab = tf.Variable(vocab)
         # create signature for export
@@ -180,5 +180,25 @@ text_tokens = reloaded_tokenizers.en.lookup(tokens)
 print(text_tokens)
 round_trip = reloaded_tokenizers.en.detokenize(tokens)
 print(round_trip.numpy()[0].decode('utf-8'))
+pt_lookup = tf.lookup.StaticVocabularyTable(
+    num_oov_buckets = 1,
+    initializer = tf.lookup.TextFileInitializer(
+        filename = 'pt_vocab.txt',
+        key_dtype = tf.string,
+        key_index = tf.lookup.TextFileIndex.WHOLE_LINE,
+        value_dtype = tf.int64,
+        value_index = tf.lookup.TextFileIndex.LINE_NUMBER
+    )
+)
+pt_tokenizer = text.BertTokenizer(pt_lookup)
+pt_lookup.lookup(tf.constant(['e', 'um', 'uma', 'para', 'nao']))
+pt_lookup = tf.lookup.StaticVocabularyTable(
+    num_oov_buckets = 1,
+    initializer = tf.lookup.KeyValueTensorInitializer(
+        keys = pt_vocab,
+        values = tf.range(len(pt_vocab) ,dtype = tf.int64)
+    )
+)
+pt_tokenizer = text.BertTokenizer(pt_lookup)
 
 print("Input text tokenizer done.")
