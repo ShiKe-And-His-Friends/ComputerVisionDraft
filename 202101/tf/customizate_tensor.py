@@ -43,6 +43,13 @@ if tf.config.list_physical_devices("GPU"):
         x = tf.random.uniform([1000 ,1000])
         assert x.device.endswith("GPU:0")
         time_matmul(x)
-
+'''
+Tensorflow GPU
+https://blog.csdn.net/wbing96/article/details/108914071
+On CPU:
+10 loops:55.00ms
+On GPU:
+10 loops:456.97ms
+'''
 
 print("Customizate tensor done.")
