@@ -35,27 +35,20 @@ plt.scatter(
 )
 plt.xlabel("Petal length")
 plt.ylabel("Sepal length")
-plt.show()
+#plt.show()
 
 def pack_features_vector(features ,labels):
     """
     Pack the features into a single array.
     """
-    feature = tf.stack(list(features.values()) ,axis = 1)
+    features = tf.stack(list(features.values()) ,axis = 1)
     return features ,labels
 
 train_dataset = train_dataset.map(pack_features_vector)
 features ,labels = next(iter(train_dataset))
-print()
-print()
-print()
-print()
 print(features)
-features.values[:5]
-print(features.values[:5])
-print()
-print()
-print()
+print(features[:5])
+
 model = tf.keras.Sequential([
     tf.keras.layers.Dense(
         10,
@@ -70,5 +63,29 @@ model = tf.keras.Sequential([
 ])
 predictions = model(features)
 print(predictions[:5])
+tf.nn.softmax(predictions[:5])
+print("Prediction:{}".format(tf.argmax(predictions ,axis = 1)))
+print("Labels:{}".format(labels))
+loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True)
+
+def loss(model ,x ,y ,training):
+    y_ = model(x ,training = training)
+    return loss_object(y_true = y ,y_pred = y_)
+l = loss(model ,features ,labels ,training = False)
+print("Loss test:{}".format(l))
+def grad(model ,inputs ,targets):
+    with tf.GradientTape() as tape:
+        loss_value = loss(model ,inputs ,targets ,training = True)
+    return loss_value ,tape.gradient(loss_value ,model.trainable_variables)
+optimizer = tf.keras.optimizers.SGD(learning_rate = 0.01)
+loss_value ,grads = grad(model ,features ,labels)
+print("Step:{} ,Intiial Loss:{}".format(
+    optimizer.iterations.numpy()
+    ,loss_value.numpy()))
+optimizer.apply_gradients(zip(grads ,model.trainable_variables))
+print("Step:{} ,Loss:{}".format(
+    optimizer.iterations.numpy(),
+    loss(model ,features ,labels ,training = True).numpy()))
+
 
 print("Customizate train done.")
