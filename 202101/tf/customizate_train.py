@@ -87,5 +87,68 @@ print("Step:{} ,Loss:{}".format(
     optimizer.iterations.numpy(),
     loss(model ,features ,labels ,training = True).numpy()))
 
+train_loss_results = []
+train_accuracy_results = []
+num_epochs = 201
+for epoch in range(num_epochs):
+    epoch_loss_avg = tf.keras.metrics.Mean()
+    epoch_accuracy = tf.keras.metrics.SparseCategoricalCrossentropy()
+    for x,y in train_dataset:
+        loss_value ,grads = grad(model ,x ,y)
+        optimizer.apply_gradients(zip(grads ,model.trainable_variables))
+        epoch_loss_avg.update_state(loss_value)
+        epoch_accuracy.update_state(y ,model(x ,training = True))
+    train_loss_results.append(epoch_loss_avg.result())
+    if epoch % 50 == 0:
+        print("Epoch{:03d}: Loss:{:.3f} ,Accuracy:{:.3%}".format(
+            epoch,
+            epoch_loss_avg.result(),
+            epoch_accuracy.result()))
+
+fig ,axes = plt.subplots(2 ,sharex = True ,figsize = (12 ,8))
+fig.suptitle('Training Metrics')
+axes[0].set_ylabel("Loss" ,fontsize = 14)
+axes[0].plot(train_loss_results)
+axes[1].set_ylabel("Accuracy" ,fontsize = 14)
+axes[1].set_xlabel("Epoch" ,fontsize = 14)
+axes[1].plot(train_accuracy_results)
+# plt.show()
+
+test_url = "https://storage.googleapis.com/download.tensorflow.org/data/iris_test.csv"
+test_fp = tf.keras.utils.get_file(
+    fname = os.path.basename(test_url) ,
+    origin = test_url
+)
+test_dataset = tf.data.experimental.make_csv_dataset(
+    test_fp,
+    batch_size,
+    column_names = column_names,
+    label_name = 'species',
+    num_epochs = 1,
+    shuffle = False
+)
+test_dataset = test_dataset.map(pack_features_vector)
+test_accuracy = tf.keras.metics.Accuracy()
+for (x ,y) in test_dataset:
+    logits = model(x ,training = False)
+    prediction = tf.argmax(
+        logits ,
+        axis = 1 ,
+        output_type = tf.int32
+    )
+print("Test set accuracy:{:.3%}".format(test_accuracy.result()))
+tf.stack([prediction] ,axis = 1)
+
+predict_dataset = tf.convert_to_tensor([
+    [5.1, 3.3, 1.7, 0.5,],
+    [5.9, 3.0, 4.2, 1.5,],
+    [6.9, 3.1, 5.4, 2.1]
+])
+predictions = model(predict_dataset ,training = False)
+for i ,logits in enumerate(predictions):
+    class_idx = tf.argmax(logits).numpy()
+    p = tf.nn.softmax(logits)[class_idx]
+    name = class_names[class_idx]
+    print("Example {} prediction:{}({:4.1f}%)".format(i ,name ,100 * p))
 
 print("Customizate train done.")
