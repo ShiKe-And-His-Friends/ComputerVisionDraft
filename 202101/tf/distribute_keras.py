@@ -74,4 +74,24 @@ model.load_weights(tf.train.latest_checkpoint(checkpoint_dir))
 eval_loss ,eval_acc = model.evaluate(eval_dataset)
 print('Eval loss:{} ,Eval Accuracy:{}'.format(eval_loss ,eval_acc))
 
+path = 'saved_model/'
+model.save(path ,save_format = 'tf')
+unreplicated_model = tf.keras.models.load_model(path)
+unreplicated_model.compile(
+    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True),
+    optimizer = tf.keras.optimizers.Adam(),
+    metrics = ['accuracy']
+)
+eval_loss ,eval_acc = unreplicated_model.evaluate(eval_dataset)
+print('Eval loss:{},Eval Accuracy:{}'.format(eval_loss ,eval_acc))
+with strategy.scope():
+    replicated_model = tf.keras.models.load_model(path)
+    replicated_model.compile(
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True),
+        optimizer = tf.keras.optimizers.Adam(),
+        metrics = ['accuracy']
+    )
+    eval_loss ,eval_acc = replicated_model.evaluate(eval_dataset)
+    print('Eval loss:{} ,Eval Accuracy: {}'.format(eval_loss ,eval_acc))
+
 print("Distribute keras done.")
