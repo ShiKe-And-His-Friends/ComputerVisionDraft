@@ -57,8 +57,21 @@ class PrintLR(tf.keras.callbacks.Callback):
             epoch + 1,
             model.optimizer.lr.numpy()))
 callbacks = [
-    tf.keras.callbacks.TensorBoard(log_dir = './log')
+    tf.keras.callbacks.TensorBoard(log_dir = './log'),
+    tf.keras.callbacks.ModelCheckpoint(
+        filepath = checkpoint_prefix,
+        save_weights_only = True
+    ),
+    tf.keras.callbacks.LearningRateScheduler(decay),
+    PrintLR()
 ]
-
+model.fit(
+    train_dataset,
+    epochs = 12,
+    callbacks = callbacks
+)
+model.load_weights(tf.train.latest_checkpoint(checkpoint_dir))
+eval_loss ,eval_acc = model.evaluate(eval_dataset)
+print('Eval loss:{} ,Eval Accuracy:{}'.format(eval_loss ,eval_acc))
 
 print("Distribute keras done.")
