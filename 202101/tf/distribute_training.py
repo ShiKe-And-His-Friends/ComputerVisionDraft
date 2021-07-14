@@ -21,4 +21,34 @@ test_dataset = tf.data.Dataset.from_tensor_slices((test_images ,test_labels)).ba
 train_dist_dataset = strategy.experimental_distribute_dataset(train_dataset)
 test_dist_dataset = strategy.experimental_distribute_dataset(test_dataset)
 
+def create_model():
+    model = tf.keras.Sequential([
+        tf.keras.layers.Conv2D(32 ,3 ,activation = 'relu'),
+        tf.keras.layers.MaxPooling2D(),
+        tf.keras.layers.Conv2D(64 ,3 ,activation = 'relu'),
+        tf.keras.layers.MaxPooling2D(),
+        tf.keras.layers.Flatten(),
+        tf.keras.layers.Dense(64 ,activation = 'relu'),
+        tf.keras.layers.Dense(10)
+    ])
+    return model
+checkpoint_dir = './training_checkpoints'
+checkpoint_prefix = os.path.join(checkpoint_dir ,"ckpt")
+with strategy.scope():
+    loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
+        from_logits = True,
+        reduction = tf.keras.losses.Reduction.NONE
+    )
+    def compute_loss(lables ,predictions):
+        per_example_loss = loss_object(lables ,predictions)
+        return tf.nn.compute_average_loss(per_example_loss ,global_batch_size = GLOBAL_BATCH_SIZE)
+with strategy.scope():
+    test_loss = tf.keras.metrics.Mean(name = 'test_loss')
+    train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(
+        name = 'train_accuracy'
+    )
+    test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(
+        name = 'test_accuracy'
+    )
+
 print("Distribute train done.")
