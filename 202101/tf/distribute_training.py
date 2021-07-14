@@ -104,4 +104,54 @@ for epoch in range(EPOCHS):
     train_accuracy.reset_states()
     test_accuracy.reset_states()
 
+eval_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name = 'eval_accuracy')
+new_model = create_model()
+new_optimizer = tf.keras.optimizers.Adam()
+test_dataset = tf.data.Dataset.from_tensor_slices((test_images ,test_labels)).batch(GLOBAL_BATCH_SIZE)
+
+@tf.function
+def eval_step(images ,labels):
+    predictions = new_model(images ,training = False)
+    eval_accuracy(labels ,predictions)
+checkpoint = tf.train.Checkpoint(
+    optimizer = new_optimizer,
+    model = new_model
+)
+checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
+for images ,labels in test_dataset:
+    eval_step(images ,labels)
+print('Accuracy after restoring the saved model without strategy:{}'.format(eval_accuracy.result() * 100))
+
+for _ in range(EPOCHS):
+    total_loss = 0.0
+    num_batchs = 0
+    train_iter = iter(train_dist_dataset)
+
+    for _ in range(10):
+        total_loss += distributed_train_step(next(train_iter))
+        num_batchs += 1
+    average_train_loss = total_loss / num_batchs
+    template = ("Epoch {}, Loss {} ,Accuracy {}")
+    print(template.format(epoch+1 ,average_train_loss ,train_accuracy.result()*100))
+    train_accuracy.reset_states()
+
+@tf.function
+def distributed_train_epoch(dataset):
+    total_loss = 0.0
+    num_batches = 0
+    for x in dataset :
+        per_replica_losses = strategy.run(train_step ,args=(x,))
+        total_loss += strategy.reduce(
+            tf.distribute.ReduceOp.SUM,
+            per_replica_losses,
+            axis = None
+        )
+        num_batches += 1
+    return total_loss / tf.cast(num_batches ,dtype = tf.float32)
+for epoch in range(EPOCHS):
+    train_loss = distributed_train_epoch(train_dist_dataset)
+    template = ("Epoch {} Loss {} Accuracy {}")
+    print(template.format(epoch + 1 ,train_loss ,train_accuracy.result()*100))
+    train_accuracy.reset_states()
+
 print("Distribute train done.")
