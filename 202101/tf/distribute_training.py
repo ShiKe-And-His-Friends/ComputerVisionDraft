@@ -11,6 +11,7 @@ test_images = test_images[...,None]
 train_images = train_images / np.float32(255)
 test_images = test_images / np.float32(255)
 strategy = tf.distribute.MirroredStrategy()
+print('Number of devices:{}'.format(strategy.num_replicas_in_sync))
 
 BUFFER_SIZE = len(train_images)
 BATCH_SIZE_PER_REPLICA = 64
@@ -32,6 +33,7 @@ def create_model():
         tf.keras.layers.Dense(10)
     ])
     return model
+
 checkpoint_dir = './training_checkpoints'
 checkpoint_prefix = os.path.join(checkpoint_dir ,"ckpt")
 with strategy.scope():
@@ -50,5 +52,29 @@ with strategy.scope():
     test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(
         name = 'test_accuracy'
     )
+with strategy.scope():
+    model = create_model()
+    optimizer = tf.keras.optimizers.Adam()
+    checkpoint = tf.train.Checkpoint(
+        optimizer = optimizer,
+        model = model
+    )
+
+def train_step(inputs):
+    iamges ,labels = inputs
+    with tf.GradientTape() as type:
+        predictions = model(images ,training = True)
+        loss = compute_loss(labels ,predictions)
+    gradients = tape.gradient(loss ,model.trainable_variables)
+    optimizer.apply_gradients(zip(gradients ,model.trainable_variables))
+    train_accuracy.update_state(labels ,predictions)
+    return loss
+def test_step(inputs):
+    images ,labels = inputs
+    predictions = model(iamges ,training = False)
+    t_loss = loss_object(labels ,predictions)
+    test_loss.update_state(t_loss)
+    test_accuracy.update_state(labels ,predictions)
+
 
 print("Distribute train done.")
