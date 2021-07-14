@@ -61,8 +61,8 @@ with strategy.scope():
     )
 
 def train_step(inputs):
-    iamges ,labels = inputs
-    with tf.GradientTape() as type:
+    images ,labels = inputs
+    with tf.GradientTape() as tape:
         predictions = model(images ,training = True)
         loss = compute_loss(labels ,predictions)
     gradients = tape.gradient(loss ,model.trainable_variables)
@@ -71,10 +71,37 @@ def train_step(inputs):
     return loss
 def test_step(inputs):
     images ,labels = inputs
-    predictions = model(iamges ,training = False)
+    predictions = model(images ,training = False)
     t_loss = loss_object(labels ,predictions)
     test_loss.update_state(t_loss)
     test_accuracy.update_state(labels ,predictions)
 
+@tf.function
+def distributed_train_step(dataset_inputs):
+    per_replica_losses = strategy.run(train_step ,args = (dataset_inputs,))
+    return strategy.reduce(tf.distribute.ReduceOp.SUM ,per_replica_losses ,axis = None)
+
+@tf.function
+def distributed_test_step(dataset_inputs):
+    return strategy.run(test_step ,args = (dataset_inputs,))
+
+for epoch in range(EPOCHS):
+    total_loss = 0.0
+    num_batchs = 0
+    for x in train_dist_dataset:
+        total_loss += distributed_train_step(x)
+        num_batchs += 1
+    train_loss = total_loss / num_batchs
+    for x in test_dist_dataset:
+        distributed_test_step(x)
+    if epoch % 2 == 0:
+        checkpoint.save(checkpoint_prefix)
+    template = (
+        "Epoch {} ,Loss {}. Accuracy {} ,Test Loss {}",
+        "Test Accuracy {}."
+    )
+    test_loss.reset_states()
+    train_accuracy.reset_states()
+    test_accuracy.reset_states()
 
 print("Distribute train done.")
