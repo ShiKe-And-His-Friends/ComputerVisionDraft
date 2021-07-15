@@ -24,5 +24,8 @@ print(json.dumps(tf_config))
 os.environ['GREETINGS'] = 'Hello Tensorflow'
 
 strategy = tf.distribute.MultiWorkerMirroredStrategy()
+with strategy.scope():
+    multi_worker_model = distribute_multi_mnist.build_and_compile_cnn_model()
+
 
 print("Distribute multi keras done.")
