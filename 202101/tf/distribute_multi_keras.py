@@ -26,6 +26,14 @@ os.environ['GREETINGS'] = 'Hello Tensorflow'
 strategy = tf.distribute.MultiWorkerMirroredStrategy()
 with strategy.scope():
     multi_worker_model = distribute_multi_mnist.build_and_compile_cnn_model()
+os.environ['TF_CONFIG'] = json.dumps(tf_config)
+tf_config['task']['index'] = 1
+os.environ['TF_CONFIG'] =  json.dumps(tf_config)
 
+options = tf.data.Options()
+options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
+global_batch_size = 64
+multi_worker_dataset = distribute_multi_mnist.mnist_dataset(batch_size = 64)
+dataset_no_auto_shared = distribute_multi_mnist.with_options(options)
 
 print("Distribute multi keras done.")
