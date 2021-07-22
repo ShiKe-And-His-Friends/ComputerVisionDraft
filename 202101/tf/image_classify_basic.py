@@ -107,5 +107,45 @@ plt.legend(loc = 'upper right')
 plt.title('Training and validation Loss')
 # plt.show()
 
+data_augmentation = Sequential([
+    layers.experimental.preprocessing.RandomFlip("horizontal" ,input_shape = (img_height ,img_width ,3)),
+    layers.experimental.preprocessing.RandomRotation(0.1),
+    layers.experimental.preprocessing.RandomZoom(0.1),
+])
+plt.figure(figsize = (10 ,10))
+for images ,_ in train_ds.take(1):
+    for i in range(9):
+        augmented_images = data_augmentation(images)
+        ax = plt.subplot(3 ,3 ,i+1)
+        plt.imshow(augmented_images[0].numpy().astype("uint8"))
+        plt.axis("off")
+# plt.show()
+
+model = Sequential([
+    data_augmentation,
+    layers.experimental.preprocessing.Rescaling(1./255),
+    layers.Conv2D(16 ,3 ,padding = 'same' ,activation = 'relu'),
+    layers.MaxPooling2D(),
+    layers.Conv2D(32 ,3 ,padding = 'same' ,activation = 'relu'),
+    layers.MaxPooling2D(),
+    layers.Conv2D(64 ,3 ,padding = 'same' ,activation = 'relu'),
+    layers.MaxPooling2D(),
+    layers.Dropout(0.2),
+    layers.Flatten(),
+    layers.Dense(128 ,activation = 'relu'),
+    layers.Dense(num_classes)
+])
+model.compile(
+    optimizer = 'adam',
+    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits = True),
+    metrics = ['accuracy']
+)
+print(model.summary())
+epochs = 15
+history = model.fit(
+    train_ds,
+    validation_data = val_ds,
+    epochs = epochs
+)
 
 print("Image classify basic done.")
