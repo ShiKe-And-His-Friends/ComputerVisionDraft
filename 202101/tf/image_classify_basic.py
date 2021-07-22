@@ -164,6 +164,21 @@ plt.plot(epochs_range ,loss ,label = 'Trianing Loss')
 plt.plot(epochs_range ,val_loss ,label = 'Validation Loss')
 plt.legend(loc = 'upper right')
 plt.title('Training and Validation Loss')
-plt.show()
+# plt.show()
+
+sunflower_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/592px-Red_sunflower.jpg"
+sunflower_path = tf.keras.utils.get_file('Red_sunflower' ,origin = sunflower_url)
+img = tf.keras.preprocessing.image.load_img(
+    sunflower_path,
+    target_size = (img_height ,img_width)
+)
+img_array = tf.keras.preprocessing.image.img_to_array(img)
+img_array = tf.expand_dims(img_array ,0)
+predictions = model.predict(img_array)
+score = tf.nn.softmax(predictions[0])
+print(
+    "This images most likely belong to {} with a {:.2f} percent confidence."
+    .format(class_names[np.argmax(score)] ,100 * np.max(score))
+)
 
 print("Image classify basic done.")
