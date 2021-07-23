@@ -42,5 +42,14 @@ val_ds = tf.keras.preprocessing.text_dataset_from_directory(
 for text_batch ,label_batch in train_ds.take(1):
     for i in range(5):
         print(label_batch[i].numpy() ,text_batch.numpy()[i])
+AUTOTUNE = tf.data.AUTOTUNE
+train_ds = train_ds.cache().prefetch(buffer_size = AUTOTUNE)
+val_ds = val_ds.cache().prefetch(buffer_size = AUTOTUNE)
+embedding_layer = tf.keras.layers.Embedding(1000 ,5)
+result = embedding_layer(tf.constant([1 ,2 ,3]))
+print(result.numpy())
+result = embedding_layer(tf.constant([[0 ,1 ,2] ,[3 ,4 ,5]]))
+print(result.shape)
+
 
 print("Text Embedding done.")
