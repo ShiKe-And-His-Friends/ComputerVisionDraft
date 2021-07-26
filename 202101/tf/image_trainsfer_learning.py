@@ -17,5 +17,11 @@ train_dataset = image_dataset_from_directory(
     batch_size = BATCH_SIZE,
     image_size = IMG_SIZE
 )
+validation_dataset = image_dataset_from_directory(
+    validation_dir,
+    shuffle = True,
+    batch_size = BATCH_SIZE,
+    image_size = IMG_SIZE
+)
 
 print("Image transfer learning done,")
