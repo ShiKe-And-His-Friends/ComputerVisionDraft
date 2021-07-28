@@ -34,4 +34,10 @@ for images ,labels in train_dataset.take(1):
         plt.axis("off")
 plt.show()        
 
+val_batches = tf.data.experimental.cardinality(validation_dataset)
+test_dataset = validation_dataset.take(val_batches // 5)
+validation_dataset = validation_dataset.skip(val_batches // 5)
+print('Number of validation batches: %d' % tf.data.experimental.cardimality(validation_dataset))
+print('Number of test batches: %d' % tf.data.experimental.cardinality(test_dataset))
+
 print("Image transfer learning done,")
