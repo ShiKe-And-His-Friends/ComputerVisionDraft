@@ -14,3 +14,6 @@ if (hasUserMedia()) {
 } else {
   alert("抱歉，你的浏览器不支持 getUserMedia.");
 }
+navigator.getUserMedia({video:false ,audio:true } ,function(stream) {
+
+});
