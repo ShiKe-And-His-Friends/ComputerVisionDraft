@@ -3,17 +3,8 @@ function hasUserMedia() {
 }
 if (hasUserMedia()) {
 	navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;   
-	navigator.getUserMedia({
-		video: true,
-		audio: true
-	}, function (stream) {
-		var video = document.querySelector('video');
-		video.src = window.URL.createObjectURL(stream);
-	}, function (err) {});
-} else {
-	alert("Expoler not support getUserMedia.");
-}
-navigator.getUserMedia(
+
+navigator.mediaDevices.getUserMedia(
 	{
 		video:{
 			mandatory: {
@@ -33,3 +24,14 @@ navigator.getUserMedia(
 		console.log("Raised an error when capturing" ,error);
 	}
 );
+	
+	navigator.getUserMedia({
+		video: true,
+		audio: true
+	}, function (stream) {
+		var video = document.querySelector('video');
+		video.src = window.URL.createObjectURL(stream);
+	}, function (err) {});
+} else {
+	alert("Expoler not support getUserMedia.");
+}
