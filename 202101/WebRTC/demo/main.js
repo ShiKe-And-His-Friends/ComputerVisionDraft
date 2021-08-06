@@ -24,4 +24,5 @@ navigator.getUserMedia(
 		console.log("Raised an error when capturing" ,error);
 	}
 );
-	
+
+}
