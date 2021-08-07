@@ -26,3 +26,25 @@ navigator.getUserMedia(
 );
 
 }
+
+var localUserId = Math.random().toString(36).subStr(2);
+var room = prompt('Enter room name');
+var socket = io('http://localhost:8080/socket.io');
+if (room != '') {
+	console.log('Attempted to join room:' ,localUserId ,room);
+	var args = {
+		'userId' : localUserId,
+		'roomName' : room
+	}
+	socket.emit('join-room' ,JSON.stringfy(args))
+}
+
+socket.on('connect' ,function(){
+	console.log("Signal server connected!")
+});
+socket.on('user-joined' ,function(userId) {
+	if (localUserId == userId) {
+		return;
+	}
+	console.log('Peer joined room:' ,userId);
+});
