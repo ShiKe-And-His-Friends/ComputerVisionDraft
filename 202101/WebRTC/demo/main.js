@@ -48,3 +48,35 @@ socket.on('user-joined' ,function(userId) {
 	}
 	console.log('Peer joined room:' ,userId);
 });
+socket.on('user-left' ,function(userId){
+	if (userId == null) {
+		return;
+	}
+	console.log('Peer left room:' ,userId);
+});
+socket.on('broadcast' ,function(msg){
+	console.log('Broadcast Received:' ,msg);
+	if (localUserId == null) {
+		return;
+	}
+	console.log('Broadcast Received:' ,msg.userId);
+	switch(msg.msgType) {
+		case MESSAGE_TYPE_OFFER:
+			handleRemoteOffer(msg);
+			break;
+
+		case MESSAGE_TYPE_ANSWER:
+			handleRemoteAnswer(msg);
+			break;
+
+		case MESSAGE_TYPE_CANDIDATE:
+			handleRemoteCandidate(msg);
+			break;
+
+		case MESSAGE_TYPE_HANDUP:
+			handleRemoteHangup();
+			break;
+		default:
+			break;
+	}
+});
