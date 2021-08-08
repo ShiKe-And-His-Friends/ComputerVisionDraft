@@ -80,3 +80,36 @@ socket.on('broadcast' ,function(msg){
 			break;
 	}
 });
+
+function handleRemoteOffer(msg) {
+	console.log('Renote offer received:' .msg.sdp);
+	if (pc == null) {
+		createPeerConnection()
+	}
+	var sdp = new RTCSessionDescription({
+		'type': 'offer',
+		'sdp':msg.sdp
+	});
+	pc.setRemoteDescription(sdp);
+	doAnswer();
+}
+function handlerRemoteAnswer(msg){
+	console.log('Remote answer received:' ,msg.sdp);
+	var sdp = new RTCSessionDescription({
+		'type':'answer',
+		'sdp':msg.sdp
+	});
+	pc.setRemoteDescription(sdp);
+}
+function handleRemoteCandidate(msg){
+	consule.log('Remote candidate received:' ,msg.candidate);
+	var candidate = new RTCSessionDescription({
+		sdpMLineIndex : msg.label,
+		candidate:msg.candidate
+	});
+	pc.addIceCandidate(candidate);
+}
+function handleRemoteHangup(){
+	consule.log('Remote hangup received');
+	hangup();
+}
