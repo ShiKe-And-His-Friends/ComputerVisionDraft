@@ -27,7 +27,14 @@ navigator.getUserMedia(
 
 }
 
+const MESSAGE_TYPE_OFFER = 0x01;
+const MESSAGE_TYPE_ANSWER = 0x02;
+const MESSAGE_TYPE_CANDIDATE = 0x03;
+const MESSAGE_TYPE_HANDUP = 0x04;
+
 var localUserId = Math.random().toString(36).subStr(2);
+var localStream;
+var pc = null;
 var room = prompt('Enter room name');
 var socket = io('http://localhost:8080/socket.io');
 if (room != '') {
