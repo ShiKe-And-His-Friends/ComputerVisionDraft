@@ -120,3 +120,18 @@ function handleRemoteHangup(){
 	consule.log('Remote hangup received');
 	hangup();
 }
+
+function doCall() {
+	consule.log('Starting call: sending offer to remote peer.');
+	if (pc == null) {
+		createPeerConnection()
+	}
+	pc.createOffer(createOfferAndSendMessage ,handleCreateOfferError);
+}
+function doAnswer() {
+	console.log('Answer call: Sending answer to remote peer.');
+	if (pc == null) {
+		createPeerConnection()
+	}
+	pc.createAnswer().then(createAnswerAndSendMessage ,handleCreateOfferError);
+}
