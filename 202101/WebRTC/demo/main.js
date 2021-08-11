@@ -135,3 +135,14 @@ function doAnswer() {
 	}
 	pc.createAnswer().then(createAnswerAndSendMessage ,handleCreateOfferError);
 }
+function createAnswerAndSendMessage(sessionDescription) {
+	console.log('CreateAnswerAndSendMessage sending message' ,sessionDescription);
+	pc.setLocalDescription(setDescription);
+	var message = {
+		'userId' : localUserId,
+		'msgType':MESSAGE_TYPE_OFFER,
+		'sdp':setDescription.sdp
+	};
+	socket.emit('broadcast' ,message);
+	console.log('Broadcast Offer:' ,message);
+}
