@@ -157,3 +157,14 @@ function createAnswerAndSendMessage(sessionDescription) {
 	socket.emit('broadcast' ,message);
 	console.log('Broadcast Answer' ,message);
 }
+function createAnswerAndSendMessage(sessionDescription) {
+	console.log('CreateAnswerAndSendMessage sending message' ,sessionDescription);
+	pc.setLocalDescription(sessionDescription);
+	var message = {
+		'userId':localUserId,
+		'msgType':MESSAGE_TYPE_ANSWER,
+		'sdp':sessionDescription.sdp
+	};
+	socekt.emit('broadcast' ,message);
+	console.log('Broadcast Answer: ',message);
+}
