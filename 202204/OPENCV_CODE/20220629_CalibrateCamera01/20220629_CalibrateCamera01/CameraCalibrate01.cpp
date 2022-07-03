@@ -8,7 +8,7 @@ const char* help =
 	"{ help h | | need help }"
 	"{ image | | image check }";
 
-int main(int argc, char* argv[]) {
+int main1(int argc, char* argv[]) {
 
 	cv::CommandLineParser parser(argc, argv, help);
 	

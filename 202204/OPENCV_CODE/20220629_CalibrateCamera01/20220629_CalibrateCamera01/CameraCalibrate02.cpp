@@ -10,9 +10,14 @@ using namespace cv;
 int main(int argc ,char** argv) {
 
 	string lenaPath = samples::findFile("lena.jpg");
-	Mat lena = imread( lenaPath, IMREAD_COLOR); 
+	cout << lenaPath << endl;
+	Mat lena = imread(lenaPath, IMREAD_COLOR);
+	cout << "rows " << lena.rows << endl;
+	cout << "cols" << lena.cols << endl;
 
-	imshow("" ,lena);
+	namedWindow("lena");
+	imshow("lena", lena);
+	waitKey(1000);
 
 	return 0;
 }
