@@ -7,7 +7,7 @@
 using namespace std;
 using namespace cv;
 
-int main(int argc ,char** argv) {
+int main2(int argc ,char** argv) {
 
 	string lenaPath = samples::findFile("lena.jpg");
 	cout << lenaPath << endl;

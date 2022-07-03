@@ -53,7 +53,14 @@ namespace
     {
         Mat img1 = imread(samples::findFile(img1Path));
         Mat img2 = imread(samples::findFile(img2Path));
+
+        // my cheerboard photo
+        // Mat img1 = imread("E:\\computerVersion\\ComputerVisionDraft\\202204\\OPENCV_CODE\\20220629_CalibrateCamera01\\CameraData\\Img-01.bmp");
+        // Mat img2 = imread("E:\\computerVersion\\ComputerVisionDraft\\202204\\OPENCV_CODE\\20220629_CalibrateCamera01\\CameraData\\Img-08.bmp");
+
         vector<Point2f> corners1, corners2;
+        
+        
         bool found1 = findChessboardCorners(img1, patternSize, corners1);
         bool found2 = findChessboardCorners(img2, patternSize, corners2);
         if (!found1 || !found2)
@@ -126,7 +133,7 @@ namespace
         "{ height bh      | 6     | chessboard height }"
         "{ square_size    | 0.025 | chessboard square size }";
 }
-int main3(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
     CommandLineParser parser(argc, argv, params);
     if (parser.has("help"))
