@@ -21,5 +21,11 @@
     <ClCompile Include="CameraCalibrate02.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="CameraCalibrate03.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraCalibrate04.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

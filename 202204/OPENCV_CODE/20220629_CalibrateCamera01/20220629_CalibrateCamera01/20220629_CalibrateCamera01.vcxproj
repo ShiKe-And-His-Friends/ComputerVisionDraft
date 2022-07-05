@@ -90,6 +90,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <PreprocessorDefinitions>_WINDOWS;UNICODE</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,6 +130,8 @@
   <ItemGroup>
     <ClCompile Include="CameraCalibrate01.cpp" />
     <ClCompile Include="CameraCalibrate02.cpp" />
+    <ClCompile Include="CameraCalibrate03.cpp" />
+    <ClCompile Include="CameraCalibrate04.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

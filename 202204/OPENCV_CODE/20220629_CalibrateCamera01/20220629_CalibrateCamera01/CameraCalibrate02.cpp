@@ -24,8 +24,8 @@ int main(int argc ,char** argv) {
 	waitKey(1000);
 	destroyAllWindows();
 
-	// format CV_8UC4
-	Mat gray_Makeself_Photo = Mat(80 ,60 ,CV_16UC4 ,Scalar(128 ,128 ,128,128));
+	// format CV_8UC4 CV_32FC4
+	Mat gray_Makeself_Photo = Mat(80 ,60 , CV_16UC4,Scalar(64 ,128 ,320 ,255));
 	imshow("gray windows", gray_Makeself_Photo);
 	waitKey(1000);
 	int rowIndex = gray_Makeself_Photo.rows;
@@ -36,7 +36,19 @@ int main(int argc ,char** argv) {
 	// draw some what
 	for (int i = 0; i < rowIndex; i++ ) {
 		for (int j = 0; j < colIndex; j ++) {
-			
+			Vec4b& bgra = gray_Makeself_Photo.at<Vec4b>(i, j);
+			if (channelsNum == 4) {
+				// bgra[3] = 0;
+			}
+			if (channelsNum >= 1 && channelsNum <= 3) {
+				int b = bgra[0];
+				int g = bgra[1];
+				int r = bgra[2];
+
+				
+
+				//bgra[0] = UCHAR_MAX; // blue light
+			}
 		}
 	}
 
