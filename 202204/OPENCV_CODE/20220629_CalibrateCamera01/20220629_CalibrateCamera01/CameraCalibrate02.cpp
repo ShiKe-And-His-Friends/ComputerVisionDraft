@@ -118,7 +118,7 @@ void saveMatData(Mat &lena_Deepcopy_Photo, Mat &gray_Makeself_Photo, Mat &gray_D
 	}
 }
 
-int main(int argc ,char** argv) {
+int main2(int argc ,char** argv) {
 
 	string lenaPath = samples::findFile("lena.jpg");
 	cout << lenaPath << endl;
