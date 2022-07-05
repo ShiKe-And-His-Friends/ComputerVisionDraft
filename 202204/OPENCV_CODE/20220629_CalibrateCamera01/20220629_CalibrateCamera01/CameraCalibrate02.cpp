@@ -7,16 +7,20 @@
 using namespace std;
 using namespace cv;
 
-int main2(int argc ,char** argv) {
+int main(int argc ,char** argv) {
 
 	string lenaPath = samples::findFile("lena.jpg");
 	cout << lenaPath << endl;
-	Mat lena = imread(lenaPath, IMREAD_COLOR);
-	cout << "rows " << lena.rows << endl;
-	cout << "cols" << lena.cols << endl;
+
+	Mat lena = imread(lenaPath, IMREAD_GRAYSCALE);
+	Mat lena_Deepcopy_Photo;
+	lena.copyTo(lena_Deepcopy_Photo);
+
+
+	cout << "rows " << lena.rows << " cols " << lena.cols << endl;
 
 	namedWindow("lena");
-	imshow("lena", lena);
+	imshow("lena", lena_Deepcopy_Photo);
 	waitKey(1000);
 
 	return 0;

@@ -11,7 +11,7 @@ const char* help =
 	"{ image1 | left01.jpg | image check }"
 	"{ image2 | left04.jpg | image check }";
 
-int main(int argc, char* argv[]) {
+int main1(int argc, char* argv[]) {
 
 	cv::CommandLineParser parser(argc, argv, help);
 	parser.printMessage();
