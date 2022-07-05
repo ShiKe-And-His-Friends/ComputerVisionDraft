@@ -25,7 +25,7 @@ int main(int argc ,char** argv) {
 	destroyAllWindows();
 
 	// format CV_8UC4 CV_32FC4
-	Mat gray_Makeself_Photo = Mat(80 ,60 , CV_16UC4,Scalar(64 ,128 ,320 ,255));
+	Mat gray_Makeself_Photo = Mat(480 ,640 , CV_16UC4,Scalar(64 ,128 ,320 ,255));
 	imshow("gray windows", gray_Makeself_Photo);
 	waitKey(1000);
 	int rowIndex = gray_Makeself_Photo.rows;
@@ -33,31 +33,57 @@ int main(int argc ,char** argv) {
 	int channelsNum = gray_Makeself_Photo.channels();
 
 	cout << "gray self make photo channel : " << channelsNum << endl;
+
+	// file write debug
+	FileStorage fileStorage("..//CameraData//20220705_gray_debug.yaml", FileStorage::WRITE);
+
 	// draw some what
 	for (int i = 0; i < rowIndex; i++ ) {
 		for (int j = 0; j < colIndex; j ++) {
-			Vec4b& bgra = gray_Makeself_Photo.at<Vec4b>(i, j);
-			if (channelsNum == 4) {
-				// bgra[3] = 0;
-			}
-			if (channelsNum >= 1 && channelsNum <= 3) {
-				int b = bgra[0];
-				int g = bgra[1];
-				int r = bgra[2];
+			if (i % 40 == 0 && j % 40 == 0) {
 
-				
+				fileStorage << "rows "<< i <<  "cols " << j;
 
-				//bgra[0] = UCHAR_MAX; // blue light
+				// 1 Byte = 8 bits   1 short = 2 Byte    1 int = 4 Byte
+				Vec4w& bgra = gray_Makeself_Photo.at<Vec4w>(i, j);
+				fileStorage << "red before " << bgra[0];
+				fileStorage << "green before " << bgra[1];
+				fileStorage << "blue before " << bgra[2];
+				fileStorage << "alpha before " << bgra[3];
+
+				if (channelsNum == 4) {
+					bgra[3] = (unsigned short)(0);
+				}
+				if (channelsNum >= 1 && channelsNum <= 3) {
+					unsigned short b = bgra[0];
+					unsigned short g = bgra[1];
+					unsigned short r = bgra[2];
+
+				}
+				// bug: file storage need word instead of number only
+				fileStorage << "red after " << bgra[0];
+				fileStorage << "green after " << bgra[1];
+				fileStorage << "blue after " << bgra[2];
+				fileStorage << "alpha after " << bgra[3];
 			}
 		}
 	}
+
+	fileStorage.release();
 
 	vector<int> params;
 	params.push_back(IMWRITE_JPEG_LUMA_QUALITY);
 	params.push_back(90);
 	params.push_back(IMWRITE_EXR_COMPRESSION_DWAB);
 
-	bool success = imwrite("..//CameraData//20220705_gray_makeself.jpg" , gray_Makeself_Photo ,params);
+	bool success = false; 
+	try {
+		success = imwrite("..//CameraData//20220705_gray_makeself.jpg", gray_Makeself_Photo, params);
+	}
+	catch (const Exception& e) {
+		fprintf(stderr , "Exception Write JPEG file error info:" , e.what());
+	}
+	
 	if (success) {
 		cout << "save gray self make photo success." << endl;
 	}
