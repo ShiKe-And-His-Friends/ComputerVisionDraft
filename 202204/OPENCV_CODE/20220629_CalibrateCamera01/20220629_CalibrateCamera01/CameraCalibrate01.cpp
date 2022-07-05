@@ -13,7 +13,7 @@ const char* help =
 	"{ image1 | left01.jpg | image check }"
 	"{ image2 | left04.jpg | image check }";
 
-int main(int argc, char* argv[]) {
+int main1(int argc, char* argv[]) {
 
 	// input and check
 	CommandLineParser parser(argc, argv, help);
@@ -44,8 +44,8 @@ int main(int argc, char* argv[]) {
 		cout << "Input image dir empty. " << endl;
 		return -3;
 	}
-	Mat chessboard_Photo1 = imread(chessboard_Photo_Dir1, IMREAD_COLOR);
-	Mat chessboard_Photo2 = imread(chessboard_Photo_Dir2, IMREAD_COLOR);
+	Mat chessboard_Photo1 = imread(chessboard_Photo_Dir1, IMREAD_UNCHANGED);
+	Mat chessboard_Photo2 = imread(chessboard_Photo_Dir2, IMREAD_UNCHANGED);
 
 	cout << "Imagr format: " << chessboard_Photo1.type() << endl;
 
