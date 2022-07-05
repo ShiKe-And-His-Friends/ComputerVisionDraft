@@ -41,12 +41,11 @@ int main(int argc ,char** argv) {
 	}
 
 	vector<int> params;
-	params.push_back(IMWRITE_PNG_STRATEGY);
-	//params.push_back(9);
-	
-//	bool success = imwrite("..//CameraData//20220705_gray_makeself.png" , gray_Makeself_Photo );
-	bool success = imwrite("20220705_gray_makeself.png", gray_Makeself_Photo);
+	params.push_back(IMWRITE_JPEG_LUMA_QUALITY);
+	params.push_back(90);
+	params.push_back(IMWRITE_EXR_COMPRESSION_DWAB);
 
+	bool success = imwrite("..//CameraData//20220705_gray_makeself.jpg" , gray_Makeself_Photo ,params);
 	if (success) {
 		cout << "save gray self make photo success." << endl;
 	}
