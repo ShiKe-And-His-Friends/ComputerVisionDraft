@@ -3,13 +3,12 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
-#include "CameraCalibrate02.h"
 
 using namespace std;
 using namespace cv;
 
-
-void saveMatInnerData(Mat &gray_Makeself_Photo ,Mat &gray_draw_Photo){
+// 跳步打印图片到YAML文件，同时用坐标画另一新图片
+void saveMatInnerData(Mat &gray_Makeself_Photo,Mat &gray_draw_Photo){
 	// file write debug
 	FileStorage fileStorage("..//CameraData//20220705_gray_debug.yaml", FileStorage::WRITE);
 
@@ -27,34 +26,38 @@ void saveMatInnerData(Mat &gray_Makeself_Photo ,Mat &gray_draw_Photo){
 				fileStorage << "rows " << i << "cols " << j;
 
 				// 1 Byte = 8 bits   1 short = 2 Byte    1 int = 4 Byte
-				Vec4w& bgra = gray_Makeself_Photo.at<Vec4w>(i, j);
-				fileStorage << "red before " << bgra[0];
-				fileStorage << "green before " << bgra[1];
-				fileStorage << "blue before " << bgra[2];
-				fileStorage << "alpha before " << bgra[3];
+				Vec4w& bgra_Gray_Makeself = gray_Makeself_Photo.at<Vec4w>(i, j);
+				fileStorage << "red before " << bgra_Gray_Makeself[0];
+				fileStorage << "green before " << bgra_Gray_Makeself[1];
+				fileStorage << "blue before " << bgra_Gray_Makeself[2];
+				fileStorage << "alpha before " << bgra_Gray_Makeself[3];
 
 				if (channelsNum == 4) {
-					bgra[3] = (unsigned short)(0);
+					bgra_Gray_Makeself[3] = (unsigned short)(0);
 				}
 				if (channelsNum >= 1 && channelsNum <= 3) {
-					unsigned short b = bgra[0];
-					unsigned short g = bgra[1];
-					unsigned short r = bgra[2];
-
+					unsigned short b = bgra_Gray_Makeself[0];
+					unsigned short g = bgra_Gray_Makeself[1];
+					unsigned short r = bgra_Gray_Makeself[2];
+					gray_draw_Photo.at<Vec4w>(i, j)[0] = UCHAR_MAX; // blue
+					gray_draw_Photo.at<Vec4w>(i, j)[1] = saturate_cast<short>( ((float)(colIndex - j) / (float)(colIndex)) * UCHAR_MAX ); // green
+					gray_draw_Photo.at<Vec4w>(i, j)[2] = saturate_cast<short>(((float)(rowIndex - i) / (float)(rowIndex)) * UCHAR_MAX); // red
+					gray_draw_Photo.at<Vec4w>(i, j)[3] = saturate_cast<short>(0.5 * (g + r)); //alpha
 				}
+				Vec4w& bgra_Gray_Draw_Photo = gray_draw_Photo.at<Vec4w>(i, j);
 				// bug: file storage need word instead of number only
-				fileStorage << "red after " << bgra[0];
-				fileStorage << "green after " << bgra[1];
-				fileStorage << "blue after " << bgra[2];
-				fileStorage << "alpha after " << bgra[3];
+				fileStorage << "red after " << bgra_Gray_Draw_Photo[0];
+				fileStorage << "green after " << bgra_Gray_Draw_Photo[1];
+				fileStorage << "blue after " << bgra_Gray_Draw_Photo[2];
+				fileStorage << "alpha after " << bgra_Gray_Draw_Photo[3];
 			}
 		}
 	}
-
 	fileStorage.release();
 
 }
 
+// 保存图片到本地
 void saveMatData(Mat &gray_Makeself_Photo){
 	vector<int> params;
 	params.push_back(IMWRITE_JPEG_LUMA_QUALITY);
@@ -97,7 +100,7 @@ int main(int argc ,char** argv) {
 
 	// format CV_8UC4 CV_32FC4
 	Mat gray_Makeself_Photo = Mat(480 ,640 , CV_16UC4,Scalar(64 ,128 ,320 ,255));
-	Mat gray_Draw_Photo = Mat(480, 640, CV_16UC4, Scalar(0 ,0 ,0 ,0));
+	Mat gray_Draw_Photo = Mat(480, 640, CV_16UC4, Scalar(0 ,0 ,128 ,0));
 	imshow("gray windows", gray_Makeself_Photo);
 	waitKey(1000);
 
