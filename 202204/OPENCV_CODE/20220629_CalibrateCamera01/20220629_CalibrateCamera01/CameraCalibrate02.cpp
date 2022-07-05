@@ -27,13 +27,13 @@ void saveMatInnerData(Mat &gray_Makeself_Photo,Mat &gray_draw_Photo){
 			if (channelsNum == 4) {
 				bgra_Gray_Makeself[3] = (unsigned short)(0);
 			}
-			if (channelsNum >= 1 && channelsNum <= 4) {
+			if (channelsNum >= 1 && channelsNum <= 3) {
 				unsigned short b = bgra_Gray_Makeself[0];
 				unsigned short g = bgra_Gray_Makeself[1];
 				unsigned short r = bgra_Gray_Makeself[2];
-				bgra_Gray_Draw_Photo[0] = saturate_cast<unsigned short>(((float)(colIndex - j) / (float)(colIndex)) * USHRT_MAX); // blue
-				bgra_Gray_Draw_Photo[1] = saturate_cast<unsigned short>(((float)(colIndex - j) / (float)(colIndex)) * USHRT_MAX); // green
-				bgra_Gray_Draw_Photo[2] = saturate_cast<unsigned short>(((float)(rowIndex - i) / (float)(rowIndex)) * USHRT_MAX); // red
+				bgra_Gray_Draw_Photo[0] = saturate_cast<unsigned short>(((float)(colIndex - j) / (float)(colIndex)) * SHRT_MAX); // blue
+				bgra_Gray_Draw_Photo[1] = saturate_cast<unsigned short>(((float)(colIndex - j) / (float)(colIndex)) * SHRT_MAX); // green
+				bgra_Gray_Draw_Photo[2] = saturate_cast<unsigned short>(((float)(rowIndex - i) / (float)(rowIndex)) * SHRT_MAX); // red
 				bgra_Gray_Draw_Photo[3] = saturate_cast<unsigned short>(0.8 * (g + r)); //alpha
 			}
 
