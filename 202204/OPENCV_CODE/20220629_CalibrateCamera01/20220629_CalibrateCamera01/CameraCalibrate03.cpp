@@ -60,7 +60,6 @@ namespace
 
         vector<Point2f> corners1, corners2;
         
-        
         bool found1 = findChessboardCorners(img1, patternSize, corners1);
         bool found2 = findChessboardCorners(img2, patternSize, corners2);
         if (!found1 || !found2)
@@ -68,6 +67,7 @@ namespace
             cout << "Error, cannot find the chessboard corners in both images." << endl;
             return;
         }
+
         vector<Point3f> objectPoints;
         calcChessboardCorners(patternSize, squareSize, objectPoints);
         FileStorage fs(samples::findFile(intrinsicsPath), FileStorage::READ);
@@ -133,7 +133,7 @@ namespace
         "{ height bh      | 6     | chessboard height }"
         "{ square_size    | 0.025 | chessboard square size }";
 }
-int main(int argc, char* argv[])
+int main3(int argc, char* argv[])
 {
     CommandLineParser parser(argc, argv, params);
     if (parser.has("help"))
