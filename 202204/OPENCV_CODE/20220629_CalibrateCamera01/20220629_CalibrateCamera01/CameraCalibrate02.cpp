@@ -3,6 +3,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/imgproc.hpp>
 
 using namespace std;
 using namespace cv;
@@ -34,7 +35,7 @@ void saveMatInnerData(Mat &gray_Makeself_Photo,Mat &gray_draw_Photo){
 				bgra_Gray_Draw_Photo[0] = saturate_cast<unsigned short>(((float)(colIndex - j) / (float)(colIndex)) * SHRT_MAX); // blue
 				bgra_Gray_Draw_Photo[1] = saturate_cast<unsigned short>(((float)(colIndex - j) / (float)(colIndex)) * SHRT_MAX); // green
 				bgra_Gray_Draw_Photo[2] = saturate_cast<unsigned short>(((float)(rowIndex - i) / (float)(rowIndex)) * SHRT_MAX); // red
-				bgra_Gray_Draw_Photo[3] = saturate_cast<unsigned short>(0.8 * (g + r)); //alpha
+				bgra_Gray_Draw_Photo[3] = saturate_cast<unsigned short>(0.5 * (g + r)); //alpha
 			}
 
 			if (i % 40 == 0 && j % 40 == 0) {
@@ -58,7 +59,16 @@ void saveMatInnerData(Mat &gray_Makeself_Photo,Mat &gray_draw_Photo){
 
 // 二值化图片
 void binarilation(Mat& mat) {
+	// convert gray
+	cvtColor(mat , mat ,COLOR_BGR2GRAY);
+	
+	// blur(mat ,mat ,Size(7 ,7));
 
+	Canny(mat ,mat ,7 ,7*3 ,3);
+
+	imshow("binarilation windnows", mat);
+	waitKey(1000);
+	destroyAllWindows();
 }
 
 // 保存图片到本地
@@ -90,6 +100,16 @@ void saveMatData(Mat &lena_Deepcopy_Photo, Mat &gray_Makeself_Photo, Mat &gray_D
 		fprintf(stderr, "Exception Write JPEG file [3] error info:", e.what());
 	}
 
+	vector<Mat> images;
+	images.push_back(gray_Makeself_Photo);
+	images.push_back(~gray_Makeself_Photo);
+	images.push_back(gray_Makeself_Photo(Rect(0 , 0, gray_Makeself_Photo.cols/2 , gray_Makeself_Photo.rows/2)));
+	try {
+		success = imwrite("..//CameraData//20220705_images.tiff", images);
+	}
+	catch (const Exception& e) {
+		fprintf(stderr, "Exception Write JPEG file [4] error info:", e.what());
+	}
 	if (success) {
 		cout << "save gray self make photo success." << endl;
 	}
@@ -122,14 +142,14 @@ int main(int argc ,char** argv) {
 	waitKey(1000);
 	destroyAllWindows();
 
-	// swap
-	binarilation(lena_Deepcopy_Photo);
-
 	// save data
 	saveMatInnerData(gray_Makeself_Photo , gray_Draw_Photo);
-	imshow("gray windows", gray_Draw_Photo);
+	imshow("draw windows", gray_Draw_Photo);
 	waitKey(2000);
 	destroyAllWindows();
+
+	// swap
+	binarilation(lena_Deepcopy_Photo);
 
 	// save photo
 	saveMatData(lena_Deepcopy_Photo ,gray_Makeself_Photo , gray_Draw_Photo);
