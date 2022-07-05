@@ -12,16 +12,49 @@ int main(int argc ,char** argv) {
 	string lenaPath = samples::findFile("lena.jpg");
 	cout << lenaPath << endl;
 
-	Mat lena = imread(lenaPath, IMREAD_GRAYSCALE);
+	Mat lena = imread(lenaPath, IMREAD_COLOR);
 	Mat lena_Deepcopy_Photo;
-	lena.copyTo(lena_Deepcopy_Photo);
-
-
 	cout << "rows " << lena.rows << " cols " << lena.cols << endl;
+	
+	lena.copyTo(lena_Deepcopy_Photo);
+	lena_Deepcopy_Photo;
 
 	namedWindow("lena");
 	imshow("lena", lena_Deepcopy_Photo);
 	waitKey(1000);
+	destroyAllWindows();
+
+	// format CV_8UC4
+	Mat gray_Makeself_Photo = Mat(80 ,60 ,CV_16UC4 ,Scalar(128 ,128 ,128,128));
+	imshow("gray windows", gray_Makeself_Photo);
+	waitKey(1000);
+	int rowIndex = gray_Makeself_Photo.rows;
+	int colIndex = gray_Makeself_Photo.cols;
+	int channelsNum = gray_Makeself_Photo.channels();
+
+	cout << "gray self make photo channel : " << channelsNum << endl;
+	// draw some what
+	for (int i = 0; i < rowIndex; i++ ) {
+		for (int j = 0; j < colIndex; j ++) {
+			
+		}
+	}
+
+	vector<int> params;
+	params.push_back(IMWRITE_PNG_STRATEGY);
+	//params.push_back(9);
+	
+//	bool success = imwrite("..//CameraData//20220705_gray_makeself.png" , gray_Makeself_Photo );
+	bool success = imwrite("20220705_gray_makeself.png", gray_Makeself_Photo);
+
+	if (success) {
+		cout << "save gray self make photo success." << endl;
+	}
+	else {
+		cout << "save gray self make photo failure." << endl;
+	}
+
+	waitKey(0);
 
 	return 0;
 }
