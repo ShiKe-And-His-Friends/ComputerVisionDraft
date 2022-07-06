@@ -1,3 +1,11 @@
+/**
+	file:///D:/4.6.0/d9/dab/tutorial_homography.html
+	
+	decompose_homography
+	homography_from_camera_dispalcement
+	pose_from_homography
+	
+*/
 #include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
