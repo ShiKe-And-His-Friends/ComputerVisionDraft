@@ -27,5 +27,8 @@
     <ClCompile Include="CameraCalibrate04.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="CameraCalibrate5.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
