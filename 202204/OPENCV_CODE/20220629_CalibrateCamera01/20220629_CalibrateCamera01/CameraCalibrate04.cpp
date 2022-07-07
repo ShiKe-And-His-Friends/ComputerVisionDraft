@@ -111,14 +111,13 @@ void pose_for_homography(Mat &photo1 ,Mat &photo2 , Mat &camera_intrisics ,Mat &
 	Mat photo2_rVec, photo2_tVec;
 
 	// 可用SVDecomp()方法
-	
 	sv_decompse_homography(H_photo_1,camera_intrisics ,distortion_coefficients , photo1_rVec , photo1_tVec);
 	sv_decompse_homography(H_photo_2, camera_intrisics, distortion_coefficients , photo2_rVec , photo2_tVec);
 	cout << "photo1_rVec " << endl << photo1_rVec << endl;
 	cout << "photo1_tVec " << endl << photo1_tVec << endl;
 	cout << "photo2_rVec " << endl << photo2_rVec << endl;
 	cout << "photo2_tVec " << endl << photo2_tVec << endl;
-
+	
 	// 也可用solvePnP()方法
 	/*
 	solvePnP(planerAxis_3f,image_points_1 ,camera_intrisics ,distortion_coefficients ,photo1_rVec ,photo1_tVec);
@@ -130,8 +129,8 @@ void pose_for_homography(Mat &photo1 ,Mat &photo2 , Mat &camera_intrisics ,Mat &
 	*/
 
 	// 画图
-	drawFrameAxes(photo1 ,camera_intrisics , distortion_coefficients , photo1_rVec , photo1_tVec ,2* square_size);
-	drawFrameAxes(photo2, camera_intrisics, distortion_coefficients, photo2_rVec, photo2_tVec , 2 * square_size);
+	drawFrameAxes(photo1 ,camera_intrisics , distortion_coefficients , photo1_rVec, photo1_tVec,2* square_size);
+	drawFrameAxes(photo2, camera_intrisics, distortion_coefficients, photo2_rVec, photo2_tVec, 2 * square_size);
 	imshow("axes windows 1 " ,photo1);
 	waitKey(1000);
 	imshow("axes windows 2 ", photo2);
