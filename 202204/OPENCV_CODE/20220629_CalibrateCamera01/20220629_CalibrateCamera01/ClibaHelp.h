@@ -1,3 +1,6 @@
+#ifndef  CLlIB_HELP_H
+#define CLlIB_HELP_H
+
 #include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/calib3d.hpp>
@@ -6,11 +9,12 @@
 using namespace std;
 using namespace cv;
 
+const float square_size = 0.025; // ?
+
 class ClibaHelp
 {
 
 private:
-	const float square_size = 0.025; // ?
 	const string homograph_yaml_dir = "..//CameraData//20220707_homography_mat_information.yaml";
 	
 	void homographyInfoClean();
@@ -26,3 +30,4 @@ public :
 
 };
 
+#endif

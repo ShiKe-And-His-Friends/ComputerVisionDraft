@@ -65,11 +65,11 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 	// camera1 cmaera2 pose estimated
 	//
 
-	// planner n vector
+	// planer n vector
 	Mat normal = (Mat_<double>(3, 1) << 0, 0, 1);
 	Mat normal1 = R1 * normal;
 
-	//distance d  between camera and planner
+	//distance d  between camera and planer
 	Mat origin(3, 1, CV_64F, Scalar(0));
 	Mat origin1 = R1 * origin + tVecs_1;
 	double d_inv1 = 1.0 / normal1.dot(origin1);
@@ -122,6 +122,7 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 
 }
 
+// yaml文件删除
 void  ClibaHelp::homographyInfoClean() {
 	FileStorage file(homograph_yaml_dir, FileStorage::WRITE);
 	file << "Author " << "sk95120";
@@ -129,6 +130,7 @@ void  ClibaHelp::homographyInfoClean() {
 	file.release();
 }
 
+// 单应矩阵的信息存yaml文件
 void  ClibaHelp::homographyInfoSave(const Mat &r, const Mat &t, const Mat& n ,int num){
 	FileStorage file(homograph_yaml_dir ,FileStorage::APPEND);
 	file << "Num " << num;
