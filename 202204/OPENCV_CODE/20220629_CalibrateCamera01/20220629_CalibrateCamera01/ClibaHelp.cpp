@@ -1,7 +1,5 @@
 #include "ClibaHelp.h"
 
-const static float square_size = 0.025; // ?
-
 // 棋盘格坐标轴的描点
 void ClibaHelp::calcChessboards(const Size &chessboardSize, vector<Point3f> &corners) {
 	corners.resize(0);
@@ -86,6 +84,7 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 	vector<Mat> r_decomp, t_decomp, normal_decomp;
 	int solutions = decomposeHomographyMat(H_sample_1, cameraIntrinsicsMatrix, r_decomp, t_decomp, normal_decomp);
 	cout << "Decompse homography matrix estimated by findHomograpy() using (photo1,photo2):" << endl;
+	homographyInfoClean();
 	for (int i = 0; i < solutions; i++) {
 		double factor_d1 = 1.0 / d_inv1;
 		Mat r_mat_decompse;
@@ -97,6 +96,7 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 		cout << "tvec from camera displacement:" << t1_to_t2.t() << endl;
 		cout << "plane normal from homography decomposition" << normal_decomp[i].t() << endl;
 		cout << "plane normal at camera 1 pose;" << normal1.t() << endl;
+		homographyInfoSave(r_decomp[i], t_decomp[i], normal_decomp[i], i);
 	}
 
 	solutions = decomposeHomographyMat(homograph, cameraIntrinsicsMatrix, r_decomp, t_decomp, normal_decomp);
@@ -112,6 +112,24 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 		cout << "tvec from camera displacement:" << t1_to_t2.t() << endl;
 		cout << "plane normal from homography decomposition" << normal_decomp[i].t() << endl;
 		cout << "plane normal at camera 1 pose;" << normal1.t() << endl;
+		homographyInfoSave(r_decomp[i], t_decomp[i], normal_decomp[i] ,i);
 	}
 
+}
+
+void  ClibaHelp::homographyInfoClean() {
+	FileStorage file(homograph_yaml_dir, FileStorage::WRITE);
+	file << "Author " << "sk95120";
+	file << "Time " << "NONE";
+	file.release();
+}
+
+void  ClibaHelp::homographyInfoSave(const Mat &r, const Mat &t, const Mat& n ,int num){
+	FileStorage file(homograph_yaml_dir ,FileStorage::APPEND);
+	file << "Num " << num;
+	file << "Rotate " << r;
+	file << "Transoform " << t;
+	file << "Normalize " << n;
+
+	file.release();
 }

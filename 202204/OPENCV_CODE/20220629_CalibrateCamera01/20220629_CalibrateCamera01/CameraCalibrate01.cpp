@@ -13,7 +13,7 @@ using namespace cv;
 const char* help = 
 	"{ help h | | need help }"
 	"{ image1 | left01.jpg | image check }"
-	"{ image2 | left02.jpg | image check }";
+	"{ image2 | left03.jpg | image check }";
 
 int main1(int argc, char* argv[]) {
 
@@ -99,22 +99,20 @@ int main1(int argc, char* argv[]) {
 		cout << (*it).x << " " << (*it).y << endl;
 	}
 	
-	// calculate homograpy matrix
+	// calculate homograpy matrix , method 1
 	ClibaHelp* clibHelp = new ClibaHelp;
 	vector<Point3f> axis;
 	clibHelp->calcChessboards(patternSize ,axis);
 	clibHelp->decomposeMatrix(chessboard_Photo1, chessboard_Photo2, patternSize, axis, chessboard_Corners1, chessboard_Corners2);
 
-
-	Mat homography_Matrix = Mat();
-
+	// calculate homograpy matrix , method 2
+	Mat H = findHomography(chessboard_Corners1 ,chessboard_Corners2);
+	cout << "Homography matrix by findHomography():" << H << endl;
 	Mat chessboard_Stitch_Photo;
-	//warpPerspective(chessboard_Photo2 ,chessboard_Stitch_Photo , homography_Matrix,Size(chessboard_Photo2.cols ,chessboard_Photo2.rows)) ;
-
-	//imshow("show chessboard" , chessboard_Stitch_Photo);
-	
-	imshow("image windows" , chessboard_Photo1);
-	waitKey(1000);
+	warpPerspective(chessboard_Photo2 ,chessboard_Stitch_Photo ,H , chessboard_Photo2.size()) ;
+	imshow("show chessboard 1", chessboard_Photo2);
+	imshow("show chessboard 2" , chessboard_Stitch_Photo);
+	waitKey(0);
 
 	delete clibHelp;
 

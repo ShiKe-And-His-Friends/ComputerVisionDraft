@@ -9,6 +9,14 @@ using namespace cv;
 class ClibaHelp
 {
 
+private:
+	const float square_size = 0.025; // ?
+	const string homograph_yaml_dir = "..//CameraData//20220707_homography_mat_information.yaml";
+	
+	void homographyInfoClean();
+	void homographyInfoSave(const Mat &r, const Mat &t, const Mat& n ,int num = 1);
+		
+
 public :
 
 	void calcChessboards(const Size &chessboardSize, vector<Point3f> &corners);

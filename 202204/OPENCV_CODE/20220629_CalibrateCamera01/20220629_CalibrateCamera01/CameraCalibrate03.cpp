@@ -17,7 +17,21 @@
 using namespace std;
 using namespace cv;
 
-int main(int argc ,char** agrv) {
+void checkVectorCalc() {
+	Mat origin(3, 1, CV_64F, Scalar(0));
+	Mat R1 = (Mat_<double>(3, 3) << 1, 2, 3, 4, 5, 6, 7, 8, 9);
+	Mat tVec1 = (Mat_<double>(3, 1) << -0.5, 0.5, 1);
+	Mat origin1 = R1 * origin + tVec1;
+
+	// Mat R1_to_R1 = cameraMatix * homograhpy * cameraMatix.inv();
+	// Mat tVec1_to_tVec2 = normal1.dot(tVec1);
+
+	cout << "R1: " << endl << R1 << endl;
+	cout << "origin: " << endl << origin << endl;
+	cout << "origin1: " << endl << origin1 << endl;
+}
+
+int main3(int argc ,char** agrv) {
 
 	string circle_Photo_Dir1 = "..//CameraData//Img-01.bmp";
 	string circle_Photo_Dir2 = "..//CameraData//Img-08.bmp";
