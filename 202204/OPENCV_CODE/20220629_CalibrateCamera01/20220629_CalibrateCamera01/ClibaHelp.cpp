@@ -62,9 +62,14 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 	Mat rvec1_to_rvec2;
 	Rodrigues(R1_to_R2, rvec1_to_rvec2);
 
+	// camera1 cmaera2 pose estimated
+	//
+
+	// planner n vector
 	Mat normal = (Mat_<double>(3, 1) << 0, 0, 1);
 	Mat normal1 = R1 * normal;
 
+	//distance d  between camera and planner
 	Mat origin(3, 1, CV_64F, Scalar(0));
 	Mat origin1 = R1 * origin + tVecs_1;
 	double d_inv1 = 1.0 / normal1.dot(origin1);
