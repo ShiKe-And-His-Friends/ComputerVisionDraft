@@ -26,8 +26,7 @@ void ClibaHelp::calcChessboards(const Size &chessboardSize, vector<Point3f> &cor
 
 // 分解矩阵
 void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternSize
-	, vector<Point3f> &corners1, vector<Point3f> &corners2
-	, vector<Point2f> &h_input1, vector<Point2f> &h_input2) {
+	, vector<Point3f> &axis, vector<Point2f> &corners1, vector<Point2f> &corners2) {
 	String intrinsicsPath = samples::findFile("left_intrinsics.yml");
 	cout << "Camera samples intrinsics path: " << intrinsicsPath << endl;
 	FileStorage file(intrinsicsPath, FileStorage::READ);
@@ -42,12 +41,12 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 
 	// 用已知点求空间点的P3P计算
 	Mat rVecs_1, tVecs_1;
-	solvePnP(corners1, h_input1, cameraIntrinsicsMatrix, cameraDistCoffes, rVecs_1, tVecs_1);
+	solvePnP(axis, corners1, cameraIntrinsicsMatrix, cameraDistCoffes, rVecs_1, tVecs_1);
 	cout << "rVecs_1 " << endl << rVecs_1 << endl;
 	cout << "tVecs_1" << endl << tVecs_1 << endl;
 
 	Mat rVecs_2, tVecs_2;
-	solvePnP(corners2, h_input2, cameraIntrinsicsMatrix, cameraDistCoffes, rVecs_2, tVecs_2);
+	solvePnP(axis, corners2, cameraIntrinsicsMatrix, cameraDistCoffes, rVecs_2, tVecs_2);
 	cout << "rVecs_2 " << endl << rVecs_2 << endl;
 	cout << "tVecs_2" << endl << tVecs_2 << endl;
 
@@ -56,7 +55,7 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 	Rodrigues(rVecs_1, R1);
 	Rodrigues(rVecs_2, R2);
 
-	// 求转换的矩阵（！）
+	// 求转换的矩阵
 	Mat R1_to_R2, t1_to_t2;
 	R1_to_R2 = R2 * R1.t();
 	t1_to_t2 = R2 * (-R1.t()* tVecs_1) + tVecs_2;
@@ -75,7 +74,7 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 	// 计算单应矩阵
 	Mat homography_euclidean = R1_to_R2 + d_inv1 * t1_to_t2 * normal1.t();
 	cout << "homography euclidean (no normal) :" << endl << homography_euclidean << endl;
-	Mat homograph = cameraIntrinsicsMatrix * homography_euclidean * cameraIntrinsicsMatrix.t();
+	Mat homograph = cameraIntrinsicsMatrix * homography_euclidean * cameraIntrinsicsMatrix.inv();
 	cout << "homography (no normal) :" << endl << homograph << endl;
 	homography_euclidean /= homography_euclidean.at<double>(2, 2);
 	homograph /= homograph.at<double>(2, 2);

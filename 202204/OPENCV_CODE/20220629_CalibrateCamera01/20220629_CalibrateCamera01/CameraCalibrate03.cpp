@@ -32,9 +32,7 @@ int main(int argc ,char** agrv) {
 	vector<Point2f> circle_Photo_Corners1;
 	vector<Point2f> circle_Photo_Corners2;
 	vector<Point2f> circle_Photo_Corners3;
-	vector<Point3f> circle_Photo_Corners_3f_1;
-	vector<Point3f> circle_Photo_Corners_3f_2;
-	vector<Point3f> circle_Photo_Corners_3f_3;
+	vector<Point3f> circle_Photo_Axis;
 
 	bool found1 =  findCirclesGrid(circle_Photo1 , patternSize ,circle_Photo_Corners1 ,flags);
 	if (found1) {
@@ -76,12 +74,10 @@ int main(int argc ,char** agrv) {
 	destroyWindow("cricle photo 3");
 
 	ClibaHelp* clibaHelp = new ClibaHelp;
-	clibaHelp->calcChessboards(patternSize ,circle_Photo_Corners_3f_1);
-	clibaHelp->calcChessboards(patternSize, circle_Photo_Corners_3f_2);
-	clibaHelp->calcChessboards(patternSize, circle_Photo_Corners_3f_3);
+	clibaHelp->calcChessboards(patternSize ,circle_Photo_Axis);
 
 	// 由相机内参、外参，计算空间点的单应矩阵H / PnP计算
-	clibaHelp->decomposeMatrix(circle_Photo1, circle_Photo2 ,patternSize, circle_Photo_Corners_3f_1, circle_Photo_Corners_3f_2 ,circle_Photo_Corners1, circle_Photo_Corners2);
+	clibaHelp->decomposeMatrix(circle_Photo1, circle_Photo2 ,patternSize ,circle_Photo_Axis ,circle_Photo_Corners1, circle_Photo_Corners2);
 
 	delete clibaHelp;
 

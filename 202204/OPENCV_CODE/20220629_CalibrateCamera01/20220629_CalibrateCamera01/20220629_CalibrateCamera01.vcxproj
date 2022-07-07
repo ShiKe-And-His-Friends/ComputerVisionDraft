@@ -131,8 +131,10 @@
     <ClCompile Include="CameraCalibrate01.cpp" />
     <ClCompile Include="CameraCalibrate02.cpp" />
     <ClCompile Include="CameraCalibrate03.cpp" />
-    <ClCompile Include="CameraCalibrate04.cpp" />
-    <ClCompile Include="CameraCalibrate5.cpp" />
+    <ClCompile Include="ClibaHelp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ClibaHelp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -14,8 +14,7 @@ public :
 	void calcChessboards(const Size &chessboardSize, vector<Point3f> &corners);
 
 	void decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternSize
-		, vector<Point3f> &corners1, vector<Point3f> &corners2
-		, vector<Point2f> &h_input1, vector<Point2f> &h_input2);
+		,vector<Point3f> &axis, vector<Point2f> &corners1, vector<Point2f> &corners2);
 
 };
 

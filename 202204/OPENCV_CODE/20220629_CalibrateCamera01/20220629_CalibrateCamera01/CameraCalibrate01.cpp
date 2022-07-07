@@ -5,6 +5,8 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/calib3d.hpp>
 
+#include "ClibaHelp.h"
+
 using namespace std;
 using namespace cv;
 
@@ -50,7 +52,7 @@ int main1(int argc, char* argv[]) {
 	cout << "Imagr format: " << chessboard_Photo1.type() << endl;
 
 	// search informations
-	Size patternSize(6 , 7);
+	Size patternSize(6 , 9);
 	Size minSize(2, 2);
 	int flags = CALIB_CB_ADAPTIVE_THRESH + CALIB_CB_NORMALIZE_IMAGE + CALIB_CB_FAST_CHECK;
 	vector<Point2f> chessboard_Corners1;
@@ -74,6 +76,12 @@ int main1(int argc, char* argv[]) {
 	bool foundCorner2 = findChessboardCorners(chessboard_Photo2, patternSize, chessboard_Corners2, flags);
 	if (foundCorner2) {
 		cout << "find corner [2]" << endl;
+		try {
+			cornerSubPix(chessboard_Photo2, chessboard_Corners2, minSize, Size(-1, -1), TermCriteria(TermCriteria::COUNT | TermCriteria::EPS, 30, 0.1));
+		}
+		catch (Exception &ex) {
+			return -6;
+		}
 	}
 	else {
 		cout << "no find corner [2]" << endl;
@@ -86,12 +94,17 @@ int main1(int argc, char* argv[]) {
 	vector<Point2f>::iterator it, end;
 	it = chessboard_Corners1.begin();
 	end = chessboard_Corners1.end();
-	cout << " step "<< (end - it) <<endl;
+	cout << " corner all : "<< (end - it) <<endl;
 	for (; it != end ; it ++ ) {
 		cout << (*it).x << " " << (*it).y << endl;
 	}
 	
 	// calculate homograpy matrix
+	ClibaHelp* clibHelp = new ClibaHelp;
+	vector<Point3f> axis;
+	clibHelp->calcChessboards(patternSize ,axis);
+	clibHelp->decomposeMatrix(chessboard_Photo1, chessboard_Photo2, patternSize, axis, chessboard_Corners1, chessboard_Corners2);
+
 
 	Mat homography_Matrix = Mat();
 
@@ -102,6 +115,8 @@ int main1(int argc, char* argv[]) {
 	
 	imshow("image windows" , chessboard_Photo1);
 	waitKey(1000);
+
+	delete clibHelp;
 
 	return 0;
 }
