@@ -11,7 +11,7 @@ using namespace cv;
 const char* help = 
 	"{ help h | | need help }"
 	"{ image1 | left01.jpg | image check }"
-	"{ image2 | left04.jpg | image check }";
+	"{ image2 | left02.jpg | image check }";
 
 int main1(int argc, char* argv[]) {
 
@@ -101,7 +101,7 @@ int main1(int argc, char* argv[]) {
 	//imshow("show chessboard" , chessboard_Stitch_Photo);
 	
 	imshow("image windows" , chessboard_Photo1);
-	waitKey(0);
+	waitKey(1000);
 
 	return 0;
 }
