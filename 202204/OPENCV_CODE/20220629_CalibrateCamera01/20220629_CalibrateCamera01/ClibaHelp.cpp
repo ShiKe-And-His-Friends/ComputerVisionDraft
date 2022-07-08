@@ -122,6 +122,11 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 
 }
 
+Scalar ClibaHelp::randomColor(RNG &rng) {
+	int color = (unsigned int)rng;
+	return Scalar( color & 255 ,(color >> 8) & 255 ,(color >> 16) & 255 );
+}
+
 // yamlÎÄ¼þÉ¾³ý
 void  ClibaHelp::homographyInfoClean() {
 	FileStorage file(homograph_yaml_dir, FileStorage::WRITE);

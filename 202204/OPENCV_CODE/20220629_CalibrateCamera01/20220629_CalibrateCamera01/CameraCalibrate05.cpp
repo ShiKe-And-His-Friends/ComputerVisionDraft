@@ -71,9 +71,24 @@ int main(int argc ,char** argv) {
 	Mat photo_draw_warp;
 	hconcat(photo2 ,photo_warp ,photo_draw_warp);
 	imshow("warp draw" ,photo_draw_warp);
-	waitKey(0);
+	waitKey(1000);
 	destroyAllWindows();
 
+	// ¡¨œﬂ
+	RNG rng(0xffffffff);
+	for (size_t i = 0; i < photo_corner_1.size(); i++) {
+		Mat point1 = (Mat_<double>(3 ,1) << photo_corner_1[i].x , photo_corner_1[i].y ,1);
+		Mat point2 = H * point1;
+		point2 /= point2.at<double>(2);
+
+		Point end_point((int)(photo1.cols + point2.at<double>(0)), (int)(point2.at<double>(1)));
+		line(photo_draw_warp , photo_corner_1[i] , end_point , clibaHelp->randomColor(rng) ,3);
+	}
+	imshow("match draw", photo_draw_warp);
+	waitKey(1000);
+	destroyAllWindows();
+
+	//  Õ∑≈
 	delete clibaHelp;
 
 	return 0;

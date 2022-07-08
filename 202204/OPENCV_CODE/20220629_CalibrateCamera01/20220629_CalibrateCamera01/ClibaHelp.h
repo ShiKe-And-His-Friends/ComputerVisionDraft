@@ -23,6 +23,8 @@ private:
 
 public :
 
+	Scalar randomColor(RNG &rng);
+
 	void calcChessboards(const Size &chessboardSize, vector<Point3f> &corners);
 
 	void decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternSize
