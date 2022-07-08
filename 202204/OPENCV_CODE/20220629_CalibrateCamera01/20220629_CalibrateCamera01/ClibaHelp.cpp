@@ -12,6 +12,8 @@ void ClibaHelp::calcChessboards(const Size &chessboardSize, vector<Point3f> &cor
 			);
 		}
 	}
+	// 打印坐标轴的描点
+	/*
 	vector<Point3f>::iterator it, end;
 	it = corners.begin();
 	end = corners.end();
@@ -20,6 +22,7 @@ void ClibaHelp::calcChessboards(const Size &chessboardSize, vector<Point3f> &cor
 	for (; it != end; it++) {
 		cout << "Chessboard aixs x" << (*it).x << " y " << (*it).y << endl;
 	}
+	*/
 }
 
 // 分解矩阵

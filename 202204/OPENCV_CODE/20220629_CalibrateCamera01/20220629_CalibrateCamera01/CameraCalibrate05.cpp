@@ -19,7 +19,7 @@ const char* params =
 
 
 
-int main(int argc ,char** argv) {
+int main5(int argc ,char** argv) {
 
 	CommandLineParser  parser(argc ,argv ,params);
 
