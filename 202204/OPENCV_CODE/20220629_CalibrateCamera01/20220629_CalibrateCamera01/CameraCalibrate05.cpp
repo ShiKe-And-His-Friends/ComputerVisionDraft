@@ -78,6 +78,7 @@ int main(int argc ,char** argv) {
 	RNG rng(0xffffffff);
 	for (size_t i = 0; i < photo_corner_1.size(); i++) {
 		Mat point1 = (Mat_<double>(3 ,1) << photo_corner_1[i].x , photo_corner_1[i].y ,1);
+		// Mat point2 = (Mat_<double>(3 ,1) << photo_corner_2[i].x ,photo_corner_2[i].y ,1);
 		Mat point2 = H * point1;
 		point2 /= point2.at<double>(2);
 
