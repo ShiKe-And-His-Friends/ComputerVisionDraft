@@ -148,7 +148,7 @@ const char* help_info =
 	"{ photo3 | left14.jpg | more important photo }"
 	"{ intrinsics | left_intrinsics.yml | cmaera intrinsics out file }";
 
-int main(int argc ,char** argv) {
+int main4(int argc ,char** argv) {
 
 	CommandLineParser parser(argc ,argv , help_info);
 	
