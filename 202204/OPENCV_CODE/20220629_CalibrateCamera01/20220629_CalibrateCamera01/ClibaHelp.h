@@ -23,6 +23,8 @@ private:
 
 public :
 
+	const static bool DEBUG_SWITCH = true;
+
 	Scalar randomColor(RNG &rng);
 
 	void calcChessboards(const Size &chessboardSize, vector<Point3f> &corners);

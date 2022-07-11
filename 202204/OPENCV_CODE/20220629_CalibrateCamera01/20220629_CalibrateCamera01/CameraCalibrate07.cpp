@@ -16,6 +16,10 @@ int main(int argc, char** argv) {
 	string circle_Photo_Dir1 = "..//CameraData//Ignore_images";
 	
 	clibaHelp->getAllFileFromDirctory(circle_Photo_Dir1 ,photos_dirs ,0);
+	if (photos_dirs.size() <= 0) {
+		cout << "No photos";
+		return -1;
+	}
 
 	// 读取所有孔洞图片
 	vector<Mat> photos;
@@ -35,7 +39,6 @@ int main(int argc, char** argv) {
 	Size patternSize(14, 13);
 	Size minSize(5, 5);
 	vector<vector<Point2f>> circle_Photo_Corners;
-	vector<Point3f> circle_Photo_Axis;
 	TermCriteria termCriteria(TermCriteria::COUNT | TermCriteria::EPS, 0, 0.001);
 
 	vector<Mat>::iterator it_photos, end_photos;
@@ -43,47 +46,48 @@ int main(int argc, char** argv) {
 	end_photos = photos.end();
 
 	for (; it_photos != end_photos; it_photos++) {
-		return_flag_values ++;
+		return_flag_values++;
 
 		vector<Point2f> circle_Photo_Corner_Sub;
-		bool found = findCirclesGrid((*it_photos), patternSize ,circle_Photo_Corner_Sub ,flags);
+		bool found = findCirclesGrid((*it_photos), patternSize, circle_Photo_Corner_Sub, flags);
 		if (found) {
-			cout << "found circle[1]" << endl;
+			cout << "found circle[" << return_flag_values << "]" << endl;
 			cornerSubPix((*it_photos), circle_Photo_Corner_Sub, minSize, Size(-1, -1), termCriteria);
 		}
 		else {
-			cout << "no found circle[1]" << endl;
+			cout << "no found circle[" << return_flag_values << "]" << endl;
 			return -return_flag_values;
 		}
 		circle_Photo_Corners.push_back(circle_Photo_Corner_Sub);
 
 		// 画图看一下标定效果
-		drawChessboardCorners((*it_photos), patternSize, circle_Photo_Corner_Sub, found);
-		imshow("cricle photo", (*it_photos));
-		waitKey(800);
-		destroyWindow("cricle photo");
+		if (clibaHelp->DEBUG_SWITCH) {
+			drawChessboardCorners((*it_photos), patternSize, circle_Photo_Corner_Sub, found);
+			imshow("cricle photo" + return_flag_values, (*it_photos));
+			waitKey(800);
+			destroyWindow("cricle photo" + return_flag_values);
+		}
 	}
 
-	/**
+	// 坐标轴
+	vector<Point3f> circle_Photo_Axis;
 	clibaHelp->calcChessboards(patternSize, circle_Photo_Axis);
 
 	// 计算相机内参、外参
 	Mat cameraMatrix, distCoeffs;
+	clibaHelp->runClibration(photos, circle_Photo_Corners, patternSize, cameraMatrix, distCoeffs);
 
-	vector<Mat> mats;
-	vector<vector<Point2f>> cornerss;
-	mats.push_back(circle_Photo1);
-	mats.push_back(circle_Photo2);
-	mats.push_back(circle_Photo3);
-	cornerss.push_back(circle_Photo_Corners1);
-	cornerss.push_back(circle_Photo_Corners2);
-	cornerss.push_back(circle_Photo_Corners3);
+	// 保存相机畸变参数
+	const string camera_matrix_distort_coffes_dir = "..//CameraData//20220710_camera_matrix_distort_coffes.yaml";
+	FileStorage file(camera_matrix_distort_coffes_dir ,FileStorage::WRITE);
+	file << "Author" << "sk95120";
+	file << "Data" << "None";
+	file << "Camera Matrix" << cameraMatrix;
+	file << "Distort Coffes" << distCoeffs;
+	file.release();
 
-	clibaHelp->runClibration(mats, cornerss, patternSize, cameraMatrix, cameraMatrix);
-	**/
-
+	// 释放
 	delete clibaHelp;
-
 
 	return 0;
 }

@@ -1,0 +1,15 @@
+%YAML:1.0
+---
+Author: sk95120
+Data: None
+Camera Matrix: !!opencv-matrix
+   rows: 5
+   cols: 1
+   dt: d
+   data: [ 1.2181302025133789e+03, -2.2877255635344630e+05,
+       7.1175842651312715e+00, -1.0534858520942556e+00, 0. ]
+Distort Coffes: !!opencv-matrix
+   rows: 0
+   cols: 0
+   dt: u
+   data: []

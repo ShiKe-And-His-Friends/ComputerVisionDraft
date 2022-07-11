@@ -90,7 +90,7 @@ int main6(int argc ,char** argv) {
 	cornerss.push_back(circle_Photo_Corners2);
 	cornerss.push_back(circle_Photo_Corners3);
 
-	clibaHelp->runClibration(mats ,cornerss ,patternSize ,cameraMatrix ,cameraMatrix);
+	clibaHelp->runClibration(mats ,cornerss ,patternSize ,cameraMatrix , distCoeffs);
 
 	delete clibaHelp;
 
