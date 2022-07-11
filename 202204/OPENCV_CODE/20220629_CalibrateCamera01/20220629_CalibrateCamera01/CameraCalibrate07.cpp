@@ -8,7 +8,7 @@
 #include <opencv2/highgui.hpp>
 #include "ClibaHelp.h"
 
-int main7(int argc, char** argv) {
+int main(int argc, char** argv) {
 
 	// 读取文件夹下的所有孔洞图片的目录
 	ClibaHelp* clibaHelp = new ClibaHelp;
@@ -19,71 +19,52 @@ int main7(int argc, char** argv) {
 
 	// 读取所有孔洞图片
 	vector<Mat> photos;
+	vector<String>::iterator it_photos_dirs, end_photos_dirs;
+	it_photos_dirs = photos_dirs.begin();
+	end_photos_dirs = photos_dirs.end();
 
-	vector<String>::iterator it, end;
-	it = photos_dirs.begin();
-	end = photos_dirs.end();
-
-	for (; it != end ; it++) {
-		Mat circle_Photo = imread((*it), IMREAD_UNCHANGED);
+	for (; it_photos_dirs != end_photos_dirs; it_photos_dirs++) {
+		Mat circle_Photo = imread((*it_photos_dirs), IMREAD_UNCHANGED);
 		photos.push_back(circle_Photo);
 	}
-
 	cout << "Photos Size " << photos.size() << endl;
 
-	/*
-
+	// 找图的特征角点
+	int return_flag_values = 0;
 	int flags = CALIB_CB_SYMMETRIC_GRID;
 	Size patternSize(14, 13);
 	Size minSize(5, 5);
-	vector<Point2f> circle_Photo_Corners1;
-	vector<Point2f> circle_Photo_Corners2;
-	vector<Point2f> circle_Photo_Corners3;
+	vector<vector<Point2f>> circle_Photo_Corners;
 	vector<Point3f> circle_Photo_Axis;
-	TermCriteria termCriteria(TermCriteria::COUNT | TermCriteria::EPS, 30, 0.001);
+	TermCriteria termCriteria(TermCriteria::COUNT | TermCriteria::EPS, 0, 0.001);
 
-	bool found1 = findCirclesGrid(circle_Photo1, patternSize, circle_Photo_Corners1, flags);
-	if (found1) {
-		cout << "found circle[1]" << endl;
-		cornerSubPix(circle_Photo1, circle_Photo_Corners1, minSize, Size(-1, -1), termCriteria);
-	}
-	else {
-		cout << "no found circle[1]" << endl;
-		return -1;
-	}
-	bool found2 = findCirclesGrid(circle_Photo2, patternSize, circle_Photo_Corners2, flags);
-	if (found2) {
-		cout << "found circle[2]" << endl;
-		cornerSubPix(circle_Photo2, circle_Photo_Corners2, minSize, Size(-1, -1), termCriteria);
-	}
-	else {
-		cout << "no found circle[2]" << endl;
-		return -2;
-	}
-	bool found3 = findCirclesGrid(circle_Photo3, patternSize, circle_Photo_Corners3, flags);
-	if (found3) {
-		cout << "found circle[3]" << endl;
-		cornerSubPix(circle_Photo3, circle_Photo_Corners3, minSize, Size(-1, -1), termCriteria);
-	}
-	else {
-		cout << "no found circle[3]" << endl;
-		return -3;
+	vector<Mat>::iterator it_photos, end_photos;
+	it_photos = photos.begin();
+	end_photos = photos.end();
+
+	for (; it_photos != end_photos; it_photos++) {
+		return_flag_values ++;
+
+		vector<Point2f> circle_Photo_Corner_Sub;
+		bool found = findCirclesGrid((*it_photos), patternSize ,circle_Photo_Corner_Sub ,flags);
+		if (found) {
+			cout << "found circle[1]" << endl;
+			cornerSubPix((*it_photos), circle_Photo_Corner_Sub, minSize, Size(-1, -1), termCriteria);
+		}
+		else {
+			cout << "no found circle[1]" << endl;
+			return -return_flag_values;
+		}
+		circle_Photo_Corners.push_back(circle_Photo_Corner_Sub);
+
+		// 画图看一下标定效果
+		drawChessboardCorners((*it_photos), patternSize, circle_Photo_Corner_Sub, found);
+		imshow("cricle photo", (*it_photos));
+		waitKey(800);
+		destroyWindow("cricle photo");
 	}
 
-	drawChessboardCorners(circle_Photo1, patternSize, circle_Photo_Corners1, found1);
-	drawChessboardCorners(circle_Photo2, patternSize, circle_Photo_Corners2, found2);
-	drawChessboardCorners(circle_Photo3, patternSize, circle_Photo_Corners3, found3);
-
-	imshow("cricle photo 1", circle_Photo1);
-	waitKey(1000);
-	destroyWindow("cricle photo 1");
-	imshow("cricle photo 2", circle_Photo2);
-	waitKey(1000);
-	destroyWindow("cricle photo 2");
-	imshow("cricle photo 3", circle_Photo3);
-	waitKey(1000);
-	destroyWindow("cricle photo 3");
-
+	/**
 	clibaHelp->calcChessboards(patternSize, circle_Photo_Axis);
 
 	// 计算相机内参、外参
@@ -99,7 +80,7 @@ int main7(int argc, char** argv) {
 	cornerss.push_back(circle_Photo_Corners3);
 
 	clibaHelp->runClibration(mats, cornerss, patternSize, cameraMatrix, cameraMatrix);
-	*/
+	**/
 
 	delete clibaHelp;
 
