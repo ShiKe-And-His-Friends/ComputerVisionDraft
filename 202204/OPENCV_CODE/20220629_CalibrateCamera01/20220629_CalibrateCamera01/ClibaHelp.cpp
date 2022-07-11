@@ -125,6 +125,45 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 
 }
 
+
+// 初始化相机内参、外参矩阵
+void ClibaHelp::runClibration(vector<Mat> &mats, vector<vector<Point2f>> &cornerss, Size size, Mat &cameraMatrix, Mat &distCoeffs) {
+	cameraMatrix = Mat::eye(3, 3, CV_64F);
+	distCoeffs = Mat::zeros(8, 1, CV_64F);
+
+	ClibaHelp* clibaHelp = new ClibaHelp;
+
+
+	// 计算相机内参 
+	double rm = -2;
+	int iFixedPoint = -2;
+	Mat rVecs, tVecs;
+
+	int width = mats[0].cols;
+	int heigh = mats[0].rows;
+	Size imageSize(width, heigh);
+
+	cout << "image size : " << endl << width << " " << heigh << endl;
+
+	vector<vector<Point3f> > objectPoints(1);
+	clibaHelp->calcChessboards(size, objectPoints[0]);
+
+	objectPoints[0][size.width - 1].x = objectPoints[0][0].x + square_size;
+	vector<Point3f> newObjPoints = objectPoints[0];
+
+	objectPoints.resize(cornerss.size(), objectPoints[0]);
+
+	rm = calibrateCameraRO(objectPoints, cornerss, imageSize, iFixedPoint, cameraMatrix, distCoeffs, rVecs, tVecs, newObjPoints, CALIB_FIX_K3 | CALIB_USE_LU, TermCriteria(TermCriteria::COUNT | TermCriteria::EPS, 30, 0.001));
+
+	cout << "rVecs : " << endl << rVecs << endl;
+	cout << "tVecs : " << endl << tVecs << endl;
+	cout << "RM : " << endl << rm << endl;
+	cout << "cameraMatrix : " << endl << cameraMatrix << endl;
+	cout << "distCoeffs : " << endl << distCoeffs << endl;
+
+	delete clibaHelp;
+}
+
 Scalar ClibaHelp::randomColor(RNG &rng) {
 	int color = (unsigned int)rng;
 	return Scalar( color & 255 ,(color >> 8) & 255 ,(color >> 16) & 255 );

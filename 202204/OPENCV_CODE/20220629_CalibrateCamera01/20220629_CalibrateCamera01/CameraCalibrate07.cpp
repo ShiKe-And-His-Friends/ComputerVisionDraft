@@ -1,5 +1,5 @@
 /*
-	camera clibration
+	camera clibration all photos
 	*/
 #include <iostream>
 #include <opencv2/core.hpp>
@@ -8,15 +8,30 @@
 #include <opencv2/highgui.hpp>
 #include "ClibaHelp.h"
 
-int main6(int argc ,char** argv) {
+int main7(int argc, char** argv) {
 
-	string circle_Photo_Dir1 = "..//CameraData//Img-01.bmp";
-	string circle_Photo_Dir2 = "..//CameraData//Img-08.bmp";
-	string circle_Photo_Dir3 = "..//CameraData//Img-22.bmp";
+	// 读取文件夹下的所有孔洞图片的目录
+	ClibaHelp* clibaHelp = new ClibaHelp;
+	vector<String> photos_dirs;
+	string circle_Photo_Dir1 = "..//CameraData//Ignore_images";
+	
+	clibaHelp->getAllFileFromDirctory(circle_Photo_Dir1 ,photos_dirs ,0);
 
-	Mat circle_Photo1 = imread(circle_Photo_Dir1, IMREAD_UNCHANGED);
-	Mat circle_Photo2 = imread(circle_Photo_Dir2, IMREAD_UNCHANGED);
-	Mat circle_Photo3 = imread(circle_Photo_Dir3, IMREAD_UNCHANGED);
+	// 读取所有孔洞图片
+	vector<Mat> photos;
+
+	vector<String>::iterator it, end;
+	it = photos_dirs.begin();
+	end = photos_dirs.end();
+
+	for (; it != end ; it++) {
+		Mat circle_Photo = imread((*it), IMREAD_UNCHANGED);
+		photos.push_back(circle_Photo);
+	}
+
+	cout << "Photos Size " << photos.size() << endl;
+
+	/*
 
 	int flags = CALIB_CB_SYMMETRIC_GRID;
 	Size patternSize(14, 13);
@@ -25,18 +40,12 @@ int main6(int argc ,char** argv) {
 	vector<Point2f> circle_Photo_Corners2;
 	vector<Point2f> circle_Photo_Corners3;
 	vector<Point3f> circle_Photo_Axis;
-	TermCriteria termCriteria(TermCriteria::COUNT | TermCriteria::EPS ,30 ,0.001);
-
-	/*
-	cvtColor(circle_Photo1, circle_Photo1, COLOR_BGR2GRAY);
-	cvtColor(circle_Photo2, circle_Photo2, COLOR_BGR2GRAY);
-	cvtColor(circle_Photo3, circle_Photo3, COLOR_BGR2GRAY);
-	*/
+	TermCriteria termCriteria(TermCriteria::COUNT | TermCriteria::EPS, 30, 0.001);
 
 	bool found1 = findCirclesGrid(circle_Photo1, patternSize, circle_Photo_Corners1, flags);
 	if (found1) {
 		cout << "found circle[1]" << endl;
-		cornerSubPix(circle_Photo1 ,circle_Photo_Corners1 ,minSize ,Size(-1 ,-1) ,termCriteria);
+		cornerSubPix(circle_Photo1, circle_Photo_Corners1, minSize, Size(-1, -1), termCriteria);
 	}
 	else {
 		cout << "no found circle[1]" << endl;
@@ -75,7 +84,6 @@ int main6(int argc ,char** argv) {
 	waitKey(1000);
 	destroyWindow("cricle photo 3");
 
-	ClibaHelp* clibaHelp = new ClibaHelp;
 	clibaHelp->calcChessboards(patternSize, circle_Photo_Axis);
 
 	// 计算相机内参、外参
@@ -90,9 +98,11 @@ int main6(int argc ,char** argv) {
 	cornerss.push_back(circle_Photo_Corners2);
 	cornerss.push_back(circle_Photo_Corners3);
 
-	clibaHelp->runClibration(mats ,cornerss ,patternSize ,cameraMatrix ,cameraMatrix);
+	clibaHelp->runClibration(mats, cornerss, patternSize, cameraMatrix, cameraMatrix);
+	*/
 
 	delete clibaHelp;
+
 
 	return 0;
 }
