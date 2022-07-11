@@ -130,6 +130,17 @@ int main(int argc ,char** argv) {
 
 	runClibration(mats ,cornerss ,patternSize ,cameraMatrix ,cameraMatrix);
 
+	//读取文件夹下所有文件
+	vector<String> dirs;
+	string circle_Photo_Dir_All = "..//CameraData//";
+
+	clibaHelp->getAllFileFromDirctory(circle_Photo_Dir_All ,dirs ,0);
+	vector<String>::iterator it = dirs.begin();
+	vector<String>::iterator end = dirs.end();
+	cout << "main directory has " << (end - it) << endl;
+	for (; it != end; it++) {
+		cout << (*it) << endl;
+	}
 
 	delete clibaHelp;
 

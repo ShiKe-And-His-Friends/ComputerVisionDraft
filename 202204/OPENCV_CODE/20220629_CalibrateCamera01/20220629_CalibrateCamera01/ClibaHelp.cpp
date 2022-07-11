@@ -148,3 +148,24 @@ void  ClibaHelp::homographyInfoSave(const Mat &r, const Mat &t, const Mat& n ,in
 
 	file.release();
 }
+
+// 读取文件夹下所有文件
+int ClibaHelp::getAllFileFromDirctory(string path ,vector<String> &dirs,int needNum) {
+	
+	int count = 0;
+	vector<String> result;
+
+	glob(path ,result ,false);
+
+	vector<String>::iterator it, end;
+	it = result.begin();
+	end = result.end();
+	count = (end - it);
+	cout << "directory has " << (end - it) << endl;
+	for (; it != end ; it++) {
+		cout << (*it) << endl;
+		dirs.push_back(*it);
+	}
+
+	return count;
+}

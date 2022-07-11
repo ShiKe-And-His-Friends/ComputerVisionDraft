@@ -30,6 +30,8 @@ public :
 	void decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternSize
 		,vector<Point3f> &axis, vector<Point2f> &corners1, vector<Point2f> &corners2);
 
+	int getAllFileFromDirctory(string path ,vector<String> &result,int needNum);
+
 };
 
 #endif
