@@ -21,13 +21,8 @@
     <None Include="Eigen_03.cp">
       <Filter>源文件</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="eigen_01.cpp">
+    <None Include="eigen_01.cp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Eigen_03.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
+    </None>
   </ItemGroup>
 </Project>
