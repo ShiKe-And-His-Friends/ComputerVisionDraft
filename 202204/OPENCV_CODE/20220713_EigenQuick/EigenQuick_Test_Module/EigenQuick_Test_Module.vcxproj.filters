@@ -18,9 +18,15 @@
     <None Include="eigen_02.cp">
       <Filter>源文件</Filter>
     </None>
+    <None Include="Eigen_03.cp">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="eigen_01.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Eigen_03.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
