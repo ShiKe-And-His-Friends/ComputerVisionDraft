@@ -49,6 +49,6 @@ end
 
  % 输出:
 if nargout==0 % 如果没有提供参数接受返回值
-  imshow(out);
+  //imshow(out);
   return;
 end
