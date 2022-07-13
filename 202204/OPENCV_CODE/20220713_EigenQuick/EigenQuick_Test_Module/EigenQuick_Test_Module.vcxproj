@@ -125,10 +125,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="eigen_01.cpp" />
+    <None Include="eigen_02.cp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="eigen_02.cp" />
+    <ClCompile Include="eigen_01.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
