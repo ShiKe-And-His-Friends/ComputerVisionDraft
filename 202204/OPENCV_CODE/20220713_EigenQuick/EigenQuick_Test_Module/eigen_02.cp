@@ -1,3 +1,6 @@
+/*
+	Dense matrix and array.
+*/
 #include <iostream>
 #include <Eigen/Dense>
 
