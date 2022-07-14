@@ -1,3 +1,24 @@
+clear;
+BW1 = imread('1.jpg');
+BW2 = rgb2gray(img);
+figure(2),
+subplot(1 ,2 ,1);
+f = double(f);
+f = fft2(f);
+f = fftshift(f);
+[m ,n] = size(f);
+d0 = 20;
+m1 = fix(m/2);
+n1 = fix(n/2);
+for i = 1:m
+    for j=1:n
+        d = sqrt((i-m1)^2 + (j-n1)^2);
+        h(i ,j) = exp(-d^2/2/do^2);
+    end
+
+end
+
+
 function out = imgrayscaling(varargin)
 % IMGRAYSCALING     执行灰度拉伸功能
 %   语法：
