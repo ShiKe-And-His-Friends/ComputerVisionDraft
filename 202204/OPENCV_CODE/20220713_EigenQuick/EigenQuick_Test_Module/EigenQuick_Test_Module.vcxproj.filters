@@ -18,11 +18,31 @@
     <None Include="eigen_02.cp">
       <Filter>源文件</Filter>
     </None>
-    <None Include="Eigen_03.cp">
-      <Filter>源文件</Filter>
-    </None>
     <None Include="eigen_01.cp">
       <Filter>源文件</Filter>
     </None>
+    <None Include="eigen_03.cp">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="eigen_04.cp">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="eigen_05.cp">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="eigen_06.cp">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="eigen_07.cp">
+      <Filter>源文件</Filter>
+    </None>
+    <None Include="eigen_10.cp">
+      <Filter>源文件</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

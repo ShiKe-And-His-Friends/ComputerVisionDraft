@@ -88,6 +88,8 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3;</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,7 +129,15 @@
   <ItemGroup>
     <None Include="eigen_01.cp" />
     <None Include="eigen_02.cp" />
-    <None Include="Eigen_03.cp" />
+    <None Include="eigen_03.cp" />
+    <None Include="eigen_04.cp" />
+    <None Include="eigen_05.cp" />
+    <None Include="eigen_06.cp" />
+    <None Include="eigen_07.cp" />
+    <None Include="eigen_10.cp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
