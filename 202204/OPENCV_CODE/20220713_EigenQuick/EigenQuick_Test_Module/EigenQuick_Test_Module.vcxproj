@@ -135,6 +135,7 @@
     <None Include="eigen_06.cp" />
     <None Include="eigen_07.cp" />
     <None Include="eigen_10.cp" />
+    <None Include="eigen_30.cp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
