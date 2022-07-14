@@ -136,9 +136,7 @@
     <None Include="eigen_07.cp" />
     <None Include="eigen_10.cp" />
     <None Include="eigen_30.cp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <None Include="eigen_40.cp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

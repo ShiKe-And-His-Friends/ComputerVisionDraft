@@ -42,10 +42,8 @@
     <None Include="eigen_30.cp">
       <Filter>源文件</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <None Include="eigen_40.cp">
       <Filter>源文件</Filter>
-    </ClCompile>
+    </None>
   </ItemGroup>
 </Project>
