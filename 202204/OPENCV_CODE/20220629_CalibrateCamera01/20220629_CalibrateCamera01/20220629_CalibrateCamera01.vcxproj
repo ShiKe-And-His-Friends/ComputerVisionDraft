@@ -131,7 +131,12 @@
     <ClCompile Include="CameraCalibrate01.cpp" />
     <ClCompile Include="CameraCalibrate02.cpp" />
     <ClCompile Include="CameraCalibrate03.cpp" />
+    <ClCompile Include="CameraCalibrate04.cpp" />
+    <ClCompile Include="CameraCalibrate05.cpp" />
+    <ClCompile Include="CameraCalibrate06.cpp" />
+    <ClCompile Include="CameraCalibrate07.cpp" />
     <ClCompile Include="ClibaHelp.cpp" />
+    <ClCompile Include="mook_cpp_trutrol.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClibaHelp.h" />

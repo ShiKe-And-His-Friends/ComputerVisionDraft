@@ -27,6 +27,21 @@
     <ClCompile Include="ClibaHelp.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="CameraCalibrate04.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraCalibrate05.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraCalibrate06.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraCalibrate07.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mook_cpp_trutrol.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClibaHelp.h">
