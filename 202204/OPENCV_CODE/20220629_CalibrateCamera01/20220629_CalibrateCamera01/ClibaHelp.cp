@@ -1,6 +1,6 @@
 #include "ClibaHelp.h"
 
-// ÆåÅÌ¸ñ×ø±êÖáµÄÃèµã
+// æ£‹ç›˜æ ¼åæ ‡è½´çš„æç‚¹
 void ClibaHelp::calcChessboards(const Size &chessboardSize, vector<Point3f> &corners) {
 	corners.resize(0);
 	for (int i = 0; i < chessboardSize.width; i++) {
@@ -12,7 +12,7 @@ void ClibaHelp::calcChessboards(const Size &chessboardSize, vector<Point3f> &cor
 			);
 		}
 	}
-	// ´òÓ¡×ø±êÖáµÄÃèµã
+	// æ‰“å°åæ ‡è½´çš„æç‚¹
 	/*
 	vector<Point3f>::iterator it, end;
 	it = corners.begin();
@@ -25,14 +25,14 @@ void ClibaHelp::calcChessboards(const Size &chessboardSize, vector<Point3f> &cor
 	*/
 }
 
-// ·Ö½â¾ØÕó
+// åˆ†è§£çŸ©é˜µ
 void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternSize
 	, vector<Point3f> &axis, vector<Point2f> &corners1, vector<Point2f> &corners2) {
 	String intrinsicsPath = samples::findFile("left_intrinsics.yml");
 	cout << "Camera samples intrinsics path: " << intrinsicsPath << endl;
 	FileStorage file(intrinsicsPath, FileStorage::READ);
 
-	// ¶ÁÈ¡Ê¾ÀıµÄÏà»ú²ÎÊı
+	// è¯»å–ç¤ºä¾‹çš„ç›¸æœºå‚æ•°
 	Mat cameraIntrinsicsMatrix, cameraDistCoffes;
 	file["camera_matrix"] >> cameraIntrinsicsMatrix;
 	file["distortion_coefficients"] >> cameraDistCoffes;
@@ -40,7 +40,7 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 	cout << "Intrinsics " << endl << cameraIntrinsicsMatrix << endl;
 	cout << "Dist Coffes" << endl << cameraDistCoffes << endl;
 
-	// ÓÃÒÑÖªµãÇó¿Õ¼äµãµÄP3P¼ÆËã
+	// ç”¨å·²çŸ¥ç‚¹æ±‚ç©ºé—´ç‚¹çš„P3Pè®¡ç®—
 	Mat rVecs_1, tVecs_1;
 	solvePnP(axis, corners1, cameraIntrinsicsMatrix, cameraDistCoffes, rVecs_1, tVecs_1);
 	cout << "rVecs_1 " << endl << rVecs_1 << endl;
@@ -51,12 +51,12 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 	cout << "rVecs_2 " << endl << rVecs_2 << endl;
 	cout << "tVecs_2" << endl << tVecs_2 << endl;
 
-	// ÇóĞı×ª¾ØÕóR1 R1
+	// æ±‚æ—‹è½¬çŸ©é˜µR1 R1
 	Mat R1, R2, T1, T2;
 	Rodrigues(rVecs_1, R1);
 	Rodrigues(rVecs_2, R2);
 
-	// Çó×ª»»µÄ¾ØÕó
+	// æ±‚è½¬æ¢çš„çŸ©é˜µ
 	Mat R1_to_R2, t1_to_t2;
 	R1_to_R2 = R2 * R1.t();
 	t1_to_t2 = R2 * (-R1.t()* tVecs_1) + tVecs_2;
@@ -77,7 +77,7 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 	Mat origin1 = R1 * origin + tVecs_1;
 	double d_inv1 = 1.0 / normal1.dot(origin1);
 
-	// ¼ÆËãµ¥Ó¦¾ØÕó
+	// è®¡ç®—å•åº”çŸ©é˜µ
 	Mat homography_euclidean = R1_to_R2 + d_inv1 * t1_to_t2 * normal1.t();
 	cout << "homography euclidean (no normal) :" << endl << homography_euclidean << endl;
 	Mat homograph = cameraIntrinsicsMatrix * homography_euclidean * cameraIntrinsicsMatrix.inv();
@@ -87,7 +87,7 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 	cout << "homography euclidean :" << endl << homography_euclidean << endl;
 	cout << "homography :" << endl << homograph << endl;
 
-	//¶Ô±È½á¹û
+	//å¯¹æ¯”ç»“æœ
 	Mat H_sample_1 = findHomography(corners1, corners2);
 	vector<Mat> r_decomp, t_decomp, normal_decomp;
 	int solutions = decomposeHomographyMat(H_sample_1, cameraIntrinsicsMatrix, r_decomp, t_decomp, normal_decomp);
@@ -126,7 +126,7 @@ void ClibaHelp::decomposeMatrix(const Mat &mat1, const Mat &mat2, Size &patternS
 }
 
 
-// ³õÊ¼»¯Ïà»úÄÚ²Î¡¢Íâ²Î¾ØÕó
+// åˆå§‹åŒ–ç›¸æœºå†…å‚ã€å¤–å‚çŸ©é˜µ
 void ClibaHelp::runClibration(vector<Mat> &mats, vector<vector<Point2f>> &cornerss, Size size, Mat &cameraMatrix, Mat &distCoeffs) {
 	cameraMatrix = Mat::eye(3, 3, CV_64F);
 	distCoeffs = Mat::zeros(8, 1, CV_64F);
@@ -134,7 +134,7 @@ void ClibaHelp::runClibration(vector<Mat> &mats, vector<vector<Point2f>> &corner
 	ClibaHelp* clibaHelp = new ClibaHelp;
 
 
-	// ¼ÆËãÏà»úÄÚ²Î 
+	// è®¡ç®—ç›¸æœºå†…å‚ 
 	double rm = -2;
 	int iFixedPoint = -2;
 	Mat rVecs, tVecs;
@@ -171,7 +171,7 @@ Scalar ClibaHelp::randomColor(RNG &rng) {
 	return Scalar( color & 255 ,(color >> 8) & 255 ,(color >> 16) & 255 );
 }
 
-// yamlÎÄ¼şÉ¾³ı
+// yamlæ–‡ä»¶åˆ é™¤
 void  ClibaHelp::homographyInfoClean() {
 	FileStorage file(homograph_yaml_dir, FileStorage::WRITE);
 	file << "Author " << "sk95120";
@@ -179,7 +179,7 @@ void  ClibaHelp::homographyInfoClean() {
 	file.release();
 }
 
-// µ¥Ó¦¾ØÕóµÄĞÅÏ¢´æyamlÎÄ¼ş
+// å•åº”çŸ©é˜µçš„ä¿¡æ¯å­˜yamlæ–‡ä»¶
 void  ClibaHelp::homographyInfoSave(const Mat &r, const Mat &t, const Mat& n ,int num){
 	FileStorage file(homograph_yaml_dir ,FileStorage::APPEND);
 	file << "Num " << num;
@@ -190,7 +190,7 @@ void  ClibaHelp::homographyInfoSave(const Mat &r, const Mat &t, const Mat& n ,in
 	file.release();
 }
 
-// ¶ÁÈ¡ÎÄ¼ş¼ĞÏÂËùÓĞÎÄ¼ş
+// è¯»å–æ–‡ä»¶å¤¹ä¸‹æ‰€æœ‰æ–‡ä»¶
 int ClibaHelp::getAllFileFromDirctory(string path ,vector<String> &dirs,int needNum) {
 	
 	int count = 0;
@@ -204,8 +204,13 @@ int ClibaHelp::getAllFileFromDirctory(string path ,vector<String> &dirs,int need
 	count = (end - it);
 	cout << "directory has " << (end - it) << endl;
 	for (; it != end ; it++) {
-		cout << (*it) << endl;
-		dirs.push_back(*it);
+		if ((*it).find("jpg") == string::npos && (*it).find("png") == string::npos) {
+			cout << (*it) << " Not a Photo" << endl;
+		}
+		else {
+			dirs.push_back(*it);
+			cout << (*it) << endl;
+		}
 	}
 
 	return count;
