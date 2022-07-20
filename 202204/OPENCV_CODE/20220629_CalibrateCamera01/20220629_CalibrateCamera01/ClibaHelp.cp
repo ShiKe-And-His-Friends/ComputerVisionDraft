@@ -155,7 +155,7 @@ void ClibaHelp::runClibration(vector<Mat> &mats, vector<vector<Point2f>> &corner
 	
 	//rm = calibrateCamera(objectPoints, cornerss, imageSize, cameraMatrix, distCoeffs, rVecs, tVecs , CALIB_FIX_K3 | CALIB_USE_LU, TermCriteria(TermCriteria::COUNT | TermCriteria::EPS, 50, 0.001));
 
-	rm = calibrateCameraRO(objectPoints ,cornerss ,imageSize ,iFixedPoint ,cameraMatrix, distCoeffs, rVecs, tVecs ,newObjPoints ,CALIB_FIX_K3 | CALIB_USE_LU, TermCriteria(TermCriteria::COUNT | TermCriteria::EPS, 50, 0.001));
+	rm = calibrateCameraRO(objectPoints ,cornerss ,imageSize ,iFixedPoint ,cameraMatrix, distCoeffs, rVecs, tVecs ,newObjPoints ,CALIB_FIX_K3 | CALIB_USE_LU);
 
 	cout << "rVecs : " << endl << rVecs << endl;
 	cout << "tVecs : " << endl << tVecs << endl;
