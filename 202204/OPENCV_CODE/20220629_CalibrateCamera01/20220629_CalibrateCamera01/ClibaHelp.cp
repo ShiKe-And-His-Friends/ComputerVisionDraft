@@ -133,7 +133,6 @@ void ClibaHelp::runClibration(vector<Mat> &mats, vector<vector<Point2f>> &corner
 
 	ClibaHelp* clibaHelp = new ClibaHelp;
 
-
 	// 计算相机内参 
 	double rm = -2;
 	int iFixedPoint = -2;
@@ -142,6 +141,7 @@ void ClibaHelp::runClibration(vector<Mat> &mats, vector<vector<Point2f>> &corner
 	int width = mats[0].cols;
 	int heigh = mats[0].rows;
 	Size imageSize(width, heigh);
+	iFixedPoint  = size.width - 1;
 
 	cout << "image size : " << endl << width << " " << heigh << endl;
 
