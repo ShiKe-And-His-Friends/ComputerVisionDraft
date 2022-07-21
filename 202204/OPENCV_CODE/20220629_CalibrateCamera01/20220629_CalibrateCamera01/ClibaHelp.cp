@@ -3,12 +3,13 @@
 // 棋盘格坐标轴的描点
 void ClibaHelp::calcChessboards(const Size &chessboardSize, vector<Point3f> &corners) {
 	corners.resize(0);
-	for (int i = 0; i < chessboardSize.width; i++) {
-		for (int j = 0; j < chessboardSize.height; j++) {
-			float x = (float)(i*square_size);
-			float y = (float)(j*square_size);
+	int setp_length = 1;
+	for (int i = 0; i < chessboardSize.height; i++) {
+		for (int j = 0; j < chessboardSize.width; j++) {
+			float x = (float)(i*setp_length);
+			float y = (float)(j*setp_length);
 			corners.push_back(
-				Point3f(x, y, 0)
+				Point3f(j, i, 0)
 			);
 		}
 	}
