@@ -1,4 +1,3 @@
-clear;
 BW1 = imread('1.jpg');
 BW2 = rgb2gray(img);
 figure(2),
@@ -68,8 +67,7 @@ elseif isa(A, 'uint16')
 % 其它情况，输出双精度类型的图像
 end
 
- % 输出:
 if nargout==0 % 如果没有提供参数接受返回值
-  //imshow(out);
+  imshow(out);
   return;
 end
