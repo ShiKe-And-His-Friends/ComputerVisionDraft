@@ -8,6 +8,8 @@
 */
 
 #include <iostream>
+#include <cmath>
+#include <map>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -26,8 +28,10 @@ extern "C" {
 
 using namespace std;
 using namespace cv;
+
 #define AUDIO_INBUF_SIZE 20480
 #define AUDIO_REFILL_THRESH 4096
+#define PI 3.1415926
 
 static int get_format_from_sample_fmt(const char** fmt,
     enum AVSampleFormat sample_fmt)
@@ -89,11 +93,30 @@ static void decode(AVCodecContext* dec_ctx, AVPacket* pkt, AVFrame* frame,
     }
 }
 
-int main(int argc, char** argv)
-{
+void draw_archimedean_spiral() {
+    Mat background = Mat::zeros(600, 600, CV_8U);
+    float a = 10, b = 10;
+    int x = 0, y = 0;
+    double theta = 0;
+    std::multimap<int, int> temp;
+    while (theta < 6 * PI)
+    {
+        x = int((a + b * theta) * cos(theta) + 300);
+        y = int((a + b * theta) * sin(theta) + 300);
+        theta += 0.1;
+        temp.insert(make_pair(x, y));
+    }
+    for (auto inter = temp.begin(); inter != temp.end(); inter++)
+    {
+        Point t(inter->first, inter->second);
+        circle(background, t, 2, Scalar(255, 0, 0), -1);
+    }
+    imshow("archimedean_spiral", background);
+    imwrite("D:\\Aritcle\\music\\menghuanlisha.png", background);
+    waitKey(1000);
+}
 
-    cout << avcodec_configuration() << endl;
-
+int get_audio_data() {
     const char inFileName[] = "D:\\Aritcle\\music\\menghuanlisha.mp3";
     const char outFileName[] = "D:\\Aritcle\\music\\menghuanlisha.pcm";
     FILE* file = fopen(outFileName, "w+b");
@@ -178,6 +201,20 @@ int main(int argc, char** argv)
     avformat_free_context(fmtCtx);
 
     fclose(file);
+
+    return 0;
+}
+
+int main(int argc, char** argv)
+{
+    // check project implement info
+    cout << avcodec_configuration() << endl;
+
+    // get audio data such like mp3 format
+    //get_audio_data();
+
+    // draw spiral
+    draw_archimedean_spiral();
 
     return 0;
 }
