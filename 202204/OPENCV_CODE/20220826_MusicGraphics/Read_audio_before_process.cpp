@@ -8,6 +8,8 @@
 */
 
 #include <iostream>
+#include <cmath>
+#include <map>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -26,8 +28,10 @@ extern "C" {
 
 using namespace std;
 using namespace cv;
+
 #define AUDIO_INBUF_SIZE 20480
 #define AUDIO_REFILL_THRESH 4096
+#define PI 3.1415926
 
 static int get_format_from_sample_fmt(const char** fmt,
     enum AVSampleFormat sample_fmt)
@@ -89,11 +93,48 @@ static void decode(AVCodecContext* dec_ctx, AVPacket* pkt, AVFrame* frame,
     }
 }
 
-int main(int argc, char** argv)
-{
+void draw_archimedean_spiral() {
+    Mat background_temp = Mat::zeros(600, 600, CV_8U);
+    float a = 10, b = 10;
+    int x = 0, y = 0;
+    double theta = 0;
+    multimap<int, int> temp;//由于存在很多X值相同的点，所以这里用multimap
+    while (theta < 600 * PI)
+    {
+        x = int((a + b * theta) * cos(theta) + 300);
+        y = int((a + b * theta) * sin(theta) + 300);
+        theta += 0.01;
+        temp.insert(make_pair(x, y));
+    }
+    for (auto inter = temp.begin(); inter != temp.end(); inter++)
+    {
+        Point t(inter->first, inter->second);
+        circle(background_temp, t, 2, Scalar(255, 0, 0), -1);
+    }
+    imshow("archimedean_spiral_temp", background_temp);
+    imwrite("D:\\Aritcle\\music\\menghuanlisha_temp.png", background_temp);
+    waitKey(1000);
+}
 
-    cout << avcodec_configuration() << endl;
+void draw_archimedean_spiral(Mat& background ,double theta ,char value) {
+    
+    float a = 10, b = 10;
+    int x = 0, y = 0;
+    
+    x = int((a + b * theta) * cos(theta) + 300);
+    y = int((a + b * theta) * sin(theta) + 300);
+    spiral_points.insert(make_pair(x, y));
+    
+    for (auto inter = spiral_points.begin(); inter != spiral_points.end(); inter++)
+    {
+        Point t(inter->first, inter->second);
+        circle(background, t, 2, Scalar(static_cast<int>(value % 255), 0, 0), -1);
+    }
 
+}
+
+
+int get_audio_data() {
     const char inFileName[] = "D:\\Aritcle\\music\\menghuanlisha.mp3";
     const char outFileName[] = "D:\\Aritcle\\music\\menghuanlisha.pcm";
     FILE* file = fopen(outFileName, "w+b");
@@ -108,6 +149,9 @@ int main(int argc, char** argv)
     AVFrame* frame = av_frame_alloc();
 
     int aStreamIndex = -1;
+
+    // background photo
+    Mat background = Mat::zeros(600, 600, CV_8U);
 
     do {
 
@@ -161,6 +205,17 @@ int main(int argc, char** argv)
                             for (int i = 0; i < frame->nb_samples; i++) {
                                 for (int ch = 0; ch < codecCtx->channels; ch++) {
                                     fwrite((char*)frame->data[ch] + numBytes * i, 1, numBytes, file);
+
+                                    // TODO link method
+                                    double theta = 0;
+                                    while (theta < 600 * PI)
+                                    {
+                                        draw_archimedean_spiral(background ,theta ,(char*)frame->data[ch] + numBytes * i);
+                                        theta += 0.01;
+
+                                    }
+
+
                                 }
                             }
                         }
@@ -178,6 +233,27 @@ int main(int argc, char** argv)
     avformat_free_context(fmtCtx);
 
     fclose(file);
+
+    imshow("archimedean_spiral", background);
+    imwrite("D:\\Aritcle\\music\\menghuanlisha.png", background);
+    waitKey(1000);
+
+    return 0;
+}
+
+// volume value in key point
+multimap<int, int> spiral_points;
+
+int main(int argc, char** argv)
+{
+    // check project implement info
+    cout << avcodec_configuration() << endl;
+
+    // get audio data such like mp3 format
+    get_audio_data();
+
+    // draw spiral
+    // draw_archimedean_spiral();
 
     return 0;
 }
