@@ -9,10 +9,23 @@
 #include "ClibaHelp.h"
 
 // 测试读写文件格式
+// 测试读写文件格式
 void TestSaveAndRead() {
 	std::cout << "验证文件读写" << std::endl;
 
-	cv::Mat mat(640, 480, CV_16UC1);
+	/*	
+	std::cout << "laserW " << laserW.type() << " indesty " << indesty.type() << " indesty8 " << indesty8.type() << " rangimg " << rangimg.type() << " " << std::endl;
+	*/
+
+	// CV_16SC1  CV_32FC1
+	
+	int width = 640;
+	int height = 480;
+	int type = CV_16SC1;
+
+	cv::String name = "a.dat";
+
+	cv::Mat mat(width, height, type);
 
 	for (int i = 0; i < mat.rows; i++) {
 		unsigned short* ptr = mat.ptr<unsigned short>(i);
@@ -21,17 +34,33 @@ void TestSaveAndRead() {
 		}
 	}
 
-	cv::String name = "a.tiff";
-	cv::imwrite(name, mat);
-	cv::Mat mat2 = cv::imread(name ,cv::IMREAD_UNCHANGED);
+	std::ofstream out_data_stream(name ,std::ios::binary | std::ios::out);
+	out_data_stream.write((char*)(mat.data) ,sizeof(short) * width * height);
+	/*
+	for (int i = 0; i < mat.rows; i++) {
+		short* ptr = mat.ptr<short>(i);
+		for (int j = 0; j < mat.cols; j++) {
+			out_data_stream << static_cast<char>(ptr[j] & (0x00ff));
+			out_data_stream << static_cast<char>((ptr[j] & (0xff00)) >> 8);
+		}
+	}
+	*/
+	out_data_stream.close();
+	
+	cv::Mat mat2(width ,height , type);
+	std::fstream in_data_stream(name ,std::ios::binary | std::ios::in);
+	in_data_stream.read((char *)(mat2.data) ,sizeof(short)* width * height);
+	in_data_stream.close();
 
 	std::cout << mat.type() << std::endl;
 	std::cout << mat2.type() << std::endl;
 
+	imwrite("a2.tiff",mat2);
+
 	cv::imshow("mat1", mat);
 	cv::imshow("mat2", mat2);
 	cv::waitKey(0);
-
+	
 }
 
 int main(int argc, char** argv) {
