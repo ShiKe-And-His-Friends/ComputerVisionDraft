@@ -8,9 +8,64 @@
 #include <opencv2/highgui.hpp>
 #include "ClibaHelp.h"
 
+// æµ‹è¯•è¯»å†™æ–‡ä»¶æ ¼å¼
+// æµ‹è¯•è¯»å†™æ–‡ä»¶æ ¼å¼
+void TestSaveAndRead() {
+	std::cout << "éªŒè¯æ–‡ä»¶è¯»å†™" << std::endl;
+
+	/*	
+	std::cout << "laserW " << laserW.type() << " indesty " << indesty.type() << " indesty8 " << indesty8.type() << " rangimg " << rangimg.type() << " " << std::endl;
+	*/
+
+	// CV_16SC1  CV_32FC1
+	
+	int width = 640;
+	int height = 480;
+	int type = CV_16SC1;
+
+	cv::String name = "a.dat";
+
+	cv::Mat mat(width, height, type);
+
+	for (int i = 0; i < mat.rows; i++) {
+		unsigned short* ptr = mat.ptr<unsigned short>(i);
+		for (int j = 0; j < mat.cols; j++) {
+			ptr[j] = static_cast<unsigned short>((i*20 + j) % 128);
+		}
+	}
+
+	std::ofstream out_data_stream(name ,std::ios::binary | std::ios::out);
+	out_data_stream.write((char*)(mat.data) ,sizeof(short) * width * height);
+	/*
+	for (int i = 0; i < mat.rows; i++) {
+		short* ptr = mat.ptr<short>(i);
+		for (int j = 0; j < mat.cols; j++) {
+			out_data_stream << static_cast<char>(ptr[j] & (0x00ff));
+			out_data_stream << static_cast<char>((ptr[j] & (0xff00)) >> 8);
+		}
+	}
+	*/
+	out_data_stream.close();
+	
+	cv::Mat mat2(width ,height , type);
+	std::fstream in_data_stream(name ,std::ios::binary | std::ios::in);
+	in_data_stream.read((char *)(mat2.data) ,sizeof(short)* width * height);
+	in_data_stream.close();
+
+	std::cout << mat.type() << std::endl;
+	std::cout << mat2.type() << std::endl;
+
+	imwrite("a2.tiff",mat2);
+
+	cv::imshow("mat1", mat);
+	cv::imshow("mat2", mat2);
+	cv::waitKey(0);
+	
+}
+
 int main(int argc, char** argv) {
 
-	// ¶ÁÈ¡ÎÄ¼ş¼ĞÏÂµÄËùÓĞ¿×¶´Í¼Æ¬µÄÄ¿Â¼
+	// è¯»å–æ–‡ä»¶å¤¹ä¸‹çš„æ‰€æœ‰å­”æ´å›¾ç‰‡çš„ç›®å½•
 	ClibaHelp* clibaHelp = new ClibaHelp;
 	vector<String> photos_dirs;
 	string circle_Photo_Dir1 = "..//CameraData//Ignore_images";
@@ -21,7 +76,7 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
-	// ¶ÁÈ¡ËùÓĞ¿×¶´Í¼Æ¬
+	// è¯»å–æ‰€æœ‰å­”æ´å›¾ç‰‡
 	vector<Mat> photos;
 	vector<String>::iterator it_photos_dirs, end_photos_dirs;
 	it_photos_dirs = photos_dirs.begin();
@@ -33,7 +88,7 @@ int main(int argc, char** argv) {
 	}
 	cout << "Photos Size " << photos.size() << endl;
 
-	// ÕÒÍ¼µÄÌØÕ÷½Çµã
+	// æ‰¾å›¾çš„ç‰¹å¾è§’ç‚¹
 	int return_flag_values = 0;
 	int flags = CALIB_CB_SYMMETRIC_GRID;
 	Size patternSize(14, 13);
@@ -60,7 +115,7 @@ int main(int argc, char** argv) {
 		}
 		circle_Photo_Corners.push_back(circle_Photo_Corner_Sub);
 
-		// »­Í¼¿´Ò»ÏÂ±ê¶¨Ğ§¹û
+		// ç”»å›¾çœ‹ä¸€ä¸‹æ ‡å®šæ•ˆæœ
 		if (clibaHelp->DEBUG_SWITCH) {
 			drawChessboardCorners((*it_photos), patternSize, circle_Photo_Corner_Sub, found);
 			imshow("cricle photo" + return_flag_values, (*it_photos));
@@ -69,15 +124,15 @@ int main(int argc, char** argv) {
 		}
 	}
 
-	// ×ø±êÖá
+	// åæ ‡è½´
 	vector<Point3f> circle_Photo_Axis;
 	clibaHelp->calcChessboards(patternSize, circle_Photo_Axis);
 
-	// ¼ÆËãÏà»úÄÚ²Î¡¢Íâ²Î
+	// è®¡ç®—ç›¸æœºå†…å‚ã€å¤–å‚
 	Mat cameraMatrix, distCoeffs;
 	clibaHelp->runClibration(photos, circle_Photo_Corners, patternSize, cameraMatrix, distCoeffs);
 
-	// ±£´æÏà»ú»û±ä²ÎÊı
+	// ä¿å­˜ç›¸æœºç•¸å˜å‚æ•°
 	const string camera_matrix_distort_coffes_dir = "..//CameraData//20220710_camera_matrix_distort_coffes.yaml";
 	FileStorage file(camera_matrix_distort_coffes_dir ,FileStorage::WRITE);
 	file << "Author" << "sk95120";
@@ -86,7 +141,7 @@ int main(int argc, char** argv) {
 	file << "Distort Coffes" << distCoeffs;
 	file.release();
 
-	// ÊÍ·Å
+	// é‡Šæ”¾
 	delete clibaHelp;
 
 	return 0;
