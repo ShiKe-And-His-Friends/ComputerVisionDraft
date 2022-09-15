@@ -1,0 +1,1922 @@
+%YAML:1.0
+---
+rows : 0
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 0
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 40
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 80
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 120
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 160
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 200
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 240
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 280
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 320
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 360
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 400
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 0
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 40
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 80
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 120
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 160
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 200
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 240
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 280
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 320
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 360
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 400
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 440
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 480
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 520
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 560
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0
+rows : 440
+cols : 600
+red before : 64
+green before : 128
+blue before : 320
+alpha before : 0
+red after : 0
+green after : 0
+blue after : 128
+alpha after : 0

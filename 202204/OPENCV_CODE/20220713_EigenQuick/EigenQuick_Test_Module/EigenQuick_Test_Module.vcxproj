@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{5C13FD11-1C0D-45CD-9922-89D709E9C82A}</ProjectGuid>
-    <RootNamespace>My20220629CalibrateCamera01</RootNamespace>
+    <ProjectGuid>{9829A5DB-0D34-4D70-A530-7A0D4F60C444}</ProjectGuid>
+    <RootNamespace>EigenQuickTestModule</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -42,7 +42,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -69,10 +69,7 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(VS_PROJECT_OPENCV_INCLUDE);$(IncludePath)</IncludePath>
-    <LibraryPath>$(VS_PROJECT_OPENCV_LIBRARY_DIR);$(LibraryPath)</LibraryPath>
-  </PropertyGroup>
+  <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -90,11 +87,12 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>_WINDOWS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3;</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>$(VS_PROJECT_OPENCV_DEBUG);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -120,6 +118,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Program Files\PCL 1.12.1\3rdParty\Eigen\eigen3</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,18 +127,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CameraCalibrate01.cpp" />
-    <ClCompile Include="CameraCalibrate02.cpp" />
-    <ClCompile Include="CameraCalibrate03.cpp" />
-    <ClCompile Include="CameraCalibrate04.cpp" />
-    <ClCompile Include="CameraCalibrate05.cpp" />
-    <ClCompile Include="CameraCalibrate06.cpp" />
-    <ClCompile Include="CameraCalibrate07.cpp" />
-    <ClCompile Include="ClibaHelp.cpp" />
-    <ClCompile Include="mook_cpp_trutrol.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ClibaHelp.h" />
+    <None Include="eigen_01.cp" />
+    <None Include="eigen_02.cp" />
+    <None Include="eigen_03.cp" />
+    <None Include="eigen_04.cp" />
+    <None Include="eigen_05.cp" />
+    <None Include="eigen_06.cp" />
+    <None Include="eigen_07.cp" />
+    <None Include="eigen_10.cp" />
+    <None Include="eigen_30.cp" />
+    <None Include="eigen_40.cp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

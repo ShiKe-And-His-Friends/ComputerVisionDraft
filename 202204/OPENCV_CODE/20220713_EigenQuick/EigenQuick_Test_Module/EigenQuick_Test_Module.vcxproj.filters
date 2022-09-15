@@ -15,37 +15,35 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CameraCalibrate01.cpp">
+    <None Include="eigen_02.cp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraCalibrate02.cpp">
+    </None>
+    <None Include="eigen_01.cp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraCalibrate03.cpp">
+    </None>
+    <None Include="eigen_03.cp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="ClibaHelp.cpp">
+    </None>
+    <None Include="eigen_04.cp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraCalibrate04.cpp">
+    </None>
+    <None Include="eigen_05.cp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraCalibrate05.cpp">
+    </None>
+    <None Include="eigen_06.cp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraCalibrate06.cpp">
+    </None>
+    <None Include="eigen_07.cp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="CameraCalibrate07.cpp">
+    </None>
+    <None Include="eigen_10.cp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="mook_cpp_trutrol.cpp">
+    </None>
+    <None Include="eigen_30.cp">
       <Filter>源文件</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="ClibaHelp.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
+    </None>
+    <None Include="eigen_40.cp">
+      <Filter>源文件</Filter>
+    </None>
   </ItemGroup>
 </Project>
