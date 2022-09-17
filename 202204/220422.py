@@ -1,4 +1,5 @@
 import tensorflow as tf
+import cv2 as cv
 import torch
 import os
 
@@ -22,3 +23,6 @@ print("Hello Tensor again")
 print(tf.__version__)
 print(tf.test.gpu_device_name())
 
+img = cv.imread("C:\\Users\\Administrator\\Pictures\\微信图片_20211018163812.jpg")
+cv.imshow(img)
+cv.waitKey(0)
