@@ -42,15 +42,15 @@ public:
 		PointCloudDecoder = new pcl::io::OctreePointCloudCompression<pcl::PointXYZRGBA>();
 		
 		// openNI2 get each frame data
-		pcl::Grabber* interface = new pcl::io::OpenNI2Grabber();
+		pcl::Grabber *interface_gradbber = new pcl::io::OpenNI2Grabber();
 
 		std::function<void(const pcl::PointCloud<pcl::PointXYZRGBA>::ConstPtr&)> f = std::bind(&SimpleOpenNIViewer::cloud_cb_, this ,std::placeholders::_1);
-		boost::signals2::connection c = interface->registerCallback(f);
-		interface->start();
+		boost::signals2::connection c = interface_gradbber->registerCallback(f);
+		interface_gradbber->start();
 		while (!viewer.wasStopped()) {
 			boost::this_thread::sleep(boost::posix_time::seconds(1));
 		}
-		interface->stop();
+		interface_gradbber->stop();
 
 		delete(PointCloudEncoder);
 		delete(PointCloudDecoder);

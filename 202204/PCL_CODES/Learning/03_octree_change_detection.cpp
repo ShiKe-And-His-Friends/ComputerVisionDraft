@@ -2,7 +2,7 @@
 #include <pcl/point_types.h>
 #include <pcl/octree/octree.h>
 
-int main(int argc ,char ** argv) {
+int octree_change_detection(int argc ,char ** argv) {
 	std::cout << "octree change detection." << std::endl;
 
 	float resolution = 32.0f;

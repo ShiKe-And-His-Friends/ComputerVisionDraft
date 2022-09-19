@@ -14,7 +14,7 @@ void viewerOneOff(pcl::visualization::PCLVisualizer& viewer) {
 	viewer.setBackgroundColor(1.0, 0.5, 1.0);
 }
 
-int main() {
+int plc_new2() {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
 
 	// char strfilepath[256] = "..\\..\\PCL_Data\\rabbit.pcd";
