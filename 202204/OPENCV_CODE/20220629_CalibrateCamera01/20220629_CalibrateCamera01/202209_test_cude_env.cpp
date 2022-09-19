@@ -25,13 +25,11 @@ int main(int argc, char** argv) {
 
 	// test opencv
 	Mat m = imread("keycci2.png", IMREAD_UNCHANGED);
-	imshow("mat", m);
-	waitKey(1000);
 
 	// test cuda
 	GpuMat img1, img2;
 	img1.upload(imread("qi.png", IMREAD_GRAYSCALE));
-	img1.upload(imread("qi2.png", IMREAD_GRAYSCALE));
+	img2.upload(imread("qi2.png", IMREAD_GRAYSCALE));
 
 	std::cout << "///////////////// cuda compile /////////////////" << std::endl;
 	cv::cuda::printShortCudaDeviceInfo(cv::cuda::getDevice());
@@ -42,6 +40,24 @@ int main(int argc, char** argv) {
 	surf(img2, GpuMat(), keypoints2GPU, descriptors2GPU);
 	std::cout << "feature object1 :" << keypoints1GPU.cols << std::endl;
 	std::cout << "feature object2 :" << keypoints2GPU.cols << std::endl;
+
+	// matching descriptors
+	Ptr<cv::cuda::DescriptorMatcher> matcher = cv::cuda::DescriptorMatcher::createBFMatcher(surf.defaultNorm());
+	std::vector<DMatch> matches;
+	matcher->match(descriptors1GPU ,descriptors2GPU ,matches);
+
+	std::vector<KeyPoint> keypoints1,keypoints2;
+	std::vector<float> descriptors1, descriptors2;
+	surf.downloadKeypoints(keypoints1GPU ,keypoints1);
+	surf.downloadKeypoints(keypoints2GPU, keypoints2);
+	surf.downloadDescriptors(keypoints1GPU ,descriptors1);
+	surf.downloadDescriptors(keypoints2GPU, descriptors2);
+
+	Mat img_matches;
+	drawMatches(Mat(img1) ,keypoints1 ,Mat(img2) ,keypoints2 ,matches ,img_matches);
+	namedWindow("matches" ,0);
+	imshow("matches" ,img_matches);
+	waitKey(2000);
 
 	return 0;
 }
