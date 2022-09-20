@@ -8,7 +8,7 @@ import os
 '''
 def torch_auto_grad():
     print("torch auto grad")
-    # function 历史纪录
+    #  .grad 自动微分  function 历史纪录
     x = torch.ones(2 ,2 ,requires_grad=True)
     print(x)
     y = x + 2
