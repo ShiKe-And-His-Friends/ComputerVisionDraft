@@ -82,6 +82,3 @@ def pytorch_enviroment():
     x = torch.rand(10)
     print("x=", x)
     print(x.tolist())
-
-if __name__ == '__main__':
-    torch_auto_grad()
