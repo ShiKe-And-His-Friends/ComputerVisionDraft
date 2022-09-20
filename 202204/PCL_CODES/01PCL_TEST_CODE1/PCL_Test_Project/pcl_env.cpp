@@ -2,7 +2,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
-int  main2(int argc, char** argv)
+int  pcl_env (int argc, char** argv)
 {
 	pcl::PointCloud<pcl::PointXYZ> cloud;   // Fill in the cloud data  
 	cloud.width = 15;
