@@ -1,4 +1,5 @@
 import pytorch_documents
+import fast_gradient_sign_attack
 
 if __name__ == '__main__':
-    pytorch_documents.torch_auto_grad()
+    fast_gradient_sign_attack.FastGradient()
