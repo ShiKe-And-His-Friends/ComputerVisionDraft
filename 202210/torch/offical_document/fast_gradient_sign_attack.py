@@ -36,7 +36,7 @@ def FastGradient():
         batch_size = 1,
         shuffle = True
     )
-    print("CuDA Available:" ,torch.cuda.is_available())
+    print("CUDA Available:" ,torch.cuda.is_available())
     device = torch.device("cuda" if (use_cuda and torch.cude.is_availabel()) else "cpu")
     # initialze network
     model = Net().to(device)
@@ -53,7 +53,7 @@ def FastGradient():
         acc ,ex = test(model ,device ,test_loader ,eps)
         accuracies.append(acc)
         examples.append(ex)
-    print("Accuracy {} \nExamples {}".format(accuracies ,examples))
+    # print("Accuracy {} \nExamples {}".format(accuracies ,examples))
 
 def fgsm_attach(image ,epsilo ,data_grad):
     sign_data_grad = data_grad.sign()
@@ -65,15 +65,15 @@ def fgsm_attach(image ,epsilo ,data_grad):
 
 def test(model ,device ,test_loader ,epsilon):
     correct = 0
-    adv_example = []
+    adv_examples = []
     for data ,target in test_loader:
         data , target = data.to(device),target.to(device)
         # set required_grad properties
-        data.required_grad = True
+        data.requires_grad = True
 
         # model forward data
         output = model(data)
-        init_pred = output.max(1 ,keepdim=True) # get the index of max log-probability
+        init_pred = output.max(1 ,keepdim=True)[1] # get the index of max log-probability
 
         # initalize error not break distribution
         if init_pred.item() != target.item():
@@ -88,7 +88,9 @@ def test(model ,device ,test_loader ,epsilon):
         loss.backward()
 
         # collect datagrad
-        data_grad = data.data_grad
+        data_grad = data.grad.data
+
+
         # FGSM to distribution
         perturbed_data = fgsm_attach(data ,epsilon ,data_grad)
         output = model(perturbed_data)
@@ -98,18 +100,18 @@ def test(model ,device ,test_loader ,epsilon):
         if final_pred.item() == target.item():
             correct += 1
             # debug example epsilon==0
-            if (epsilon == 0) and (len(adv_example) < 5):
+            if (epsilon == 0) and (len(adv_examples) < 5):
                 adv_ex = perturbed_data.squeeze().detach().cpu().numpy()
-                adv_example.append((init_pred.item()) ,final_pred.item() ,adv_ex)
+                adv_examples.append((init_pred.item() ,final_pred.item() ,adv_ex) )
             # debug some visualization example
             else :
-                if len(adv_example) < 5:
-                    adv_ex = perturbed_data.sequeeze().detach().cpu().numpy()
-                    adv_example.append((init_pred.item() ,final_pred.item() ,adv_ex))
+                if len(adv_examples) < 5:
+                    adv_ex = perturbed_data.squeeze().detach().cpu().numpy()
+                    adv_examples.append((init_pred.item() ,final_pred.item() ,adv_ex))
 
     # calculate epsilon final accuracy
     final_acc = correct / float(len(test_loader))
     print("Epsilon:{}\tTest Accuracy={} / {} = {}.".format(
         epsilon ,correct ,len(test_loader) ,final_acc
     ))
-    return final_acc ,adv_example
+    return final_acc ,adv_examples
