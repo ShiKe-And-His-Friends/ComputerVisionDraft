@@ -3,7 +3,7 @@
 #include <pcl/point_types.h>
 #include <pcl/filters/voxel_grid.h>
 
-int main(int argc, char** argv) {
+int voxel_grid(int argc, char** argv) {
 	std::cout << "voxel box grid" << std::endl;
 
 	pcl::PCLPointCloud2::Ptr cloud(new pcl::PCLPointCloud2());
