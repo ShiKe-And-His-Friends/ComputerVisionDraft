@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 use_cuda = False
 epsilons = [0 ,0.05 ,.1 ,.15 ,.2 ,.25 ,.3]
-pretrained_model = "./data/lenet_mnist_model.pth"
+pretrained_model = "../weight/lenet_mnist_model.pth"
 
 class Net(nn.Module):
     def __init__(self):
@@ -43,4 +43,73 @@ def FastGradient():
     # upload fine-tune model
     model.load_state_dict(torch.load(pretrained_model ,map_location='cpu'))
     # evaluate model
-    model.eval()
+    eval_result = model.eval()
+    print(eval_result)
+
+    # execuate distribution
+    accuracies = []
+    examples = []
+    for eps in epsilons:
+        acc ,ex = test(model ,device ,test_loader ,eps)
+        accuracies.append(acc)
+        examples.append(ex)
+    print("Accuracy {} \nExamples {}".format(accuracies ,examples))
+
+def fgsm_attach(image ,epsilo ,data_grad):
+    sign_data_grad = data_grad.sign()
+    # distrubance value
+    perturbed_image = image + epsilo*sign_data_grad
+    # cut range [0 ,1]
+    perturbed_image = torch.clamp(perturbed_image ,0 ,1)
+    return perturbed_image
+
+def test(model ,device ,test_loader ,epsilon):
+    correct = 0
+    adv_example = []
+    for data ,target in test_loader:
+        data , target = data.to(device),target.to(device)
+        # set required_grad properties
+        data.required_grad = True
+
+        # model forward data
+        output = model(data)
+        init_pred = output.max(1 ,keepdim=True) # get the index of max log-probability
+
+        # initalize error not break distribution
+        if init_pred.item() != target.item():
+            continue
+
+        # calculate loss
+        loss = F.nll_loss(output ,target)
+        print('///////////////////////////////')
+        print('losss ',loss)
+
+        model.zero_grad()
+        loss.backward()
+
+        # collect datagrad
+        data_grad = data.data_grad
+        # FGSM to distribution
+        perturbed_data = fgsm_attach(data ,epsilon ,data_grad)
+        output = model(perturbed_data)
+
+        # check distribution result
+        final_pred = output.max(1 ,keepdim=True)[1] # get the index of the max log-probabolity
+        if final_pred.item() == target.item():
+            correct += 1
+            # debug example epsilon==0
+            if (epsilon == 0) and (len(adv_example) < 5):
+                adv_ex = perturbed_data.squeeze().detach().cpu().numpy()
+                adv_example.append((init_pred.item()) ,final_pred.item() ,adv_ex)
+            # debug some visualization example
+            else :
+                if len(adv_example) < 5:
+                    adv_ex = perturbed_data.sequeeze().detach().cpu().numpy()
+                    adv_example.append((init_pred.item() ,final_pred.item() ,adv_ex))
+
+    # calculate epsilon final accuracy
+    final_acc = correct / float(len(test_loader))
+    print("Epsilon:{}\tTest Accuracy={} / {} = {}.".format(
+        epsilon ,correct ,len(test_loader) ,final_acc
+    ))
+    return final_acc ,adv_example
