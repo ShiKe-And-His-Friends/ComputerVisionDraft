@@ -55,6 +55,33 @@ def FastGradient():
         examples.append(ex)
     # print("Accuracy {} \nExamples {}".format(accuracies ,examples))
 
+    plt.figure(figsize=(5,5))
+    plt.plot(epsilons ,accuracies ,"*-")
+    plt.xticks(np.arange(0 ,1.1 ,step=0.1))
+    plt.yticks(np.arange(0 ,.35 ,step=0.05))
+    plt.title("Accuracy vs Epsilon")
+    plt.xlabel("Epsilon")
+    plt.ylabel("Accuracy")
+    plt.show()
+
+    # each epsilon plot some example
+    cnt = 0
+    plt.figure(figsize=(8 ,10))
+    for i in range(len(epsilons)):
+        for j in range(len(examples[i])):
+            cnt +=1
+            plt.subplot(len(epsilons) ,len(examples[0]) ,cnt)
+            plt.xticks([] ,[])
+            plt.yticks([], [])
+            if j == 0 :
+                plt.ylabel("Eps:{}".format(epsilons[i]) ,fontsize=14)
+            orig ,adv ,ex = examples[i][j]
+            plt.title("{}->{}".format(orig ,adv))
+            plt.imshow(ex ,cmap="gray")
+    plt.tight_layout()
+    plt.show()
+
+
 def fgsm_attach(image ,epsilo ,data_grad):
     sign_data_grad = data_grad.sign()
     # distrubance value
@@ -81,7 +108,6 @@ def test(model ,device ,test_loader ,epsilon):
 
         # calculate loss
         loss = F.nll_loss(output ,target)
-        print('///////////////////////////////')
         print('losss ',loss)
 
         model.zero_grad()
