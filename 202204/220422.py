@@ -1,7 +1,7 @@
 import tensorflow as tf
 import torch
 import os
-import cv2 as cv
+import cv2
 
 '''
     Command message: tensorflow/core/platform/cpu_feature_guard.cc:193] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN) to use the following CPU instructions in performance-critical operations:  AVX AVX2
@@ -23,6 +23,6 @@ print("Hello Tensor again")
 print(tf.__version__)
 print(tf.test.gpu_device_name())
 
-img = cv.imread("C:\\Users\\Administrator\\Pictures\\微信图片_20211018163812.jpg")
-cv.imshow(img)
-cv.waitKey(0)
+img = cv2.imread("C:/Users/Administrator/Pictures/a.png" )
+cv2.imshow("img",img)
+cv2.waitKey(1000)
