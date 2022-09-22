@@ -54,9 +54,11 @@ def pytorch_enviroment():
     m = torch.rand(3 ,5)
     x = torch.empty(3 ,5)
     z = torch.zeros(3 ,5)
+    n = torch.clamp(z ,0 ,1)
     print(m)
     print(x)
     print(z)
+    print(n)
     # 类型转换
     x = x.new_ones(3 ,5 ,dtype = torch.double)
     print(x)
