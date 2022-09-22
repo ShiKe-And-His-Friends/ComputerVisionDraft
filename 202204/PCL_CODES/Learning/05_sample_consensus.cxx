@@ -8,6 +8,7 @@
 #include <pcl/visualization/pcl_visualizer.h>
 #include <boost/thread/thread.hpp>
 
+
 /*
 	Eigen crash in PCL memory.h
 		C/C++ -> all configure -> use enhance instruction sets -> arch:/AVX
@@ -23,7 +24,7 @@ boost::shared_ptr<pcl::visualization::PCLVisualizer> simpleVis(pcl::PointCloud<p
 	return (viewer);
 }
 
-int main(int argc, char** argv) {
+int sample_consensus(int argc, char** argv) {
 
 	std::cout << "sample consensus." << std::endl;
 
