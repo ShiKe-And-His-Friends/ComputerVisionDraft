@@ -2,7 +2,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 
-int main(int argc ,char **argv) {
+int concat_point_cloud(int argc ,char **argv) {
 
 	std::cout << "concat point cloud " << std::endl;
 	std::cout << "argc: " << argc << std::endl;
@@ -21,11 +21,13 @@ int main(int argc ,char **argv) {
 	cloud_a.points.resize(cloud_a.width * cloud_a.height);
 	if (strcmp(argv[1], "-p") == 0) {
 		cloud_b.width = 3;
+		cloud_b.points.resize(cloud_b.width * cloud_b.height);
 	}
 	else {
 		n_cloud_b.width = 5;
+		n_cloud_b.points.resize(n_cloud_b.width * n_cloud_b.height);
 	}
-	cloud_b.points.resize(cloud_b.width * cloud_b.height);
+	
 	for (size_t i = 0; i < cloud_a.points.size(); i++) {
 		cloud_a.points[i].x = 1024 * rand() / (RAND_MAX + 1.0f);
 		cloud_a.points[i].y = 1024 * rand() / (RAND_MAX + 1.0f);
