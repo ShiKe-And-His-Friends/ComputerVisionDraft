@@ -13,7 +13,7 @@ void showHelp(int argc ,char **argv) {
 	std::cout << "-h: show this help" << std::endl;
 }
 
-int main00(int argc ,char **argv) {
+int matrix_transform(int argc ,char **argv) {
 
 	if (pcl::console::find_switch(argc, argv, "-h") || pcl::console::find_switch(argc,argv ,"-help")) {
 		showHelp(argc ,argv);
