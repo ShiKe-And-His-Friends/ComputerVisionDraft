@@ -1,8 +1,8 @@
 import os
 
 def EnvCmdText():
-    text = open('a.txt' ,mode='r+' ,encoding='utf-8')
-    out_text = open('b.txt' ,mode='w+' ,encoding='utf-8')
+    text = open('a' ,mode='r+' ,encoding='utf-8')
+    out_text = open('b' ,mode='w+' ,encoding='utf-8')
 
     i = 1
     lines = text.readlines()
@@ -15,3 +15,6 @@ def EnvCmdText():
     out_text.close()
 
     return None
+
+if __name__ == "__main__":
+    EnvCmdText()
