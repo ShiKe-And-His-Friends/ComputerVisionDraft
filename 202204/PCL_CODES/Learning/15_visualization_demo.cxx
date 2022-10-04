@@ -137,7 +137,16 @@ namespace visualization_demo {
 	unsigned int text_id = 0;
 
 	void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event ,void *viewer_void) {
-		// TODO 
+		pcl::visualization::PCLVisualizer* viewer = static_cast<pcl::visualization::PCLVisualizer*>(viewer_void);
+		if (event.getKeyCode() == 'r' && event.keyDown()) {
+			std::cout << "r was pressed => removing all text" << std::endl;
+			char str[512];
+			for (unsigned int i = 0; i < text_id; i++) {
+				sprintf(str ,"text#%03d" ,i);
+				viewer->removeShape(str);
+			}
+			text_id = 0;
+		}
 	}
 
 	void mouseEventOccurred(const pcl::visualization::MouseEvent & event ,void *viewer_void) {
@@ -152,8 +161,8 @@ namespace visualization_demo {
 		}
 	}
 
-	void interactionCustomizationViewers() {
-		boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer)("interaction viewer");
+	boost::shared_ptr<pcl::visualization::PCLVisualizer> interactionCustomizationViewers() {
+		boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer(new pcl::visualization::PCLVisualizer("interaction viewer"));
 		viewer->setBackgroundColor(0 ,0,0);
 		viewer->registerKeyboardCallback(keyboardEventOccurred ,(void *)viewer.get());
 		viewer->registerMouseCallback(mouseEventOccurred, (void*)viewer.get());
