@@ -29,6 +29,8 @@ if __name__ == '__main__':
     batch_size = Freeze_batch_size if Freeze_Train else unfreeze_batch_size
     shuffle = True if distributed else False
     input_shape = [416, 416]
+    anchors_mask = [[6,7,8] ,[3,4,5] ,[0,1,2]] #用于帮助代码找到对应的先验框，一般不修改
+
 
     # *********************************************************#
     # dataloader
@@ -65,7 +67,7 @@ if __name__ == '__main__':
     # *********************************************************#
     ## yolo-conv2d-1
     # *********************************************************#
-    model = YoloBody(pretrained)
+    model = YoloBody(anchors_mask ,num_classes ,pretrained)
 
     # *********************************************************#
     ##### epoch one
