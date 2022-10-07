@@ -18,7 +18,7 @@ if __name__ == '__main__':
     train_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_train.txt' # 训练图片和路径
     val_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_val.txt'  # 验证图片和路径
 
-    input_size = [416, 416]
+    input_shape = [416, 416]
 
     # *********************************************************#
     # dataloader
