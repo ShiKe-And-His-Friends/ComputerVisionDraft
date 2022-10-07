@@ -1,5 +1,7 @@
 import cv2
 from random import sample , shuffle
+
+import torch
 from PIL import Image
 import numpy as np
 from matplotlib import pyplot as plt
@@ -12,7 +14,6 @@ class YoloDataset():
         self.num_classes = num_classes
         self.train = train
         self.length = len(self.annotation_lines)
-        image ,box = self.get_random_data(self.annotation_lines[3], self.input_shape, random=self.train)
 
     def __len__(self):
         return self.length
@@ -139,6 +140,16 @@ class YoloDataset():
 
     def rand(self ,a=0.0 ,b=1.0):
         return np.random.rand()*(b-a)+a
+
+def yolo_dataset_collate(batch):
+    images = []
+    bboxes = []
+    for img,box in batch:
+        images.append(img)
+        bboxes.append(box)
+    images = torch.from_numpy(np.array(images)).type(torch.FloatTensor)
+    bboxes = [torch.from_numpy(ann).type(torch.FloatTensor) for ann in bboxes]
+    return images,bboxes
 
 # print("shikeDebug",box)
 '''

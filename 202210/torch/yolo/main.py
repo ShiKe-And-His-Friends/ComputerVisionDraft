@@ -6,8 +6,9 @@
 '''
 import os
 import torch
-from utils.dataloader import YoloDataset
+from utils.dataloader import YoloDataset ,yolo_dataset_collate
 from utils.utils import get_anchors, get_classes
+from torch.utils.data import DataLoader
 
 if __name__ == '__main__':
     # *********************************************************#
@@ -17,7 +18,14 @@ if __name__ == '__main__':
     anchors_path = 'E:/Torch/yolov4-pytorch-master/model_data/yolo_anchors.txt'
     train_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_train.txt' # 训练图片和路径
     val_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_val.txt'  # 验证图片和路径
-
+    distributed = False # 指定是否单卡训练
+    num_workers = 4 #多线程读取
+    #是否进行冻结训练 #默认先冻结主干训练后解冻训练
+    Freeze_Train = True
+    Freeze_batch_size = 8
+    unfreeze_batch_size = 16
+    batch_size = Freeze_batch_size if Freeze_Train else unfreeze_batch_size
+    shuffle = True if distributed else False
     input_shape = [416, 416]
 
     # *********************************************************#
@@ -42,9 +50,15 @@ if __name__ == '__main__':
     f.close()
     num_train = len(train_lines)
     num_val = len(val_lines)
+    train_sampler = None # distributed False
+    val_sampler = None
 
     train_dataset = YoloDataset(train_lines ,input_shape ,num_classes ,train = True)
     val_dataset = YoloDataset(val_lines ,input_shape ,num_classes ,train = False)
+    gen = DataLoader(train_dataset ,shuffle= shuffle,batch_size= batch_size,num_workers= num_workers,pin_memory=True ,
+                     drop_last=True ,collate_fn=yolo_dataset_collate ,sampler=train_sampler)
+    val_gen = DataLoader(val_dataset, shuffle= shuffle, batch_size=batch_size, num_workers=num_workers, pin_memory=True,
+                     drop_last=True, collate_fn=yolo_dataset_collate, sampler=val_sampler)
 
     # *********************************************************#
     ## yolo-conv2d-1
