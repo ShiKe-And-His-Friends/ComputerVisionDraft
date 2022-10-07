@@ -9,6 +9,7 @@ import torch
 from utils.dataloader import YoloDataset ,yolo_dataset_collate
 from utils.utils import get_anchors, get_classes
 from torch.utils.data import DataLoader
+from net.yolo import YoloBody
 
 if __name__ == '__main__':
     # *********************************************************#
@@ -20,6 +21,7 @@ if __name__ == '__main__':
     val_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_val.txt'  # 验证图片和路径
     distributed = False # 指定是否单卡训练
     num_workers = 4 #多线程读取
+    pretrained = False
     #是否进行冻结训练 #默认先冻结主干训练后解冻训练
     Freeze_Train = True
     Freeze_batch_size = 8
@@ -63,10 +65,7 @@ if __name__ == '__main__':
     # *********************************************************#
     ## yolo-conv2d-1
     # *********************************************************#
-
-    # *********************************************************#
-    ### cs-darknet-53
-    # *********************************************************#
+    model = YoloBody(pretrained)
 
     # *********************************************************#
     ##### epoch one
