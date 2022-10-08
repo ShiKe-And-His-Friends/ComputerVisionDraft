@@ -132,7 +132,7 @@ class CSPDarkNet(nn.Module):
             # 权值初始化
             if isinstance(m ,nn.Conv2d):
                 n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.wight.data.normal_(0 ,math.sqrt(2. / n))
+                m.weight.data.normal_(0 ,math.sqrt(2. / n))
             elif isinstance(m ,nn.BatchNorm2d):
                 m.weight.data.fill_(1)
                 m.bias.data.zero_()

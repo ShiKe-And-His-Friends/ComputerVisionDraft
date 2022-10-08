@@ -70,7 +70,8 @@ def yolo_head(filters_list ,in_filters):
     return m
 
 class YoloBody(nn.Module):
-    def __int__(self ,anchors_mask ,num_classes ,pretrained = False):
+    def __init__(self ,anchors_mask ,num_classes ,pretrained = False):
+        super(YoloBody, self).__init__()
         # *********************************************************#
         #  backbone 使用 cs-darknet-53
         #  获得3个有效特征，分别是：

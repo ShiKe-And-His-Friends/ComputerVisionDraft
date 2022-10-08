@@ -67,7 +67,7 @@ if __name__ == '__main__':
     # *********************************************************#
     ## yolo-conv2d-1
     # *********************************************************#
-    model = YoloBody(anchors_mask ,num_classes ,pretrained)
+    model = YoloBody(anchors_mask ,num_classes ,pretrained=pretrained)
 
     # *********************************************************#
     ##### epoch one
