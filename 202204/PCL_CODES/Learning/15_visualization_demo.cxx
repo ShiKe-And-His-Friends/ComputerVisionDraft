@@ -172,7 +172,7 @@ namespace visualization_demo {
 
 using namespace visualization_demo;
 
-int main(int argc ,char **argv) {
+int visualization_demo_sphare(int argc ,char **argv) {
 
 	std::cout << "visualization demo" << std::endl;
 	if (pcl::console::find_argument(argc, argv, "-h") >=0) {
