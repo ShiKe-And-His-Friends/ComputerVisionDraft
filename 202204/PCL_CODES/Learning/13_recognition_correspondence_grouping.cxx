@@ -55,10 +55,10 @@ bool use_cloud_resolution_(false);
 bool use_hough_(true);
 float model_ss_(0.01f); //模型采样率
 float scene_ss_(0.03f); //场景采样率
-float rf_rad_(0.015f);
+float rf_rad_(0.0015f);
 float descr_rad_(0.02f);
-float cg_size_(0.01f); //聚类，霍夫空间设置每个bin的大小
-float cg_thresh_(5.0f); //聚类阈值
+float cg_size_(0.001f); //聚类，霍夫空间设置每个bin的大小
+float cg_thresh_(0.50f); //聚类阈值
 
 void showHelp(char *filename) {
 	std::cout << std::endl;
@@ -84,7 +84,7 @@ void showHelp(char *filename) {
 }
 
 void parseCommandLine(int argc,char *argv[]) {
-	// milk.pcd milk_cartoon_all_small_clorox.pcd -k -c -r --algorithm "Hough" --model_ss 0.01f  --scene_ss 0.03f  --rf_rad 0.015f  --descr_rad 0.02f --cg_size 0.01f --cg_thresh 5.0f
+	// milk_cartoon_all_small_clorox.pcd  milk.pcd -k -c --algorithm "Hough" --model_ss 0.01f  --scene_ss 0.03f  --rf_rad 0.015f  --descr_rad 0.02f --cg_size 0.01f --cg_thresh 5.0f
 	if (pcl::console::find_switch(argc, argv ,"-h")) {
 		showHelp(argv[0]);
 		exit(0);
@@ -158,10 +158,10 @@ double computeCloudResolution(const pcl::PointCloud<PointType>::ConstPtr &cloud)
 	return res;
 }
 
-int main(int argc ,char **argv) {
+int recognition_correspondence_grouping(int argc, char** argv) {
 
 	std::cout << "registition correspondence grouping..." << std::endl;
-	parseCommandLine(argc ,argv);
+	parseCommandLine(argc, argv);
 
 	// ======================载入点云=======================
 	pcl::PointCloud<PointType>::Ptr model(new pcl::PointCloud<PointType>);
@@ -172,8 +172,8 @@ int main(int argc ,char **argv) {
 	pcl::PointCloud<NormalType>::Ptr scene_normals(new pcl::PointCloud<NormalType>);
 	pcl::PointCloud<DescriptorType>::Ptr model_descriptors(new pcl::PointCloud<DescriptorType>);
 	pcl::PointCloud<DescriptorType>::Ptr scene_descriptors(new pcl::PointCloud<DescriptorType>);
-	
-	if (pcl::io::loadPCDFile(model_filename ,*model) < 0) {
+
+	if (pcl::io::loadPCDFile(model_filename, *model) < 0) {
 		std::cout << "Error loading model cloud." << std::endl;
 		showHelp(argv[0]);
 		return -1;
@@ -225,6 +225,7 @@ int main(int argc ,char **argv) {
 
 	// ==========为keypoints关键点计算添加描述子Hough / SHOT==============
 	pcl::SHOTEstimationOMP<PointType, NormalType, DescriptorType> descr_est; //SHOT描述子
+	std::cout << "Estimation radius  " << descr_rad_ << std::endl;
 	descr_est.setRadiusSearch(descr_rad_); // 调大描述子半径 修复 ‘The local reference frame is not valid!’
 	descr_est.setInputCloud(model_keypoints);
 	descr_est.setInputNormals(model_normals);
@@ -263,9 +264,9 @@ int main(int argc ,char **argv) {
 	std::vector<pcl::Correspondences> clustered_corrs; //匹配点 相互连线的索引
 	// clustered_corrs[i][j].index_query 模型点 索引
 	// clustered_corrs[i][j].index_match 场景点 索引
-	
+
 	//使用Hough3D 霍夫算法 寻找匹配点
-	if (use_hough_) {
+	if (!use_hough_) {
 		// 计算参考帧的Hough，也就是关键点
 		pcl::PointCloud<RFType>::Ptr model_rf(new pcl::PointCloud<RFType>());
 		pcl::PointCloud<RFType>::Ptr scene_rf(new pcl::PointCloud<RFType>());
@@ -278,7 +279,7 @@ int main(int argc ,char **argv) {
 		rf_est.setSearchSurface(model);
 		rf_est.compute(*model_rf);
 
-		rf_est.setInputCloud(scene);
+		rf_est.setInputCloud(scene_keypoints);
 		rf_est.setInputNormals(scene_normals);
 		rf_est.setSearchSurface(scene);
 		rf_est.compute(*scene_rf);
@@ -295,30 +296,30 @@ int main(int argc ,char **argv) {
 		clusterer.setSceneCloud(scene_keypoints);
 		clusterer.setSceneRf(scene_rf); //场景点云参考帧
 		clusterer.setModelSceneCorrespondences(model_scene_corrs); // 组关系
-		//clusterer.cluster(clustered_corrs);
+		clusterer.cluster(clustered_corrs);
 		clusterer.recognize(rototranslations ,clustered_corrs);
 
 	}
 	else { // CG 几何一致性 寻找匹配点
-		pcl::GeometricConsistencyGrouping<PointType, PointType> gc_clusterer;
-		gc_clusterer.setGCSize(cg_size_);
+		//pcl::GeometricConsistencyGrouping<PointType, PointType> gc_clusterer;
+		/*gc_clusterer.setGCSize(cg_size_);
 		gc_clusterer.setGCThreshold(cg_thresh_);
 		gc_clusterer.setInputCloud(model_keypoints);
 		gc_clusterer.setSceneCloud(scene_keypoints);
-		gc_clusterer.setModelSceneCorrespondences(model_scene_corrs);
+		gc_clusterer.setModelSceneCorrespondences(model_scene_corrs);*/
 		//gc_clusterer.cluster(clustered_corrs);
-		gc_clusterer.recognize(rototranslations ,clustered_corrs);
+		//gc_clusterer.recognize(rototranslations ,clustered_corrs);
 	}
-
+	std::cout << "Rototranslation found:" << clustered_corrs.size() << std::endl;
 	// =============== 输出识别结果 ===================
 	std::cout << "Model instances found: " << rototranslations.size() << std::endl;
-	for (size_t i = 0; i < rototranslations.size();i++) {
-		std::cout << "Instance " << i+1 << std::endl;
+	for (size_t i = 0; i < rototranslations.size(); i++) {
+		std::cout << "Instance " << i + 1 << std::endl;
 		std::cout << "  Correspondences belonging to this instance: " << clustered_corrs[i].size() << std::endl;
 
 		// 打印 [R T]
-		Eigen::Matrix3f rotation = rototranslations[i].block<3, 3 >(0,0);
-		Eigen::Matrix3f translation = rototranslations[i].block<3, 1>(0 ,3);
+		Eigen::Matrix3f rotation = rototranslations[i].block<3, 3 >(0, 0);
+		Eigen::Matrix3f translation = rototranslations[i].block<3, 1>(0, 3);
 
 		std::cout << "Rotation matrix:" << std::endl;
 		printf("\t|%6.3f\t%6.3f\t%6.3f\t|\n", rotation(0, 0), rotation(0, 1), rotation(0, 2));
@@ -326,39 +327,39 @@ int main(int argc ,char **argv) {
 		printf("\t|%6.3f\t%6.3f\t%6.3f\t|\n", rotation(2, 0), rotation(2, 1), rotation(2, 2));
 
 		std::cout << "Translation vector:" << std::endl;
-		printf("\tt=<%6.3f\t%6.3f\t%6.3f\t>\n", translation(0, 3), translation(1, 3), translation(2, 3));
+		printf("\tt=<%6.3f\t%6.3f\t%6.3f\t>\n", translation(0), translation(1), translation(2));
 	}
 
 	// =============== 可视化 ===================
 	pcl::visualization::PCLVisualizer viewer("Correspondence Grouping");
-	viewer.addPointCloud(scene ,"scene_cloud");
+	viewer.addPointCloud(scene, "scene_cloud");
 
 	pcl::PointCloud<PointType>::Ptr off_scene_model(new pcl::PointCloud<PointType>); //变换后的模型点云
 	pcl::PointCloud<PointType>::Ptr off_scene_model_keypoints(new pcl::PointCloud<PointType>); //关键点
 	if (show_correspondences_ || show_keypoints_) { // 可视化平移后的模型点云
 		// 对输入点云进行旋转和平移，在可视化界面中间x轴负方向平移一个单位
-		pcl::transformPointCloud(*model ,*off_scene_model ,Eigen::Vector3f(-1 ,0 ,0) ,Eigen::Quaternionf(1,0,0,0));
-		pcl::transformPointCloud(*model_keypoints ,*off_scene_model_keypoints ,Eigen::Vector3f(-1 ,0,0), Eigen::Quaternionf(1, 0, 0, 0));
+		pcl::transformPointCloud(*model, *off_scene_model, Eigen::Vector3f(-1, 0, 0), Eigen::Quaternionf(1, 0, 0, 0));
+		pcl::transformPointCloud(*model_keypoints, *off_scene_model_keypoints, Eigen::Vector3f(-1, 0, 0), Eigen::Quaternionf(1, 0, 0, 0));
 
-		pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_color_handler(off_scene_model,255,255,128);
-		viewer.addPointCloud(off_scene_model ,off_scene_model_color_handler ,"off_scene_model");
+		pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_color_handler(off_scene_model, 255, 255, 128);
+		viewer.addPointCloud(off_scene_model, off_scene_model_color_handler, "off_scene_model");
 	}
 	if (show_keypoints_) { //可视化 场景关键点和模型关键点
-		pcl::visualization::PointCloudColorHandlerCustom<PointType> scene_keypoint_color_handler(scene_keypoints ,0,0,255);
-		viewer.addPointCloud(scene_keypoints ,scene_keypoint_color_handler ,"scene_keypoints");
-		viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE ,5 ,"scene_keypoints");
+		pcl::visualization::PointCloudColorHandlerCustom<PointType> scene_keypoint_color_handler(scene_keypoints, 0, 0, 255);
+		viewer.addPointCloud(scene_keypoints, scene_keypoint_color_handler, "scene_keypoints");
+		viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "scene_keypoints");
 
-		pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_keypoints_color_handler(off_scene_model_keypoints ,0 ,0 ,255);
-		viewer.addPointCloud(off_scene_model_keypoints,off_scene_model_keypoints_color_handler ,"off_scene_model_keypoints");
-		viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE ,5 ,"off_scene_model_keypoints");
+		pcl::visualization::PointCloudColorHandlerCustom<PointType> off_scene_model_keypoints_color_handler(off_scene_model_keypoints, 0, 0, 255);
+		viewer.addPointCloud(off_scene_model_keypoints, off_scene_model_keypoints_color_handler, "off_scene_model_keypoints");
+		viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "off_scene_model_keypoints");
 	}
-	for (size_t i = 0; i < rototranslations.size();i++) {//在场景中匹配点云
+	for (size_t i = 0; i < rototranslations.size(); i++) {//在场景中匹配点云
 		pcl::PointCloud<PointType>::Ptr rotated_model(new pcl::PointCloud<PointType>);
-		pcl::transformPointCloud(*model ,*rotated_model ,rototranslations[i]);
+		pcl::transformPointCloud(*model, *rotated_model, rototranslations[i]);
 		std::stringstream ss_cloud;
 		ss_cloud << "instance" << i;
-		pcl::visualization::PointCloudColorHandlerCustom<PointType> rotated_model_color_handler(rotated_model ,255 ,0 ,0);
-		viewer.addPointCloud(rotated_model ,rotated_model_color_handler ,ss_cloud.str());
+		pcl::visualization::PointCloudColorHandlerCustom<PointType> rotated_model_color_handler(rotated_model, 255, 0, 0);
+		viewer.addPointCloud(rotated_model, rotated_model_color_handler, ss_cloud.str());
 		if (show_correspondences_) {
 			for (size_t j = 0; j < clustered_corrs[i].size(); j++) {
 				std::stringstream ss_line;
