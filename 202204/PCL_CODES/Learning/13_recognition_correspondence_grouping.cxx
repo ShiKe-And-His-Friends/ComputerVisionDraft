@@ -15,8 +15,8 @@
 
 **/
 #include <iostream>
-#include <Eigen>
 #include <pcl/io/pcd_io.h>
+#include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/correspondence.h> //分组算法对应两个实体的匹配（描述符等）
 #include <pcl/features/normal_3d_omp.h> //法向量特征
@@ -40,7 +40,7 @@
 	Atircle: Unique Signatures of Histograms for Local Surface
 */
 
-typedef pcl::PointXYZRGB PointType;
+typedef pcl::PointXYZRGBA PointType;
 typedef pcl::Normal NormalType;
 typedef pcl::ReferenceFrame RFType;//参考帧
 typedef pcl::SHOT352 DescriptorType; //SHOT描述子 32 * 11 = 352
@@ -55,10 +55,10 @@ bool use_cloud_resolution_(false);
 bool use_hough_(true);
 float model_ss_(0.01f); //模型采样率
 float scene_ss_(0.03f); //场景采样率
-float rf_rad_(0.0015f);
+float rf_rad_(0.015f);
 float descr_rad_(0.02f);
-float cg_size_(0.001f); //聚类，霍夫空间设置每个bin的大小
-float cg_thresh_(0.50f); //聚类阈值
+float cg_size_(0.01f); //聚类，霍夫空间设置每个bin的大小
+float cg_thresh_(5.0f); //聚类阈值
 
 void showHelp(char *filename) {
 	std::cout << std::endl;
@@ -158,7 +158,7 @@ double computeCloudResolution(const pcl::PointCloud<PointType>::ConstPtr &cloud)
 	return res;
 }
 
-int recognition_correspondence_grouping(int argc, char** argv) {
+int recognition_correspondence_grouding(int argc, char** argv) {
 
 	std::cout << "registition correspondence grouping..." << std::endl;
 	parseCommandLine(argc, argv);
@@ -243,15 +243,15 @@ int recognition_correspondence_grouping(int argc, char** argv) {
 	pcl::CorrespondencesPtr model_scene_corrs(new pcl::Correspondences()); //最佳匹配分组
 	pcl::KdTreeFLANN<DescriptorType> match_search;
 	match_search.setInputCloud(model_descriptors);
-	for (size_t i = 0; i < scene_descriptors->size();i++) {
+	for (size_t i = 0; i < scene_descriptors->size(); i++) {
 		std::vector<int> neigh_indices(1); // 索引
 		std::vector<float> neigh_sqr_dists(1);
 		if (!std::isfinite(scene_descriptors->at(i).descriptor[0])) { // 跳过NAN点
 			continue;
 		}
-		int found_neighs = match_search.nearestKSearch(scene_descriptors->at(i) ,1 ,neigh_indices ,neigh_sqr_dists);
+		int found_neighs = match_search.nearestKSearch(scene_descriptors->at(i), 1, neigh_indices, neigh_sqr_dists);
 		if (found_neighs == 1 && neigh_sqr_dists[0] < 0.25f) {
-			pcl::Correspondence corr(neigh_indices[0] ,static_cast<int>(i) ,neigh_sqr_dists[0]);
+			pcl::Correspondence corr(neigh_indices[0], static_cast<int>(i), neigh_sqr_dists[0]);
 			// 模型点云 和 场景点云 的最佳匹配,距离neigh_sqr_dists[0]
 			model_scene_corrs->push_back(corr);
 		}
@@ -266,7 +266,7 @@ int recognition_correspondence_grouping(int argc, char** argv) {
 	// clustered_corrs[i][j].index_match 场景点 索引
 
 	//使用Hough3D 霍夫算法 寻找匹配点
-	if (!use_hough_) {
+	if (use_hough_) {
 		// 计算参考帧的Hough，也就是关键点
 		pcl::PointCloud<RFType>::Ptr model_rf(new pcl::PointCloud<RFType>());
 		pcl::PointCloud<RFType>::Ptr scene_rf(new pcl::PointCloud<RFType>());
@@ -297,20 +297,21 @@ int recognition_correspondence_grouping(int argc, char** argv) {
 		clusterer.setSceneRf(scene_rf); //场景点云参考帧
 		clusterer.setModelSceneCorrespondences(model_scene_corrs); // 组关系
 		clusterer.cluster(clustered_corrs);
-		clusterer.recognize(rototranslations ,clustered_corrs);
+		clusterer.recognize(rototranslations, clustered_corrs);
 
 	}
 	else { // CG 几何一致性 寻找匹配点
-		//pcl::GeometricConsistencyGrouping<PointType, PointType> gc_clusterer;
-		/*gc_clusterer.setGCSize(cg_size_);
+		pcl::GeometricConsistencyGrouping<PointType, PointType> gc_clusterer;
+		gc_clusterer.setGCSize(cg_size_);
 		gc_clusterer.setGCThreshold(cg_thresh_);
 		gc_clusterer.setInputCloud(model_keypoints);
 		gc_clusterer.setSceneCloud(scene_keypoints);
-		gc_clusterer.setModelSceneCorrespondences(model_scene_corrs);*/
+		gc_clusterer.setModelSceneCorrespondences(model_scene_corrs);
 		//gc_clusterer.cluster(clustered_corrs);
-		//gc_clusterer.recognize(rototranslations ,clustered_corrs);
+		gc_clusterer.recognize(rototranslations, clustered_corrs);
 	}
 	std::cout << "Rototranslation found:" << clustered_corrs.size() << std::endl;
+
 	// =============== 输出识别结果 ===================
 	std::cout << "Model instances found: " << rototranslations.size() << std::endl;
 	for (size_t i = 0; i < rototranslations.size(); i++) {
@@ -319,7 +320,7 @@ int recognition_correspondence_grouping(int argc, char** argv) {
 
 		// 打印 [R T]
 		Eigen::Matrix3f rotation = rototranslations[i].block<3, 3 >(0, 0);
-		Eigen::Matrix3f translation = rototranslations[i].block<3, 1>(0, 3);
+		Eigen::Vector3f translation = rototranslations[i].block<3, 1>(0, 3);
 
 		std::cout << "Rotation matrix:" << std::endl;
 		printf("\t|%6.3f\t%6.3f\t%6.3f\t|\n", rotation(0, 0), rotation(0, 1), rotation(0, 2));
