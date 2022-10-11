@@ -39,7 +39,6 @@ namespace Recoginition_Global_Hythcesis_Verificaiton {
 		double g;
 		double b;
 		double size;
-
 		CloudStyle(double r, double g, double b, double size) :
 			r(r),
 			g(g),
@@ -48,7 +47,6 @@ namespace Recoginition_Global_Hythcesis_Verificaiton {
 
 		}
 	};
-
 
 	CloudStyle style_white(255.0, 255.0, 255.0, 4.0);
 	CloudStyle style_red(255.0, 0, 0, 3.0);
