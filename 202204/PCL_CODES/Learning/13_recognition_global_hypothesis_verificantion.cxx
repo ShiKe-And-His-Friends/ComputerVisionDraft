@@ -209,7 +209,7 @@ int main(int argc ,char** argv) {
 	std::cout << "Scene total keypoints " << scene_keypoints->size() << std::endl;
 
 	// ======================SHOT描述子=======================
-	pcl::SHOTColorEstimationOMP<PointType, NormalType, DescriptorType> descri_est;
+	pcl::SHOTEstimationOMP<PointType, NormalType, DescriptorType> descri_est;
 	descri_est.setRadiusSearch(descr_rad_);
 	descri_est.setInputCloud(model_keypoints);
 	descri_est.setInputNormals(model_normals);
@@ -222,6 +222,89 @@ int main(int argc ,char** argv) {
 	descri_est.setSearchSurface(scene);
 	descri_est.compute(*scene_descriptors);
 	std::cout << "Scene total descriptors " << scene_descriptors->size() << std::endl;
+
+	// ======================按KdTree存储方法匹配两个点云分组=======================
+	pcl::CorrespondencesPtr model_scene_corrs(new pcl::Correspondences()); //最佳匹配组
+	pcl::KdTreeFLANN<DescriptorType> match_search;
+	match_search.setInputCloud(model_descriptors);
+	std::vector<int> model_good_keypoints_indices;
+	std::vector<int> scene_good_keypoints_indices;
+	for (size_t i = 0; i < scene_descriptors->size();i++) {
+		std::vector<int> neigh_indices(1);
+		std::vector<float> neigh_sqr_dists(1);
+		if (!std::isfinite(scene_descriptors->at(i).descriptor[0])) {
+			continue;
+		}
+		// 寻找1个临近点
+		int found_neighs = match_search.nearestKSearch(scene_descriptors->at(i) ,1 , neigh_indices ,neigh_sqr_dists);
+		if (found_neighs == 1 && neigh_sqr_dists[0] < 0.25f) { // 临近点距离一般0-1之间
+			pcl::Correspondence corr(neigh_indices[0] ,static_cast<int>(i) ,neigh_sqr_dists[0]);
+			model_scene_corrs->push_back(corr);
+			model_good_keypoints_indices.push_back(corr.index_query); //模型点云匹配 关键点键
+			scene_good_keypoints_indices.push_back(corr.index_match); //场景点云匹配 关键点值
+		}
+	}
+	pcl::PointCloud<PointType>::Ptr model_good_kp(new pcl::PointCloud<PointType>);
+	pcl::PointCloud<PointType>::Ptr scene_good_kp(new pcl::PointCloud<PointType>);
+	pcl::copyPointCloud(*model_keypoints ,model_good_keypoints_indices ,*model_good_kp);
+	pcl::copyPointCloud(*scene_keypoints ,scene_good_keypoints_indices ,*scene_good_kp);
+	std::cout <<"Match models points " << model_good_kp->size() << " scene_points " << scene_good_kp->size() << std::endl;
+	
+	// ======================实现匹配方式 执行聚类=======================
+	std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> rototranslations;
+	std::vector<pcl::Correspondences> clustered_corrs; //匹配点相互连线
+	// clustered_corrs[i][j].index_query
+	// clustered_corrs[i][j].index_match
+	std::cout << "Used Alogrithm : " << (used_hough_ == true ? "Hough " : "GC") << std::endl;
+	if (used_hough_) {
+		pcl::PointCloud<RFType>::Ptr model_rf(new pcl::PointCloud<RFType>);
+		pcl::PointCloud<RFType>::Ptr scene_rf(new pcl::PointCloud<RFType>);
+		pcl::BOARDLocalReferenceFrameEstimation<PointType, NormalType, RFType> rf_est;
+		rf_est.setFindHoles(true);
+		rf_est.setRadiusSearch(rf_rad_);
+
+		rf_est.setInputCloud(model_keypoints);
+		rf_est.setInputNormals(model_normals);
+		rf_est.setSearchSurface(model);
+		rf_est.compute(*model_rf);
+
+		rf_est.setInputCloud(scene_keypoints);
+		rf_est.setInputNormals(scene_normals);
+		rf_est.setSearchSurface(scene);
+		rf_est.compute(*scene_rf);
+
+		// 执行聚类Clustering
+		pcl::Hough3DGrouping<PointType, PointType, RFType, RFType> clusterer;
+		clusterer.setHoughBinSize(cg_size_);
+		clusterer.setHoughThreshold(cg_thresh_);
+		clusterer.setUseInterpolation(true);
+		clusterer.setUseDistanceWeight(false);
+
+		clusterer.setInputCloud(model_keypoints);
+		clusterer.setInputRf(model_rf);
+		clusterer.setSceneCloud(scene_keypoints);
+		clusterer.setSceneRf(scene_rf);
+		clusterer.setModelSceneCorrespondences(model_scene_corrs);
+		
+		clusterer.recognize(rototranslations ,clustered_corrs);
+	}
+	else {
+		pcl::GeometricConsistencyGrouping<PointType, PointType> gc_clusterer;
+		gc_clusterer.setGCSize(cg_size_);
+		gc_clusterer.setGCThreshold(cg_thresh_);
+		gc_clusterer.setInputCloud(model_keypoints);
+		gc_clusterer.setSceneCloud(scene_keypoints);
+		gc_clusterer.setModelSceneCorrespondences(model_scene_corrs);
+		gc_clusterer.recognize(rototranslations ,clustered_corrs);
+	}
+
+	if (rototranslations.size() <= 0) {
+		std::cout << "Recognized not found instance." << std::endl;
+		return -3;
+	}
+	else {
+		std::cout << "Recognized Instances "  << rototranslations.size() << std::endl;
+	}
 
 	return 0;
 }
