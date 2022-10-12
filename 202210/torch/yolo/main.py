@@ -5,6 +5,8 @@
 
 '''
 import os
+
+import numpy as np
 import torch
 from utils.dataloader import YoloDataset ,yolo_dataset_collate
 from utils.utils import get_anchors, get_classes
@@ -21,7 +23,7 @@ if __name__ == '__main__':
     val_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_val.txt'  # 验证图片和路径
     distributed = False # 指定是否单卡训练
     num_workers = 4 #多线程读取
-    pretrained = False
+    pretrained = False #  是否对主干Backbone进行训练，不训练则直接加载model_path
     #是否进行冻结训练 #默认先冻结主干训练后解冻训练
     Freeze_Train = True
     Freeze_batch_size = 8
@@ -31,6 +33,8 @@ if __name__ == '__main__':
     input_shape = [416, 416]
     anchors_mask = [[6,7,8] ,[3,4,5] ,[0,1,2]] #用于帮助代码找到对应的先验框，一般不修改
 
+    model_path = 'E:/Torch/yolov4-pytorch-master/model_data/yolo4_weights.pth' # 训练好的权值路径，SOTA数据结果
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # *********************************************************#
     # dataloader
@@ -68,6 +72,28 @@ if __name__ == '__main__':
     ## yolo-conv2d-1
     # *********************************************************#
     model = YoloBody(anchors_mask ,num_classes ,pretrained=pretrained)
+    if not pretrained:
+        print("wight_init()")
+    if not model_path == '':
+        print("LOAD weigth file {}".format(model_path))
+        # 根据预训练的全职key和weight进行加载
+        model_dict = model.state_dict()
+        print(model_dict)
+        pretrained_dict = torch.load(model_path ,map_location=device)
+        load_key ,no_load_key ,temp_dict = [] , [] ,{}
+        v_item = 0
+        for k ,v in pretrained_dict.items():
+            if k in model_dict.keys() and np.shape(model_dict[k])== np.shape(v):
+                temp_dict[k] = v
+                load_key.append(k)
+            else :
+                no_load_key.append(k)
+        model_dict.update(temp_dict)
+        model.load_state_dict(model_dict)
+
+        #TODO not match keys
+
+    yolo_loss = TOLOLoss(anchors ,num_classes ,input_shape ,Cuda ,anchors_mask ,label_smoothing ,focal_loss ,focal_gamme ,iou_type)
 
     # *********************************************************#
     ##### epoch one
