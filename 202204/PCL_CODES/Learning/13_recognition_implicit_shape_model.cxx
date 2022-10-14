@@ -43,7 +43,7 @@
 #include <boost/thread/thread.hpp>
 #include <pcl/visualization/pcl_visualizer.h>
 
-int main(int argc, char** argv) {
+int recognition_implicit_shape_model (int argc, char** argv) {
 
 	std::cout << "Recognition implicit shape model." << std::endl;
 
@@ -154,7 +154,7 @@ int main(int argc, char** argv) {
 
 	// ÊÓÍ¼²é¿´
 	pcl::visualization::PCLVisualizer viewer("Result viewer");
-	viewer.setBackgroundColor(1, 1, 1);
+	// viewer.setBackgroundColor(0, 0, 0);
 	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> colorh(testing_cloud ,30 ,200,30);
 	viewer.addPointCloud(testing_cloud ,colorh ,"test_data");
 	viewer.addPointCloud(colored_cloud ,"centors");
@@ -162,8 +162,8 @@ int main(int argc, char** argv) {
 	viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 10, "centors");
 
 	while (!viewer.wasStopped()) {
-		viewer.spinOnce(10);
-		boost::this_thread::sleep(boost::posix_time::microseconds(1000000));
+		viewer.spinOnce(5);
+		boost::this_thread::sleep(boost::posix_time::microseconds(10000));
 	}
 	return 0;
 }
