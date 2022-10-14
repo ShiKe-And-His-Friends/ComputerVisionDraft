@@ -154,11 +154,12 @@ int main(int argc, char** argv) {
 
 	//  ”Õº≤Èø¥
 	pcl::visualization::PCLVisualizer viewer("Result viewer");
+	viewer.setBackgroundColor(1, 1, 1);
 	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> colorh(testing_cloud ,30 ,200,30);
 	viewer.addPointCloud(testing_cloud ,colorh ,"test_data");
 	viewer.addPointCloud(colored_cloud ,"centors");
-	viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE ,10 ,"test_data");
-	viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "centors");
+	viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE ,3 ,"test_data");
+	viewer.setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 10, "centors");
 
 	while (!viewer.wasStopped()) {
 		viewer.spinOnce(10);
