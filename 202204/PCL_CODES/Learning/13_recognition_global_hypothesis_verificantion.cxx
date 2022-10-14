@@ -163,7 +163,7 @@ namespace Recoginition_Global_Hythcesis_Verificaiton {
 
 using namespace Recoginition_Global_Hythcesis_Verificaiton;
 
-int main(int argc, char** argv) {
+int recognition_global_hythcesis(int argc, char** argv) {
 
 	std::cout << "recognition global hypothesis verification." << std::endl;
 	parseCommandLine(argc, argv);
