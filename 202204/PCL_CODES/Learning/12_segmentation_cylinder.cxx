@@ -21,7 +21,7 @@ namespace Segmentation_Cylinder {
 
 using namespace Segmentation_Cylinder;
 
-int main(int argc ,char **argv) {
+int segmentation_cylinder(int argc ,char **argv) {
 
 	std::cout << "Segmentation cylinder contours." << std::endl;
 
