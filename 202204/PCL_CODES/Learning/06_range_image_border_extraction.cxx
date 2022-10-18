@@ -50,8 +50,7 @@ namespace Range_image_border_extract {
 using namespace Range_image_border_extract;
 
 
-// int show_range_border_extraction(int argc ,char **argv) {
-int main(int argc ,char **argv) {
+int show_range_border_extraction(int argc ,char **argv) {
 
 	std::cout << "visualization range images" << std::endl;
 
@@ -122,7 +121,8 @@ int main(int argc ,char **argv) {
 	int border_size = 1;
 	std::shared_ptr<pcl::RangeImage> range_image_ptr(new pcl::RangeImage);
 	pcl::RangeImage& range_image = *range_image_ptr;
-
+	range_image.createFromPointCloud(point_cloud ,angular_resolution ,pcl::deg2rad(360.0f) ,pcl::deg2rad(180.0f),
+		scene_sensor_pose ,coordinate_frame ,noise_level,min_range ,border_size);
 	range_image.integrateFarRanges(far_ranges);
 	if (setUnseenToMaxRange) {
 		range_image.setUnseenToMaxRange();
