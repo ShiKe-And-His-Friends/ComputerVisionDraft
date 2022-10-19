@@ -93,7 +93,14 @@ if __name__ == '__main__':
 
         #TODO not match keys
 
-    yolo_loss = TOLOLoss(anchors ,num_classes ,input_shape ,Cuda ,anchors_mask ,label_smoothing ,focal_loss ,focal_gamme ,iou_type)
+    yolo_loss = YOLOLoss(anchors ,num_classes ,input_shape
+        ,False #cude
+        ,anchors_mask
+        ,0.005 #focal_loss
+        ,0.25 #focal_alpha
+        ,2 #focal_gamme
+        ,'cioy' #iou_type
+    )
 
     # *********************************************************#
     ##### epoch one
