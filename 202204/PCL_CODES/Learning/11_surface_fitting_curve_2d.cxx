@@ -91,7 +91,7 @@ int curve_2d_fitting(int argc, char** argv) {
 	reader.read(argv[1] ,*cloud);
 	
 	if (pcl::console::find_argument(argc ,argv ,"-h") >=0) {
-		printHelp(argv[0]);
+		Surface_fitting_curve_2d::printHelp(argv[0]);
 		return 0;
 	}
 	bool pd(false), td(false), sd(false), apd(false), atd(false), asd(false);
@@ -116,7 +116,7 @@ int curve_2d_fitting(int argc, char** argv) {
 		std::cout << "asdm\n" << std::endl;
 	}
 	else {
-		printHelp(argv[0]);
+		Surface_fitting_curve_2d::printHelp(argv[0]);
 		return 0;
 	}
 
@@ -134,7 +134,7 @@ int curve_2d_fitting(int argc, char** argv) {
 
 	// data type convert
 	pcl::on_nurbs::NurbsDataCurve2d data;
-	PointCloud2Vector2d(cloud ,data.interior);
+	Surface_fitting_curve_2d::PointCloud2Vector2d(cloud ,data.interior);
 
 	// initialize curve
 	unsigned order(3); // k-level
@@ -149,7 +149,7 @@ int curve_2d_fitting(int argc, char** argv) {
 		pcl::on_nurbs::FittingCurve2dPDM fit(&data ,curve);
 		fit.assemble(curve_params);
 		fit.solve();
-		VisualizeCurve(fit.m_nurbs ,1.0 ,0.0 ,0.0 ,false);
+		Surface_fitting_curve_2d::VisualizeCurve(fit.m_nurbs ,1.0 ,0.0 ,0.0 ,false);
 	}
 	else if (td) {
 		pcl::on_nurbs::FittingCurve2dTDM::Parameter curve_params;
@@ -159,7 +159,7 @@ int curve_2d_fitting(int argc, char** argv) {
 		pcl::on_nurbs::FittingCurve2dTDM fit(&data, curve);
 		fit.assemble(curve_params);
 		fit.solve();
-		VisualizeCurve(fit.m_nurbs ,1.0 ,0 ,0 ,false);
+		Surface_fitting_curve_2d::VisualizeCurve(fit.m_nurbs ,1.0 ,0 ,0 ,false);
 	}
 	else if (sd) {
 		pcl::on_nurbs::FittingCurve2dSDM::Parameter curve_params;
@@ -169,7 +169,7 @@ int curve_2d_fitting(int argc, char** argv) {
 		pcl::on_nurbs::FittingCurve2dSDM fit(&data ,curve);
 		fit.assemble(curve_params);
 		fit.solve();
-		VisualizeCurve(fit.m_nurbs ,1.0 ,0 ,0 ,false);
+		Surface_fitting_curve_2d::VisualizeCurve(fit.m_nurbs ,1.0 ,0 ,0 ,false);
 	}
 	else if (apd) {
 		pcl::on_nurbs::FittingCurve2dAPDM::Parameter curve_paramters;
@@ -179,7 +179,7 @@ int curve_2d_fitting(int argc, char** argv) {
 		pcl::on_nurbs::FittingCurve2dAPDM fit(&data ,curve);
 		fit.assemble(curve_paramters);
 		fit.solve();
-		VisualizeCurve(fit.m_nurbs ,1.0 ,0 ,0 ,false);
+		Surface_fitting_curve_2d::VisualizeCurve(fit.m_nurbs ,1.0 ,0 ,0 ,false);
 	}
 	else if (asd) {
 		pcl::on_nurbs::FittingCurve2dASDM::Parameter curve_params;
@@ -189,7 +189,7 @@ int curve_2d_fitting(int argc, char** argv) {
 		pcl::on_nurbs::FittingCurve2dASDM fit(&data,curve);
 		fit.assemble(curve_params);
 		fit.solve();
-		VisualizeCurve(fit.m_nurbs ,1.0 ,0 ,0 ,false);
+		Surface_fitting_curve_2d::VisualizeCurve(fit.m_nurbs ,1.0 ,0 ,0 ,false);
 	}
 
 	viewer.setSize(800 ,600);
