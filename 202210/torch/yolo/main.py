@@ -12,6 +12,7 @@ from utils.dataloader import YoloDataset ,yolo_dataset_collate
 from utils.utils import get_anchors, get_classes
 from torch.utils.data import DataLoader
 from net.yolo import YoloBody
+from net.yolo_training import YoloLoss
 
 if __name__ == '__main__':
     # *********************************************************#
@@ -78,7 +79,6 @@ if __name__ == '__main__':
         print("LOAD weigth file {}".format(model_path))
         # 根据预训练的全职key和weight进行加载
         model_dict = model.state_dict()
-        print(model_dict)
         pretrained_dict = torch.load(model_path ,map_location=device)
         load_key ,no_load_key ,temp_dict = [] , [] ,{}
         v_item = 0
@@ -93,7 +93,7 @@ if __name__ == '__main__':
 
         #TODO not match keys
 
-    yolo_loss = YOLOLoss(anchors ,num_classes ,input_shape
+    yolo_loss = YoloLoss(anchors ,num_classes ,input_shape
         ,False #cude
         ,anchors_mask
         ,0.005 #focal_loss

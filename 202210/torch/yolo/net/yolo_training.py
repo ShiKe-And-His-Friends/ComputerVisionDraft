@@ -4,9 +4,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-class YOLOLoss(nn.Module):
+class YoloLoss(nn.Module):
     def __init__(self,anchors ,num_classes ,input_shape ,cuda ,anchors_mask = [[6,7,8] ,[3,4,5] ,[0,1,2]] ,label_smoothing = 0 ,focal_loss = False ,alpha = 0.25 ,gamma = 2 ,iou_type = 'ciou'):
-        super(YOLOLoss ,self).__init__()
+        super(YoloLoss ,self).__init__()
         # *********************************************************#
         #  13x13的特征层对应的anchor是[142 ,110] ,[192,243] ,[459 ,401]
         #  26x26的特征层对应的anchor是[36 ,75] ,[76,55] ,[72 ,146]
@@ -48,12 +48,197 @@ class YOLOLoss(nn.Module):
         output = - target * torch.log(pred) - (1.0 - target) * torch.log(1.0 - pred)
         return output
 
+    def box_iou(self ,b1 ,b2):
+        """
+        输入为：
+        b1 : tensor ,shape = (batch ,anchor_num ,feat_w ,feat_h ,4),xywh
+        b2 : tensor ,shape = (batch ,anchor_num ,feat_w ,feat_h ,4),xywh
+        返回是:
+        out : tensor,shape = (batch ,anchor_nun ,feat_w ,feat_h)
+        """
+        # 求预测框 左上角右下角
+        b1_xy = b1[... ,:2]
+        b1_wh = b1[... ,2:4]
+        b1_wh_half = b1_wh / 2.
+        b1_mins = b1_xy - b1_wh_half
+        b1_maxes = b1_xy + b1_wh_half
+
+        # 求真实框 左上角右下角
+        b2_xy = b2[...,:2]
+        b2_wh = b2[... ,2:4]
+        b2_wh_half = b2_wh / 2.
+        b2_mins = b2_xy - b2_wh_half
+        b2_maxes = b2_xy + b2_wh_half
+
+        # 求真实框和预测框的IOU
+        intersect_mins = torch.max(b1_mins ,b2_mins)
+        intersect_maxes = torch.max(b1_maxes ,b2_maxes)
+        intersect_wh = torch.max(intersect_maxes - intersect_mins ,torch.zeros_like(intersect_maxes))
+        intersect_area = intersect_wh[... ,0] * intersect_wh[...,1]
+        b1_area = b1_wh[...,0] * b1_wh[...,1]
+        b2_area = b2_wh[...,0] * b2_wh[...,1]
+        union_area = b1_area + b2_area - intersect_area
+        iou = intersect_area /torch.clamp(union_area ,min=1e-5)
+
+        # 计算中心的差距
+        center_wh = b1_xy - b2_xy
+        # 找包裹的两个框的左上角和右下角
+        enclose_mins = torch.min(b1_mins ,b2_mins)
+        enclose_maxes = torch.max(b1_maxes ,b2_maxes)
+        enclose_wh = torch.max(enclose_maxes- enclose_mins ,torch.zeros_like(intersect_maxes))
+
+        if self.iou_type == 'ciou':
+            # 中心距离
+            center_distance = torch.sum(torch.pow(center_wh ,2) ,axis = -1)
+            # 对角线距离
+            enclose_diagonal = torch.sum(torch.pow(center_wh,2) ,axis = -1)
+            ciou = iou - 1.0 * (center_distance) / torch.clamp(enclose_diagonal ,min = 1e-6)
+            v = (4/math.pi ** 2) * torch.pow((torch.atan(b1_wh[...,0] / torch.clamp(b1_wh[...,1] ,min = 1e-6)) - torch.atan(b2_wh[...,0] / torch.clamp(b2_wh[...,1] ,min=1e-6))) ,2)
+            alpha = v / torch.clamp((1.0 - iou + v) ,min= 1e-6)
+            out = ciou - alpha * v
+        elif self.iou_type == 'siou':
+            # Angle cost
+            sigma = torch.pow(torch.sum(torch.pow(center_wh ,2) ,axis =-1) ,0.5)
+            # 求h和w方向的sin比值
+            sin_alpha_1 = torch.clamp(torch.abs(center_wh[...,0]) / torch.clamp(sigma,min=1e-6) ,min=0 ,max=1)
+            sin_alpha_2 = torch.clamp(torch.abs(center_wh[...,1]) / torch.clamp(sigma ,min=1e-6) ,min=0 ,max=1)
+            # --------------------------------#
+            #  求门限值，二分之根号二，0.707
+            #  如果门限大于0.707，代表某个方向角度大于45°
+            #  此时取另一个方向的角度
+            # --------------------------------#
+            threshold = pow(2,0.5) /2
+            sin_alpha = torch.where(sin_alpha_1 > threshold ,sin_alpha_2,sin_alpha_1)
+
+            # --------------------------------#
+            #  alpha越接近45°，angle_cost越接近1，gamma 越接近1
+            #  alpha越接近0°，angle_cost越接近0，gamma 越接近2
+            # --------------------------------#
+            angle_cost = torch.cos(torch.asin(sin_alpha) * 2 -math.pi /2)
+            gamma = 2 - angle_cost
+
+            # --------------------------------#
+            #  Distance cost
+            #  求中心与外围举行的宽高的比值
+            # --------------------------------#
+            rho_x = (center_wh[...,0] / torch.clamp(enclose_wh[...,0] ,min= 1e-6)) **2
+            rho_y = (center_wh[...,1] / torch.clamp(enclose_wh[...,1] ,min=1e-6)) **2
+            distance_cost = 2 - torch.exp(-gamma * rho_x) - torch.exp(-gamma * rho_y)
+
+            # --------------------------------#
+            #  Shape cost
+            #  真实框与预测框的宽高差异与最大值的比较
+            #  差异越小，costshape_cost越小
+            # --------------------------------#
+            omiga_w = torch.abs(b1_wh[...,0] -b2_wh[..., 0]) / torch.clamp(torch.max(b1_wh[...,0] ,b2_wh[...,0]) ,min=1e-6)
+            omiga_h = torch.abs(b1_wh[...,1] - b2_wh[...,1]) / torch.clamp(torch.max(b1_wh[...,1] ,b2_wh[...,1]) ,min=1e-6)
+            shape_cost = torch.pow(1-torch.exp(-1 * omiga_w) ,4) + torch.pow(1-torch.exp(-1*omiga_h) ,4)
+            out = iou - 0.5 * (distance_cost + shape_cost)
+        return out
+
     # 平滑标签
     def smooth_labels(self ,y_true ,label_smoothing ,num_classes):
         return y_true * (1.0 - label_smoothing) + label_smoothing / num_classes
 
-    def forward(self):
-        return None
+    def forward(self ,l ,input ,targets=None):
+        """
+          l 代表使用第几个有效特征层
+          input 的shape为
+                           bs, 3* (5+num_classes) ,13 ,13
+                           bs, 3* (5+num_classes) ,26 ,26
+                           bs, 3* (5+num_classes) ,52 ,52
+          target 真实框的标签情况
+                           [batch_size ,num_gt ,5]
+        """
+        #获得图像数量和宽高
+        bs = input.size(0)
+        in_h = input.size(2)
+        in_w = input.size(3)
+
+        # --------------------------------#
+        #  计算步长 每一个特征点对应原来图片上的像素点
+        #  特征层[13x13] ，一个特征对应原来图片上的32个像素点
+        #  特征层[26x26] ，一个特征对应原来图片上的16个像素点
+        #  特征层[52x52] ，一个特征对应原来图片上的8个像素点
+        #  stride_h = stride_w = 32 16 8
+        # --------------------------------#
+        stride_h = self.input_shape[0] / in_h
+        stride_w = self.input_shape[1] / in_w
+
+        # 此时scaled_anchors大小相对于特征层的
+        scaled_anchors = [(a_w / stride_w ,a_h / stride_h) for a_w ,a_h in self.anchors]
+
+        # --------------------------------#
+        #  输入input有三个，它们的shape分别是
+        #  bs,3*(5+num_classes),13 ,13 => bs,3,5+num_classes ,13 ,13 => batch_size ,3 ,13,13,5+num_classes
+        #  特征层[13x13] ，batch_size ,3 ,13,13,5+num_classes
+        #  特征层[26x26] ，batch_size ,3 ,26,25,5_num_classes
+        #  特征层[52x52] ，batch_size ,3 ,52,52,5+num_classes
+        # --------------------------------#
+        prediction = input.view(bs ,len(self.anchors_mask[l]) ,self.bbox_attrs ,in_h ,in_w).permute(0,1,3,4,2).contiguous()
+
+        # 先验框的中心位置调整
+        x = torch.sigmoid(prediction[...,0])
+        y = torch.sigmoid(prediction[...,1])
+
+        # 先验框的宽高调整
+        w = prediction[...,2]
+        h = prediction[...,3]
+        # 获取置信度，是否有物体
+        conf = torch.sigmoid(prediction[...,4])
+        # 种类置信度
+        pred_cls = torch.sigmoid(prediction[...,5:])
+        y_true ,noobj_mask ,box_loss_scale = self.get_target(l ,targets ,scaled_anchors ,in_h ,in_w)
+
+        # --------------------------------#
+        #  对预测结果进行解码，判断预测结果和真实值的重合程度
+        #  如果重合程度过大则忽略，因为这些特征点属于预测比较准确的特征点
+        #  作为负样本不合适
+        # --------------------------------#
+        noobj_mask ,pred_boxes = self.get_ignore(l ,x ,y ,h ,w ,targets ,scaled_anchors ,in_h ,in_w ,noobj_mask)
+
+        if self.cuda :
+            y_true = y_true.type_as(x)
+            noobj_mask = noobj_mask.type_as(x)
+            box_loss_scale = box_loss_scale.type_as(x)
+        # --------------------------------#
+        #  box_loss_scale 是真实宽高的成绩，宽高均在0-1之间，因此乘积也在0-1之间
+        #  宽高的成绩代表真实框越大，比重越小，小框的比重越大
+        #  使用iou损失时，大中小目标的回归损失不存在比例失衡的问题，故弃用
+        # --------------------------------#
+        box_loss_scale = 2 - box_loss_scale
+
+        loss = 0
+        obj_mask = y_true[...,4] == 1
+        n = torch.sum(obj_mask)
+
+        if n!=0:
+            # --------------------------------#
+            #  计算预测结果和真实结果的差距
+            #  loss_loc iou回归损失
+            #  loss_cls 分类损失
+            # --------------------------------#
+            iou = self.box_iou(pred_boxes ,y_true[...,:4]).type_as(x)
+            obj_mask = obj_mask & torch.logical_not(torch.isnan(iou))
+            loss_loc = torch.mean((1-iou)[obj_mask])
+            # loss_loc = torch.mean((1-iou)[obj_mask] * box_loss_scale[obj_mask])
+            loss_cls = torch.mean(self.BCELoss(pred_cls[obj_mask] ,y_true[...,5:]))
+            loss += loss_loc * self.box_ratio + loss_cls * self.cls_ratio
+        if self.focal_loss:
+            # --------------------------------#
+            #  计算是否包含物体的置信度损失
+            # --------------------------------#
+            pos_neg_ratio = torch.where(obj_mask ,torch.ones_like(conf) * self.alpha ,torch.ones_like(conf) * (1-self.alpha))
+            hard_easy_ratio = torch.where(obj_mask ,torch.ones_like(conf)) ** self.gamma
+            loss_conf = torch.mean((self.BCELoss(conf,obj_mask.type_as(conf)) * pos_neg_ratio * hard_easy_ratio)[noobj_mask.bool() | obj_mask]) * self.focal_loss_ratio
+        else:
+            loss_conf = torch.mean(self.BCELoss(conf,obj_mask.type_as(conf))[noobj_mask.bool() | obj_mask])
+        loss += loss_conf * self.balance[l] * self.obj_ratio
+
+        # if n != 0:
+        #    print(loss_loc * self.box_ratio ,loss_cls * self.cls_ratio ,loss_conf * self.balance[l] * self.obj_ratio)
+
+        return loss
 
     def calculate_iou(self ,_box_a ,_box_b):
         # 计算真实框的左上角和右下角
