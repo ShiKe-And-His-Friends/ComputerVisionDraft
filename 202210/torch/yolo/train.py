@@ -16,6 +16,7 @@ from utils.utils import get_anchors, get_classes
 from torch.utils.data import DataLoader
 from net.yolo import YoloBody
 from net.yolo_training import YoloLoss
+from net.yolo_training import get_lr_scheduler
 
 if __name__ == '__main__':
     # *********************************************************#
