@@ -261,7 +261,7 @@ class YoloLoss(nn.Module):
 
         # 计算交的面积
         max_xy = torch.min(box_a[: ,2:].unsqueeze(1).expand(A ,B ,2) ,box_b[:,2:].unsqueeze(0).expand(A ,B ,2))
-        min_xy = torch.max(box_a[:,:2].unsquenze(1).expand(A,B,2) ,box_b[:,:2].unsquenze(0).expand(A ,B ,2) )
+        min_xy = torch.max(box_a[:,:2].unsqueeze(1).expand(A,B,2) ,box_b[:,:2].unsqueeze(0).expand(A ,B ,2) )
         inter = torch.clamp((max_xy - min_xy) ,min =0)
         inter = inter[: ,: ,0] * inter[: ,: ,1]
 
@@ -277,12 +277,12 @@ class YoloLoss(nn.Module):
         # 计算一共多少张图片
         bs = len(targets)
         # 用于选取哪些先验框不含物体
-        noobj_mask = torch.ones(bs ,len(self.anchors_mask[1]) ,in_h ,in_w ,requires_grad=False)
+        noobj_mask = torch.ones(bs ,len(self.anchors_mask[l]) ,in_h ,in_w ,requires_grad=False)
         # 网络关注更小目标
-        box_loss_scale = torch.zeros(bs ,len(self.anchors_mask[1]) ,in_h,in_w ,requires_grad=False)
+        box_loss_scale = torch.zeros(bs ,len(self.anchors_mask[l]) ,in_h,in_w ,requires_grad=False)
 
         # batch_size,3 ,13 ,13 ,5 + num_classes
-        y_true = torch.zeros(bs ,len(self.anchors_mask[1]) ,in_h ,in_w ,self.bbox_attrs,requires_grad=False)
+        y_true = torch.zeros(bs ,len(self.anchors_mask[l]) ,in_h ,in_w ,self.bbox_attrs,requires_grad=False)
         for b in range(bs):
             if len(targets[b]) == 0:
                 continue
@@ -291,6 +291,7 @@ class YoloLoss(nn.Module):
             batch_target[: ,[0,2]] = targets[b][: ,[0 ,2]] * in_w
             batch_target[: ,[1,3]] = targets[b][:,[1,3]] * in_h
             batch_target[: ,4] = targets[b][: ,4]
+            batch_target = batch_target.cpu()
 
             # 将真实框转换成一个形式 num_true_box ,4
             gt_box = torch.FloatTensor(torch.cat((torch.zeros((batch_target.size(0),2)), batch_target[: ,2:4]) ,1))
@@ -300,7 +301,7 @@ class YoloLoss(nn.Module):
             best_ns = torch.argmax(self.calculate_iou(gt_box ,anchors_shapes) ,dim= -1)
 
             for t , best_n in enumerate(best_ns):
-                if best_n not in self.anchors_mask[1]:
+                if best_n not in self.anchors_mask[l]:
                     continue
                 # 判断这个先验框是当前特征点的哪一个先验框
                 k = self.anchors_mask[l].index(best_n)
@@ -331,7 +332,7 @@ class YoloLoss(nn.Module):
         grid_x = torch.linspace(0 ,in_w -1 ,in_w).repeat(in_h ,1).repeat(
             int(bs * len(self.anchors_mask[l])) ,1 ,1).view(x.shape).type_as(x)
         grid_y = torch.linspace(0 ,in_h -1 ,in_h).repeat(in_w ,1).t().repeat(
-            int(bs*len(self.anchors_mask[l])),1,1).view(y.shape).type_as(x)
+            int(bs * len(self.anchors_mask[l])),1,1).view(y.shape).type_as(x)
 
         # 先验框的宽高
         scaled_anchors_1 = np.array(scaled_anchors)[self.anchors_mask[l]]
@@ -339,14 +340,14 @@ class YoloLoss(nn.Module):
         anchor_h = torch.Tensor(scaled_anchors_1).index_select(1 ,torch.LongTensor([1])).type_as(x)
 
         anchor_w = anchor_w.repeat(bs ,1).repeat(1 ,1 ,in_h * in_w).view(w.shape)
-        anchor_w = anchor_h.repeat(bs ,1).repeat(1 ,1 ,in_h * in_w).wiew(h.shape)
+        anchor_h = anchor_h.repeat(bs ,1).repeat(1 ,1 ,in_h * in_w).view(h.shape)
 
         # 计算先验框调整后的中心和宽高
         pred_boxes_x = torch.unsqueeze(x + grid_x ,-1)
         pred_boxes_y = torch.unsqueeze(y + grid_y ,-1)
         pred_boxes_w = torch.unsqueeze(torch.exp(w) * anchor_w ,-1)
         pred_boxes_h = torch.unsqueeze(torch.exp(h)* anchor_h ,-1)
-        pred_boxes = torch.cat([pred_boxes_x ,pred_boxes_y ,pred_boxes_w ,pred_boxes_h])
+        pred_boxes = torch.cat([pred_boxes_x ,pred_boxes_y ,pred_boxes_w ,pred_boxes_h] ,dim=-1)
 
         for b in range(bs):
             # 预测结果转换一个形状
