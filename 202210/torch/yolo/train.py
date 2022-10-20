@@ -17,6 +17,8 @@ from torch.utils.data import DataLoader
 from net.yolo import YoloBody
 from net.yolo_training import YoloLoss
 from net.yolo_training import get_lr_scheduler
+from net.yolo_training import weight_init
+from net.yolo_training import set_optimizer_lr
 from utils.utils_fit import fit_one_epoch
 
 if __name__ == '__main__':
@@ -29,7 +31,7 @@ if __name__ == '__main__':
     val_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_val.txt'  # 验证图片和路径
     distributed = False # 指定是否单卡训练
     num_workers = 4 #多线程读取
-    pretrained = False #  是否对主干Backbone进行训练，不训练则直接加载model_path
+    pretrained = True #  是否对主干Backbone进行训练，不训练则直接加载model_path
     #是否进行冻结训练 #默认先冻结主干训练后解冻训练
     Freeze_Train = True
     Freeze_batch_size = 8
@@ -83,7 +85,8 @@ if __name__ == '__main__':
     model = YoloBody(anchors_mask ,num_classes ,pretrained=pretrained)
     if not pretrained:
         print("wight_init()")
-    if not model_path == '':
+        weight_init(model)
+    if model_path != '':
         print("LOAD weigth file {}".format(model_path))
         # 根据预训练的全职key和weight进行加载
         model_dict = model.state_dict()
@@ -242,11 +245,14 @@ if __name__ == '__main__':
             gen.dataset.epoch_now = epoch
             gen_val.dataset.epoch_now = epoch
 
-            # fit_one_epoch(model_train ,model .yolo_loss ,loss_history ,eval_callback ,optimizer ,epoch ,epoch_step ,epoch_step_val ,gen ,gen_val ,UnFreeze_Epoch ,False #Cuda
-            #               ,False # fp16
-            #               ,scaler ,save_period ,save_dir
-            #               ,0 #local_rank
-            # )
+            set_optimizer_lr(optimizer ,lr_scheduler_func ,epoch)
+
+            fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,optimizer ,epoch ,epoch_step ,epoch_step_val ,gen ,gen_val ,UnFreeze_Epoch ,False #Cuda
+                          ,False # fp16
+                          ,scaler ,save_period ,save_dir
+                          ,0 #local_rank
+            )
+            break
         # done for
 
         # TODO cuda local ranks

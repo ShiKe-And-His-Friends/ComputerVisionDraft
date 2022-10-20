@@ -25,3 +25,8 @@ def cvtColor(image):
 def preprocess_input(image):
     image /= 255.0
     return image
+
+# 获得学习率
+def get_lr(optimizer):
+    for param_group in optimizer.param_groups:
+        return param_group['lr']
