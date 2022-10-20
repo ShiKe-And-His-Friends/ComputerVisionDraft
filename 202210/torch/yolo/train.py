@@ -36,10 +36,11 @@ if __name__ == '__main__':
     Freeze_Train = True
     Freeze_batch_size = 8
     Init_Epoch = 0
-    UnFreeze_Epoch = 300
-    Unfreeze_batch_size = 16
+    UnFreeze_Epoch = 20
+    Unfreeze_batch_size = 480
     batch_size = Freeze_batch_size if Freeze_Train else Unfreeze_batch_size
     shuffle = True if distributed else False
+    label_smoothing = 0 # 标签平滑 一般0.01以下，如0.01 0.005
     Init_lr = 1e-2 #模型学习率
     Min_lr = Init_lr * 0.01
     lr_decay_type = 'cos' # 学习率下降的方式，有cos step
@@ -106,7 +107,7 @@ if __name__ == '__main__':
 
     yolo_loss = YoloLoss(anchors ,num_classes ,input_shape
         ,False #cude
-        ,anchors_mask
+        ,anchors_mask,label_smoothing
         ,0.005 #focal_loss
         ,0.25 #focal_alpha
         ,2 #focal_gamme

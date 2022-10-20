@@ -44,7 +44,7 @@ class YoloLoss(nn.Module):
 
     def BCELoss(self ,pred ,target):
         epsilon = 1e-7
-        pred = self.clip_by_tensor((pred ,epsilon ,1.0-epsilon))
+        pred = self.clip_by_tensor(pred ,epsilon ,1.0-epsilon)
         output = - target * torch.log(pred) - (1.0 - target) * torch.log(1.0 - pred)
         return output
 
@@ -222,14 +222,14 @@ class YoloLoss(nn.Module):
             obj_mask = obj_mask & torch.logical_not(torch.isnan(iou))
             loss_loc = torch.mean((1-iou)[obj_mask])
             # loss_loc = torch.mean((1-iou)[obj_mask] * box_loss_scale[obj_mask])
-            loss_cls = torch.mean(self.BCELoss(pred_cls[obj_mask] ,y_true[...,5:]))
+            loss_cls = torch.mean(self.BCELoss(pred_cls[obj_mask] ,y_true[...,5:][obj_mask]))
             loss += loss_loc * self.box_ratio + loss_cls * self.cls_ratio
         if self.focal_loss:
             # --------------------------------#
             #  计算是否包含物体的置信度损失
             # --------------------------------#
             pos_neg_ratio = torch.where(obj_mask ,torch.ones_like(conf) * self.alpha ,torch.ones_like(conf) * (1-self.alpha))
-            hard_easy_ratio = torch.where(obj_mask ,torch.ones_like(conf)) ** self.gamma
+            hard_easy_ratio = torch.where(obj_mask ,torch.ones_like(conf) -conf ,conf) ** self.gamma
             loss_conf = torch.mean((self.BCELoss(conf,obj_mask.type_as(conf)) * pos_neg_ratio * hard_easy_ratio)[noobj_mask.bool() | obj_mask]) * self.focal_loss_ratio
         else:
             loss_conf = torch.mean(self.BCELoss(conf,obj_mask.type_as(conf))[noobj_mask.bool() | obj_mask])
