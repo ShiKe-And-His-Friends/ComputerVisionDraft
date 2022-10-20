@@ -16,7 +16,7 @@ class YoloLoss(nn.Module):
         self.num_classes = num_classes
         self.bbox_attrs = 5 + num_classes
         self.input_shape = input_shape
-        self.anchor_mask = anchors_mask
+        self.anchors_mask = anchors_mask
         self.label_smoothing = label_smoothing
 
         self.balance = [0.4 ,1.0 ,4]
@@ -277,12 +277,12 @@ class YoloLoss(nn.Module):
         # 计算一共多少张图片
         bs = len(targets)
         # 用于选取哪些先验框不含物体
-        noobj_mask = torch.ones(bs ,len(self.anchor_mask[1]) ,in_h ,in_w ,requires_grad=False)
+        noobj_mask = torch.ones(bs ,len(self.anchors_mask[1]) ,in_h ,in_w ,requires_grad=False)
         # 网络关注更小目标
-        box_loss_scale = torch.zeros(bs ,len(self.anchor_mask[1]) ,in_h,in_w ,requires_grad=False)
+        box_loss_scale = torch.zeros(bs ,len(self.anchors_mask[1]) ,in_h,in_w ,requires_grad=False)
 
         # batch_size,3 ,13 ,13 ,5 + num_classes
-        y_true = torch.zeros(bs ,len(self.anchor_mask[1]) ,in_h ,in_w ,self.bbox_attrs,requires_grad=False)
+        y_true = torch.zeros(bs ,len(self.anchors_mask[1]) ,in_h ,in_w ,self.bbox_attrs,requires_grad=False)
         for b in range(bs):
             if len(targets[b]) == 0:
                 continue
@@ -329,9 +329,9 @@ class YoloLoss(nn.Module):
         bs = len(targets)
         # 生成网格，先验框中心，网格左上角
         grid_x = torch.linspace(0 ,in_w -1 ,in_w).repeat(in_h ,1).repeat(
-            int(bs * len(self.anchor_mask[l])) ,1 ,1).view(x.shape).type_as(x)
+            int(bs * len(self.anchors_mask[l])) ,1 ,1).view(x.shape).type_as(x)
         grid_y = torch.linspace(0 ,in_h -1 ,in_h).repeat(in_w ,1).t().repeat(
-            int(bs*len(self.anchor_mask[l])),1,1).view(y.shape).type_as(x)
+            int(bs*len(self.anchors_mask[l])),1,1).view(y.shape).type_as(x)
 
         # 先验框的宽高
         scaled_anchors_1 = np.array(scaled_anchors)[self.anchors_mask[l]]

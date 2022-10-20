@@ -31,6 +31,7 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
             #  前向传播
             # --------------------------------#
             outputs = model_train(images)
+
             loss_value_all = 0
             # --------------------------------#
             #  计算损失

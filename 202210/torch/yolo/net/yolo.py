@@ -122,8 +122,8 @@ class YoloBody(nn.Module):
         # [256 x 26 x 26] + [256 x 26 x 26] -> [512 x 26 x 26]
         P4 = torch.cat([P4 ,P5_upsample] ,axis = 1)
         # [512 x 26 x 26] -> [256 x 26 x 26] -> [512 x 26 x 26] -> [256 x 26 x 26] -> [512 x 26 x 26] -> [256 x 26 x 26]
-
         P4 = self.make_five_conv1(P4)
+
         # [256 x 26 x 26] -> [128 x 26 x 26] -> [256 x 52 x 52]
         P4_upsample = self.upsample2(P4)
         # [256 x 52 x 52] -> [128 x 52 x 52]
