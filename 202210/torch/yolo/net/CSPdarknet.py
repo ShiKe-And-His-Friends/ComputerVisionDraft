@@ -102,6 +102,7 @@ class Resblock_body(nn.Module):
         # 最通道进行整合
         # --------------------------------#
         x = self.concat_conv(x)
+        return x
 
 # *********************************************************#
 # CSPdarknet53 的主体部分
@@ -138,7 +139,6 @@ class CSPDarkNet(nn.Module):
                 m.bias.data.zero_()
     def forward(self ,x):
         x = self.conv1(x)
-
         x = self.stages[0](x)
         x = self.stages[1](x)
         out3 = self.stages[2](x)
