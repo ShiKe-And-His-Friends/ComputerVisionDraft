@@ -17,6 +17,7 @@ from torch.utils.data import DataLoader
 from net.yolo import YoloBody
 from net.yolo_training import YoloLoss
 from net.yolo_training import get_lr_scheduler
+from utils.utils_fit import fit_one_epoch
 
 if __name__ == '__main__':
     # *********************************************************#
@@ -32,11 +33,14 @@ if __name__ == '__main__':
     #是否进行冻结训练 #默认先冻结主干训练后解冻训练
     Freeze_Train = True
     Freeze_batch_size = 8
+    Init_Epoch = 0
+    UnFreeze_Epoch = 300
     Unfreeze_batch_size = 16
     batch_size = Freeze_batch_size if Freeze_Train else Unfreeze_batch_size
     shuffle = True if distributed else False
     Init_lr = 1e-2 #模型学习率
     Min_lr = Init_lr * 0.01
+    lr_decay_type = 'cos' # 学习率下降的方式，有cos step
     optimizer_type = "sgd"
     momentum = 0.937
     weight_decay = 5e-7
@@ -72,13 +76,6 @@ if __name__ == '__main__':
     num_val = len(val_lines)
     train_sampler = None # distributed False
     val_sampler = None
-
-    train_dataset = YoloDataset(train_lines ,input_shape ,num_classes ,train = True)
-    val_dataset = YoloDataset(val_lines ,input_shape ,num_classes ,train = False)
-    gen = DataLoader(train_dataset ,shuffle= shuffle,batch_size= batch_size,num_workers= num_workers,pin_memory=True ,
-                     drop_last=True ,collate_fn=yolo_dataset_collate ,sampler=train_sampler)
-    val_gen = DataLoader(val_dataset, shuffle= shuffle, batch_size=batch_size, num_workers=num_workers, pin_memory=True,
-                     drop_last=True, collate_fn=yolo_dataset_collate, sampler=val_sampler)
 
     # *********************************************************#
     ## yolo-conv2d-1
@@ -179,10 +176,42 @@ if __name__ == '__main__':
         optimizer.add_param_group({"params":pg2})
 
         # 学习率下降的公式
-        lr_scheduler_func = get_lr_scheduler()
+        lr_scheduler_func = get_lr_scheduler(lr_decay_type ,Init_lr_fit ,Min_lr_fit ,UnFreeze_Epoch)
+        print('lr scheduler functions: %s' % lr_scheduler_func)
 
+        # 判断每一个世代的长度
+        epoch_step = num_train // batch_size
+        epoch_step_val = num_val // batch_size
+        if epoch_step == 0 or epoch_step_val == 0:
+            raise ValueError("数据集过小，无法进行训练，请扩充数据集")
+
+        # 构建数据集加载器
+        train_dataset = YoloDataset(train_lines, input_shape, num_classes, train=True)
+        val_dataset = YoloDataset(val_lines, input_shape, num_classes, train=False)
+        gen = DataLoader(train_dataset, shuffle=shuffle, batch_size=batch_size, num_workers=num_workers,
+                         pin_memory=True,
+                         drop_last=True, collate_fn=yolo_dataset_collate, sampler=train_sampler)
+        gen_val = DataLoader(val_dataset, shuffle=shuffle, batch_size=batch_size, num_workers=num_workers,
+                             pin_memory=True,
+                             drop_last=True, collate_fn=yolo_dataset_collate, sampler=val_sampler)
+
+        #TODO save weights and logs[2]
+        #eval_callback = EvalCallback(model ,input_shape ,anchors ,anchors_mask ,class_names ,num_classes ,val_lines ,log_dir ,Cuda ,\
+        #       eval_flag = eval_flag ,period = eval_peried)
+        eval_callback = None
+
+        # --------------------------------#
+        #  开始训练模型
+        # --------------------------------#
         for epoch in range(Init_Epoch ,UnFreeze_Epoch):
-            fit_one_epoch(model_train ,model .yolo_loss ,loss_history ,eval_callback ,optimizer ,epoch ,epoch_step ,epoch_step_val ,gen ,gen_val ,Unfreeze_epoch ,Cuda ,fp16 scaler ,save_period ,save_dir ,local_rank)
+            fit_one_epoch(model_train ,model .yolo_loss ,loss_history ,eval_callback ,optimizer ,epoch ,epoch_step ,epoch_step_val ,gen ,gen_val ,UnFreeze_Epoch ,False #Cuda
+                          ,False # fp16
+                          ,scaler ,save_period ,save_dir
+                          ,0 #local_rank
+            )
 
+        # TODO cuda local ranks
+        ''''
         if local_rank == 0:
             loss_history.writer.close()
+        '''
