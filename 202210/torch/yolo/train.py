@@ -203,12 +203,51 @@ if __name__ == '__main__':
         # --------------------------------#
         #  开始训练模型
         # --------------------------------#
+        print("FreezeEpoch:%d , UnFreeze_flag:%d ,Freeze_Train:%d" % (UnFreeze_Epoch, UnFreeze_flag, Freeze_Train))
         for epoch in range(Init_Epoch ,UnFreeze_Epoch):
-            fit_one_epoch(model_train ,model .yolo_loss ,loss_history ,eval_callback ,optimizer ,epoch ,epoch_step ,epoch_step_val ,gen ,gen_val ,UnFreeze_Epoch ,False #Cuda
-                          ,False # fp16
-                          ,scaler ,save_period ,save_dir
-                          ,0 #local_rank
-            )
+
+            # --------------------------------#
+            #  如果模型有冻结学习部分
+            #  则解冻，并设置参数
+            # --------------------------------#
+            if epoch >= UnFreeze_Epoch and not UnFreeze_flag and Freeze_Train:
+                batch_size = Unfreeze_batch_size
+                # 判断当前batch_size，自适应调整学习率
+                nbs = 64
+                lr_limit_max = 1e-3 if optimizer_type in ['adam' ,'adamw'] else 5e-2
+                lr_limit_min = 3e-4 if optimizer_type in ['adam' ,'adamw'] else 5e-4
+                Init_lr_fit = min(max(batch_size / nbs * Init_lr , lr_limit_min) ,lr_limit_max)
+                Min_lr_fit = min(max(batch_size / nbs * Min_lr ,lr_limit_min * 1e-2) ,lr_limit_max *1e-2)
+                # 获得学习率下降的公式
+                lr_scheduler_func = get_lr_scheduler(lr_decay_type ,Init_lr_fit ,Min_lr_fit ,UnFreeze_Epoch)
+
+                for param in model.backbone.parameters():
+                    param.requires_grad = True
+
+                epoch_step = num_train//batch_size
+                epoch_step_val = num_val//batch_size
+                if epoch_step == 0 or epoch_step_val == 0:
+                    raise ValueError("训练中数据集小，无法进行训练，请扩充数据集")
+
+                gen = DataLoader(train_dataset ,shuffle=shuffle ,batch_size=batch_size,num_workers=num_workers ,pin_memory=True,
+                                 drop_last=True ,collate_fn=yolo_dataset_collate ,sampler=train_sampler)
+                gen_val = DataLoader(val_dataset ,shuffle=shuffle ,batch_size=batch_size ,num_workers=num_workers ,pin_memory=True,
+                                drop_last=True ,collate_fn=yolo_dataset_collate ,sampler=val_sampler)
+
+                UnFreeze_flag = True
+
+            # --------------------------------#
+            #  当前epoch训练模型
+            # --------------------------------#
+            gen.dataset.epoch_now = epoch
+            gen_val.dataset.epoch_now = epoch
+
+            # fit_one_epoch(model_train ,model .yolo_loss ,loss_history ,eval_callback ,optimizer ,epoch ,epoch_step ,epoch_step_val ,gen ,gen_val ,UnFreeze_Epoch ,False #Cuda
+            #               ,False # fp16
+            #               ,scaler ,save_period ,save_dir
+            #               ,0 #local_rank
+            # )
+        # done for
 
         # TODO cuda local ranks
         ''''
