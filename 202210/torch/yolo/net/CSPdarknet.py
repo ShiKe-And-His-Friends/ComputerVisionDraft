@@ -143,7 +143,7 @@ class CSPDarkNet(nn.Module):
         x = self.stages[1](x)
         out3 = self.stages[2](x)
         out4 = self.stages[3](out3)
-        out5 = self.stages[0](out4)
+        out5 = self.stages[4](out4)
         return out3 ,out4 ,out5
 
 def darknet53(pretrained = False):
