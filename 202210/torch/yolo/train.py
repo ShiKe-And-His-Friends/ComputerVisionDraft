@@ -25,6 +25,8 @@ from utils.callback import LossHistory ,EvalCallback
 from utils.utils_fit import fit_one_epoch
 
 if __name__ == '__main__':
+    #TODO revisit this configure variable values
+
     # *********************************************************#
     # configure
     # *********************************************************#
@@ -144,7 +146,7 @@ if __name__ == '__main__':
     #  记录Loss数据
     # --------------------------------#
     if local_rank == 0:
-        time_str = datetime.datetime.strftime(datetime.datetime.now() ,'%Y_%m_%d_$H_%M_%S')
+        time_str = datetime.datetime.strftime(datetime.datetime.now() ,'%Y_%m_%d_%H_%M_%S')
         log_dir = os.path.join(save_dir ,"loss_" + str(time_str))
         loss_history = LossHistory(log_dir ,model ,input_shape=input_shape)
     else:
@@ -245,7 +247,7 @@ if __name__ == '__main__':
 
         # 学习率下降的公式
         lr_scheduler_func = get_lr_scheduler(lr_decay_type ,Init_lr_fit ,Min_lr_fit ,UnFreeze_Epoch)
-        print('lr scheduler functions: %s' % lr_scheduler_func)
+        print('lr scheduler functions: %s' % lr_decay_type)
 
         # 判断每一个世代的长度
         epoch_step = num_train // batch_size
