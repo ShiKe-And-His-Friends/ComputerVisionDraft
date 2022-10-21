@@ -198,7 +198,7 @@ if __name__ == '__main__':
             classes_path = classes_path ,anchors_path=anchors_path ,anchors_mask = anchors_mask ,model_path = model_path ,input_shape = input_shape,\
             Init_Epoch = Init_Epoch ,UnFreeze_Epoch = UnFreeze_Epoch ,Freeze_batch_size = Freeze_batch_size ,Unfreeze_batch_size = Unfreeze_batch_size ,Freeze_Train = Freeze_Train,\
             Init_lr = Init_lr ,Min_lr = Min_lr ,optimizer_type = optimizer_type ,momentum = momentum ,lr_decay_type = lr_decay_type ,\
-            save_period = save_period ,save_dir = save_dir ,num_workers = num_workers ,num_train = num_train , num_val = num_val
+            save_period = save_period ,save_dir = save_dir ,num_workers = num_workers ,num_train = num_train , num_val = num_val ,lr_scheduler_fuc = lr_decay_type
         )
 
     #TODO 总训练世代
@@ -247,7 +247,6 @@ if __name__ == '__main__':
 
         # 学习率下降的公式
         lr_scheduler_func = get_lr_scheduler(lr_decay_type ,Init_lr_fit ,Min_lr_fit ,UnFreeze_Epoch)
-        print('lr scheduler functions: %s' % lr_decay_type)
 
         # 判断每一个世代的长度
         epoch_step = num_train // batch_size

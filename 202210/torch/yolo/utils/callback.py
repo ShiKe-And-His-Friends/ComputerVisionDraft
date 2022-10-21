@@ -1,6 +1,6 @@
 import os
 import torch
-from matplotlib.pyplot import plot as plt
+from matplotlib import pyplot as plt
 import scipy.signal
 from torch.utils.tensorboard import SummaryWriter
 
@@ -26,14 +26,14 @@ class LossHistory():
         self.losses.append(loss)
         self.val_loss.append(val_loss)
 
-        with open(os.path.join(self.log_dir ,"epoch_loss.txt" ,'a')) as f:
+        with open(os.path.join(self.log_dir ,"epoch_loss.txt" ),'a') as f:
             f.write((str(loss)))
             f.write("\n")
             f.close()
         with open(os.path.join(self.log_dir ,"epoch_val_loss.txt") ,'a') as f:
             f.write(str(val_loss))
             f.write("\n")
-            f.clos()
+            f.close()
         self.writer.add_scalar('loss' ,loss ,epoch)
         self.writer.add_scalar('val_loss' ,val_loss ,epoch)
         self.loss_plot()
