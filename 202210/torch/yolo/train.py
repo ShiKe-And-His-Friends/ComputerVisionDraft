@@ -30,12 +30,40 @@ if __name__ == '__main__':
     # *********************************************************#
     # configure
     # *********************************************************#
-    classes_path = 'E:/Torch/yolov4-pytorch-master/model_data/voc_classes.txt' # 分类数量
+    classes_path = 'E:/Torch/yolov4-pytorch-master/model_data/voc_classes.txt'
     anchors_path = 'E:/Torch/yolov4-pytorch-master/model_data/yolo_anchors.txt'
+
     train_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_train.txt' # 训练图片和路径
     val_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_val.txt'  # 验证图片和路径
-    Cuda = False # 是否使用GPU
+    Cuda = True # 是否使用GPU
     num_workers = 4 #多线程读取
+    # ------------------------------------------------------------------------------------------------------------------------------------#
+    #  训练分两个部分，分别是冻结阶段和解冻阶段。设置冻结阶段是为了满足机器性能不足的设备的训练需求。
+    #  冻结训练需要的显存较小，显卡非常差的情况下，可设置Freeze_Epoch 等于 UnFreeze_Epoch ，此时仅进行冻结训练
+    #
+    #  提供若干参数设置建议，训练时根据需求灵活调整
+    #   （一） 整个模型的预训练权重开始训练
+    #       Adam：
+    #           Init_Epoch = 0 , Freeze_Epoch = 50 , UnFreeze_Epoch = 100 , Freeze_Train = True ,opeimizer = 'adam' ,Init_lr = 1e-3 ,weight_decay = 0 (冻结)
+    #           Init_Epoch = 0 , UnFreeze_Epoch = 100 ,Freeze_Train = False ,optimizer_type = 'adam' ,Init_lr = 1e-3 ,weight_decay = 0 （不冻结）
+    #       SGD:
+    #           Init_Epoch = 0 , Freeze_Epoch = 50 ,UnFreeze_Epoch = 300 , Freeze_Train = True ,optimizer_type = 'sgd' ,Init_lr = 1e-2 ,weight_decay = 5e-4 (冻结)
+    #           Init_Epoch = 0 ,UnFreeze_Epoch = 300 ,Freeze_Train = False ,optimizer_type = 'sgd' ,Init_lr = 1e-2 ,weight_decay=5e-4 (不冻结)
+    #   （二） 从主干网络的预训练权重开始训练
+    #       Adam SGD 参数同上
+    #       其中：由于从主干网络预训练权重开始训练，主干的权值不一定适合目标检测，需要更多的训练跳出局部最优解
+    #           UnFreeze_Epoch 可以设置150-300之间调整 ，YOLOv5与YOLOX均推荐300
+    #           Adam相对于SGD收敛快一些，因此UnFreeze_Epoch理论上可以小一点，但是推荐更多的Epoch
+    #   （三） 从0开始训练：
+    #       Init_Epoch = 0 ,UnFreeze_Epoch >= 300 ,Unfreeze_batch_size >=16 ,Freeze_Train = False （不冻结训练）
+    #       其中: UnFreeze_Epoch 尽量不小于300。 optimizer_type = 'sgd' ,Init_lr = 1e-2 ,mosic = True
+    #   (四) batch_size 的设置
+    #       在显卡接受的范围内，以大为好。现存不足与数据集大小无关吧。提示显存不足（OOM或CUDA out of memory）只能调小batch_size
+    #       受到BatchNorm层影响，batch_size 最小为2 ，不能为1
+    #       正常情况下Freeze_batch_size 建议为Unfreeze_batch_size 的1-2倍，不建议设置差距过大，因为关系到学习率的自动调整
+    #
+    # ------------------------------------------------------------------------------------------------------------------------------------#
+
     pretrained = True #  是否对主干Backbone进行训练，不训练则直接加载model_path
     #是否进行冻结训练 #默认先冻结主干训练后解冻训练
     Freeze_Train = True
@@ -47,6 +75,9 @@ if __name__ == '__main__':
     distributed = False  # 指定是否单卡训练
     sync_bn = False # 是否DDP模式多卡可用
     fp16 = False # 是否使用很合精度验证，可减少一半的显存，需要pytorch1.7.1以上
+
+    #TODO Mosaic 数据增强的效果更好
+
     ngpus_per_node = torch.cuda.device_count()
     if distributed:
         dist.init_process_group(backend='nccl')
@@ -67,7 +98,7 @@ if __name__ == '__main__':
     lr_decay_type = 'cos' # 学习率下降的方式，有cos step
     optimizer_type = "sgd"
     momentum = 0.937
-    weight_decay = 5e-7
+    weight_decay = 5e-4
     save_period = 10 #多少次epoch保存一次权值
     input_shape = [416, 416]
     anchors_mask = [[6,7,8] ,[3,4,5] ,[0,1,2]] #用于帮助代码找到对应的先验框，一般不修改

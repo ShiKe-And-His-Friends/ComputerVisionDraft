@@ -15,13 +15,15 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
 
     #TODO kill thie debug variable
     # small samples to train ,delete later
+    DEBUG = False
     times = 0
 
     for iteration,batch in enumerate(gen):
-        times += 1
-        if times == 3:
-            print('\nDebug small example train')
-            break
+        if DEBUG:
+            times += 1
+            if times == 3:
+                print('\nDebug small example train')
+                break
         if iteration >= epoch_step:
             break
         images ,targets = batch[0] ,batch[1]
@@ -90,10 +92,11 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
 
     model_train.eval()
     for iteration,batch in enumerate(gen_val):
-        times += 1
-        if times == 3:
-            print('\nDebug small example validate')
-            break
+        if DEBUG:
+            times += 1
+            if times == 3:
+                print('\nDebug small example validate')
+                break
         if iteration >= epoch_step_val:
             break
         images ,targets = batch[0],batch[1]

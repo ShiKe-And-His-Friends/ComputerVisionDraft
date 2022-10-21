@@ -78,7 +78,7 @@ class YoloLoss(nn.Module):
         b1_area = b1_wh[...,0] * b1_wh[...,1]
         b2_area = b2_wh[...,0] * b2_wh[...,1]
         union_area = b1_area + b2_area - intersect_area
-        iou = intersect_area /torch.clamp(union_area ,min=1e-5)
+        iou = intersect_area /torch.clamp(union_area ,min=1e-6)
 
         # 计算中心的差距
         center_wh = b1_xy - b2_xy
