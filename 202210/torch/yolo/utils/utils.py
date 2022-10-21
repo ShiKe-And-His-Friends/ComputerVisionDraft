@@ -30,3 +30,12 @@ def preprocess_input(image):
 def get_lr(optimizer):
     for param_group in optimizer.param_groups:
         return param_group['lr']
+
+def show_config(**kwargs):
+    print("Configurations:")
+    print('-'*100)
+    print('|%25s | %70s ' % ('keys' ,'values'))
+    print('-'*100)
+    for key,value in kwargs.items() :
+        print('|%25s | %70s |' % (str(key) ,str(value)))
+    print('-'*100)

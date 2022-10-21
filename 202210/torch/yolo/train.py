@@ -10,17 +10,18 @@ import os
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.distributed as dist
 from utils.dataloader import YoloDataset ,yolo_dataset_collate
-from utils.utils import get_anchors, get_classes
+from utils.utils import get_anchors, get_classes ,show_config
 from torch.utils.data import DataLoader
 from net.yolo import YoloBody
 from net.yolo_training import YoloLoss
 from net.yolo_training import get_lr_scheduler
 from net.yolo_training import weight_init
 from net.yolo_training import set_optimizer_lr
-from utils.callback import LossHistory
+from utils.callback import LossHistory ,EvalCallback
 from utils.utils_fit import fit_one_epoch
 
 if __name__ == '__main__':
@@ -31,6 +32,7 @@ if __name__ == '__main__':
     anchors_path = 'E:/Torch/yolov4-pytorch-master/model_data/yolo_anchors.txt'
     train_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_train.txt' # 训练图片和路径
     val_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_val.txt'  # 验证图片和路径
+    Cuda = False # 是否使用GPU
     num_workers = 4 #多线程读取
     pretrained = True #  是否对主干Backbone进行训练，不训练则直接加载model_path
     #是否进行冻结训练 #默认先冻结主干训练后解冻训练
@@ -41,6 +43,8 @@ if __name__ == '__main__':
     Unfreeze_batch_size = 480
     # 设置用到的显卡
     distributed = False  # 指定是否单卡训练
+    sync_bn = False # 是否DDP模式多卡可用
+    fp16 = False # 是否使用很合精度验证，可减少一半的显存，需要pytorch1.7.1以上
     ngpus_per_node = torch.cuda.device_count()
     if distributed:
         dist.init_process_group(backend='nccl')
@@ -68,6 +72,8 @@ if __name__ == '__main__':
 
     model_path = 'E:/Torch/yolov4-pytorch-master/model_data/yolo4_weights.pth' # 训练好的权值路径，SOTA数据结果
     save_dir = 'logs' # 保存权值和日志文件
+    eval_flag = True # 是否训练时评估，评估对象为验证集
+    eval_period = 2 #10 # 多少次epoch评估一次，不建议频繁。获得验证集的mAP和get_map.py稍有不同,参数更加保守.
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # *********************************************************#
@@ -103,8 +109,9 @@ if __name__ == '__main__':
         print("wight_init()")
         weight_init(model)
     if model_path != '':
-        print("LOAD weigth file {}".format(model_path))
         # 根据预训练的全职key和weight进行加载
+        if local_rank == 0:
+            print("LOAD weigth file {}".format(model_path))
         model_dict = model.state_dict()
         pretrained_dict = torch.load(model_path ,map_location=device)
         load_key ,no_load_key ,temp_dict = [] , [] ,{}
@@ -117,14 +124,16 @@ if __name__ == '__main__':
                 no_load_key.append(k)
         model_dict.update(temp_dict)
         model.load_state_dict(model_dict)
-
-        #TODO not match keys
-
+        # 显示没有匹配上的权值
+        if local_rank == 0:
+            print("\nSucessful Load Key:",str(load_key)[:500] ,"...\nSucessful Load Key Num:",len(load_key))
+            print("\nFail To Load Key:",str(no_load_key)[:500] ,"...\nFail To Key Num:",len(no_load_key))
+            print("\n\033[1;33;44m温馨还是不温馨都要提示：head部分没有载入是正常现象，Backbone部分没有载入是错误的。\033[0m")
     # --------------------------------#
     #  损失函数
     # --------------------------------#
     yolo_loss = YoloLoss(anchors ,num_classes ,input_shape
-        ,False #cude
+        ,Cuda
         ,anchors_mask,label_smoothing
         ,0.005 #focal_loss
         ,0.25 #focal_alpha
@@ -141,11 +150,36 @@ if __name__ == '__main__':
     else:
         loss_history = None
 
-    scaler = None # torch1.2 不支持amp torch1.7以上支持fp16
-
     model_train = model.train()
 
-    #TODO 多卡bn 和或者cuda
+    # --------------------------------#
+    #  torch1.2不支持amp ,建议使用torch1.7.1及以上正确使用fp16
+    #  因此torch1.2这里显示"could not be resolve"
+    # --------------------------------#
+    if fp16:
+        from torch.cuda.amp import GradScaler as GradScaler
+        scaler = GradScaler()
+    else:
+        scaler = None
+    # --------------------------------#
+    #  多卡同步bn
+    # --------------------------------#
+    if sync_bn and ngpus_per_node > 1 and distributed:
+        model_train = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model_train)
+    elif sync_bn:
+        print("Sync_bn is not support in one gpu or not distributed.")
+
+    if Cuda:
+        if distributed:
+            # --------------------------------#
+            #  多卡平行运行
+            # --------------------------------#
+            model_train = model_train.cuda(local_rank)
+            model_train = torch.nn.parallel.DistributedDataParallel(model_train ,device_ids=[local_rank] ,find_unused_parameters=True)
+        else:
+            model_train = torch.nn.DataParallel(model)
+            cudnn.benchmark = True
+            model_train = model_train.cuda()
 
     # *********************************************************#
     #  读取数据集对应的txt
@@ -156,6 +190,14 @@ if __name__ == '__main__':
         val_lines = f.readlines()
     num_train = len(train_lines)
     num_val = len(val_lines)
+
+    if local_rank == 0:
+        show_config(
+            classes_path = classes_path ,anchors_path=anchors_path ,anchors_mask = anchors_mask ,model_path = model_path ,input_shape = input_shape,\
+            Init_Epoch = Init_Epoch ,UnFreeze_Epoch = UnFreeze_Epoch ,Freeze_batch_size = Freeze_batch_size ,Unfreeze_batch_size = Unfreeze_batch_size ,Freeze_Train = Freeze_Train,\
+            Init_lr = Init_lr ,Min_lr = Min_lr ,optimizer_type = optimizer_type ,momentum = momentum ,lr_decay_type = lr_decay_type ,\
+            save_period = save_period ,save_dir = save_dir ,num_workers = num_workers ,num_train = num_train , num_val = num_val
+        )
 
     #TODO 总训练世代
 
@@ -221,15 +263,15 @@ if __name__ == '__main__':
                              pin_memory=True,
                              drop_last=True, collate_fn=yolo_dataset_collate, sampler=val_sampler)
 
-        #TODO save weights and logs[2]
-        #eval_callback = EvalCallback(model ,input_shape ,anchors ,anchors_mask ,class_names ,num_classes ,val_lines ,log_dir ,Cuda ,\
-        #       eval_flag = eval_flag ,period = eval_peried)
-        eval_callback = None
+        if local_rank == 0:
+            eval_callback = EvalCallback(model ,input_shape ,anchors ,anchors_mask ,class_names ,num_classes ,val_lines ,log_dir ,Cuda ,\
+                  eval_flag = eval_flag ,period = eval_period)
+        else:
+            eval_callback = None
 
         # --------------------------------#
         #  开始训练模型
         # --------------------------------#
-        print("FreezeEpoch:%d , UnFreeze_flag:%d ,Freeze_Train:%d" % (UnFreeze_Epoch, UnFreeze_flag, Freeze_Train))
         for epoch in range(Init_Epoch ,UnFreeze_Epoch):
 
             # --------------------------------#
@@ -271,15 +313,13 @@ if __name__ == '__main__':
             set_optimizer_lr(optimizer ,lr_scheduler_func ,epoch)
 
             fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,optimizer ,epoch ,epoch_step ,epoch_step_val ,gen ,gen_val ,UnFreeze_Epoch ,False #Cuda
-                          ,False # fp16
+                          ,fp16
                           ,scaler ,save_period ,save_dir
                           ,0 #local_rank
             )
             break
         # done for
 
-        # TODO cuda local ranks
-        ''''
         if local_rank == 0:
             loss_history.writer.close()
-        '''
+
