@@ -125,7 +125,7 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
     if local_rank == 0:
         pbar.close()
         loss_history.append_loss(epoch+1 ,loss / epoch_step ,val_loss /epoch_step_val)
-        eval_callback.on_epoch_en(epoch+1 ,model_train)
+        eval_callback.on_epoch_end(epoch+1 ,model_train)
         print('\nEpoch:' + str(epoch+1) + "/"+ str(Epoch))
         print('Total loss: %.3f || Val loss: %.3f ' % (loss / epoch_step ,val_loss /epoch_step_val))
         # --------------------------------#

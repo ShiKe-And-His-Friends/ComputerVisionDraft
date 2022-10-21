@@ -118,6 +118,10 @@ class EvalCallback():
             outputs = self.net(images)
             outputs = self.bbox_util.decode_box(outputs)
 
+            # 将预测框进行堆叠，然后进行非极大抑制
+            results = self.bbox_util.non_max_suppression(torch.cat(output ,1) ,self.num_classes , self.input_shape,
+                    image_shape ,self.letterbox_image ,conf_thres = self.confidence ,nms_thres = self.nms_iou)
+
 
     def on_epoch_end(self ,epoch ,model_eval):
         if epoch % self.period == 0 and self.eval_flag:
