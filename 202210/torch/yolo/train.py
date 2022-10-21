@@ -11,6 +11,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import torch.distributed as dist
 from utils.dataloader import YoloDataset ,yolo_dataset_collate
 from utils.utils import get_anchors, get_classes
 from torch.utils.data import DataLoader
@@ -19,6 +20,7 @@ from net.yolo_training import YoloLoss
 from net.yolo_training import get_lr_scheduler
 from net.yolo_training import weight_init
 from net.yolo_training import set_optimizer_lr
+from utils.callback import LossHistory
 from utils.utils_fit import fit_one_epoch
 
 if __name__ == '__main__':
@@ -29,7 +31,6 @@ if __name__ == '__main__':
     anchors_path = 'E:/Torch/yolov4-pytorch-master/model_data/yolo_anchors.txt'
     train_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_train.txt' # 训练图片和路径
     val_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_val.txt'  # 验证图片和路径
-    distributed = False # 指定是否单卡训练
     num_workers = 4 #多线程读取
     pretrained = True #  是否对主干Backbone进行训练，不训练则直接加载model_path
     #是否进行冻结训练 #默认先冻结主干训练后解冻训练
@@ -38,6 +39,20 @@ if __name__ == '__main__':
     Init_Epoch = 0
     UnFreeze_Epoch = 20
     Unfreeze_batch_size = 480
+    # 设置用到的显卡
+    distributed = False  # 指定是否单卡训练
+    ngpus_per_node = torch.cuda.device_count()
+    if distributed:
+        dist.init_process_group(backend='nccl')
+        local_rank = int(os.environ["LOCAL_RANK"])
+        rank = int(os.environ["RANK"])
+        device = torch.device("cuda" ,local_rank)
+        if local_rank == 0:
+            print(f"[{os.getpid()}] (rank= {rank} ,local_rank={local_rank}) training...")
+            print("Gpu Device Count:" ,ngpus_per_node)
+    else:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        local_rank = 0
     batch_size = Freeze_batch_size if Freeze_Train else Unfreeze_batch_size
     shuffle = True if distributed else False
     label_smoothing = 0 # 标签平滑 一般0.01以下，如0.01 0.005
@@ -105,6 +120,9 @@ if __name__ == '__main__':
 
         #TODO not match keys
 
+    # --------------------------------#
+    #  损失函数
+    # --------------------------------#
     yolo_loss = YoloLoss(anchors ,num_classes ,input_shape
         ,False #cude
         ,anchors_mask,label_smoothing
@@ -113,13 +131,17 @@ if __name__ == '__main__':
         ,2 #focal_gamme
         ,'ciou' #iou_type
     )
-    time_str = datetime.datetime.strftime(datetime.datetime.now() ,'%Y_%m_%d_$H_%M_%S')
-    log_dir = os.path.join(save_dir ,"loss_" + str(time_str))
-    #loss_history = LossHistory() #TODO save weights and logs
-    loss_history = None
+    # --------------------------------#
+    #  记录Loss数据
+    # --------------------------------#
+    if local_rank == 0:
+        time_str = datetime.datetime.strftime(datetime.datetime.now() ,'%Y_%m_%d_$H_%M_%S')
+        log_dir = os.path.join(save_dir ,"loss_" + str(time_str))
+        loss_history = LossHistory(log_dir ,model ,input_shape=input_shape)
+    else:
+        loss_history = None
 
-    # torch1.2 不支持amp torch1.7以上支持fp16
-    scaler = None
+    scaler = None # torch1.2 不支持amp torch1.7以上支持fp16
 
     model_train = model.train()
 
