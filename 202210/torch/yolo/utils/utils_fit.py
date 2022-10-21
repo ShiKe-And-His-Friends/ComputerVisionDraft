@@ -13,6 +13,7 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
         pbar = tqdm(total=epoch_step ,desc=f'Epoch{epoch + 1}/{Epoch}' ,postfix=dict ,mininterval=0.3)
     model_train.train()
 
+    #TODO kill thie debug variable
     # small samples to train ,delete later
     times = 0
 
@@ -123,7 +124,6 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
 
     if local_rank == 0:
         pbar.close()
-        print('\nFinish Validation\n')
         loss_history.append_loss(epoch+1 ,loss / epoch_step ,val_loss /epoch_step_val)
         eval_callback.on_epoch_en(epoch+1 ,model_train)
         print('\nEpoch:' + str(epoch+1) + "/"+ str(Epoch))
