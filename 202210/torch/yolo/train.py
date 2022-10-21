@@ -63,14 +63,41 @@ if __name__ == '__main__':
     #       正常情况下Freeze_batch_size 建议为Unfreeze_batch_size 的1-2倍，不建议设置差距过大，因为关系到学习率的自动调整
     #
     # ------------------------------------------------------------------------------------------------------------------------------------#
+    # -------------------------------------------------------#
+    #   冻结阶段训参数
+    #       此时模型的主干被冻结了，特征提取网络不发生改变
+    #       占用的显存较小，仅对网络进行微调
+    #   Init_Epoch  模型当前开始的训练世代，开始大于Freeze_Epoch ，如设置：
+    #               Init_Epoch = 60 Freeze_Epoch = 50  UnFreeze_Epoch = 100
+    #               会跳过冻结阶段，直接从60开始，并调整对应的学习率
+    #               （断点训练时使用）
+    #   Freeze_Epoch 模型冻结训练的Freeze_Epoch
+    #                （当Freeze_Train = False时失效）
+    #   Freeze_batch_size 模型冻结训练的batch_size
+    #                （当Freeze_Train = False时失效）
+    # -------------------------------------------------------#
+    Init_Epoch = 0
+    Freeze_Epoch = 100
+    Freeze_batch_size = 8
+    # -------------------------------------------------------#
+    #   解冻阶段训参数
+    #       此时模型的主干不被冻结了，特征提取网络会发生改变
+    #       占用的显存很大，网络的参数都会发生变化
+    #   UnFreeze_Epoch 模型总训练的epoch
+    #                  SGD需要更长的时间收敛，因此设置较大的UnFreeze_Epoch
+    #                  Adam可以使用较小的UnFreeze_Epoch
+    #   Unfreeze_batch_size 模型解冻的batch_size
+    # -------------------------------------------------------#
+    UnFreeze_Epoch = 150
+    Unfreeze_batch_size = 10
+    # -------------------------------------------------------#
+    #   Freeze_Train    是否进行冻结训练
+    #                   默认先冻结主干后解冻训练
+    # -------------------------------------------------------#
+    Freeze_Train = False
 
     pretrained = True #  是否对主干Backbone进行训练，不训练则直接加载model_path
-    #是否进行冻结训练 #默认先冻结主干训练后解冻训练
-    Freeze_Train = True
-    Freeze_batch_size = 8
-    Init_Epoch = 0
-    UnFreeze_Epoch = 20
-    Unfreeze_batch_size = 480
+
     # 设置用到的显卡
     distributed = False  # 指定是否单卡训练
     sync_bn = False # 是否DDP模式多卡可用
