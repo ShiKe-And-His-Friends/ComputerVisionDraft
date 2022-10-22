@@ -89,7 +89,7 @@ if __name__ == '__main__':
     #   Unfreeze_batch_size 模型解冻的batch_size
     # -------------------------------------------------------#
     UnFreeze_Epoch = 150
-    Unfreeze_batch_size = 10
+    Unfreeze_batch_size = 12
     # -------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
     #                   默认先冻结主干后解冻训练
@@ -376,7 +376,7 @@ if __name__ == '__main__':
                           ,scaler ,save_period ,save_dir
                           ,0 #local_rank
             )
-            break
+
         # done for
 
         if local_rank == 0:

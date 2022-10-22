@@ -72,7 +72,7 @@ class YoloLoss(nn.Module):
 
         # 求真实框和预测框的IOU
         intersect_mins = torch.max(b1_mins ,b2_mins)
-        intersect_maxes = torch.max(b1_maxes ,b2_maxes)
+        intersect_maxes = torch.min(b1_maxes ,b2_maxes)
         intersect_wh = torch.max(intersect_maxes - intersect_mins ,torch.zeros_like(intersect_maxes))
         intersect_area = intersect_wh[... ,0] * intersect_wh[...,1]
         b1_area = b1_wh[...,0] * b1_wh[...,1]

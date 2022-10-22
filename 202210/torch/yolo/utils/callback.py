@@ -14,7 +14,7 @@ class LossHistory():
         self.log_dir = log_dir
         self.losses = []
         self.val_loss = []
-        print("log histoory dir save weightsL " ,self.log_dir)
+        print("log history dir save weights " ,self.log_dir)
         os.makedirs(self.log_dir)
         self.writer = SummaryWriter(self.log_dir)
         try:
