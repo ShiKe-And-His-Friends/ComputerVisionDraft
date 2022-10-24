@@ -123,6 +123,30 @@ class EvalCallback():
                     image_shape ,self.letterbox_image ,conf_thres = self.confidence ,nms_thres = self.nms_iou)
             if results[0] is None:
                 return
+<<<<<<< HEAD
+=======
+
+            top_label = np.array(results[0][:,6] ,dtype = 'int32')
+            top_conf = results[0][:,4] * results[0][: ,5]
+            top_box = results[0][:,:4]
+        top_100 = np.argsort(top_conf)[::-1][:self.max_boxes]
+        top_boxes = top_box[top_100]
+        top_conf = top_conf[top_100]
+        top_label = top_label[top_100]
+
+        for i ,c in list(enumerate(top_label)):
+            predict_class = self.class_names[int(c)]
+            box = top_boxes[i]
+            socre = str(top_conf[i])
+
+            top ,left ,bottom ,right = box
+            if predict_class not in class_names:
+                continue
+
+            f.write("%s %s %s %s %s %s\n" %(predict_class , socre[:6] , str(int(left)) , str(int(top)) , str(int(right)) , str(int(bottom))))
+        f.close()
+        return
+>>>>>>> a3dc9b283b52cddc2ece64a1d6f58fd29c48ebc5
 
     def on_epoch_end(self ,epoch ,model_eval):
         if epoch % self.period == 0 and self.eval_flag:
