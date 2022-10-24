@@ -15,7 +15,7 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
 
     #TODO kill thie debug variable
     # small samples to train ,delete later
-    DEBUG = False
+    DEBUG = True
     times = 0
 
     for iteration,batch in enumerate(gen):

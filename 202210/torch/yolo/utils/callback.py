@@ -119,9 +119,10 @@ class EvalCallback():
             outputs = self.bbox_util.decode_box(outputs)
 
             # 将预测框进行堆叠，然后进行非极大抑制
-            results = self.bbox_util.non_max_suppression(torch.cat(output ,1) ,self.num_classes , self.input_shape,
+            results = self.bbox_util.non_max_suppression(torch.cat(outputs ,1) ,self.num_classes , self.input_shape,
                     image_shape ,self.letterbox_image ,conf_thres = self.confidence ,nms_thres = self.nms_iou)
-
+            if results[0] is None:
+                return
 
     def on_epoch_end(self ,epoch ,model_eval):
         if epoch % self.period == 0 and self.eval_flag:
@@ -142,4 +143,13 @@ class EvalCallback():
                 gt_boxes = np.array([np.array(list(map(int ,box.split(',')))) for box in line[1:] ])
                 # 获得预测txt
                 self.get_map_txt(image_id ,image ,self.class_names ,self.map_out_path)
-
+                # 获得真实框txt
+                with open(os.path.join(self.map_out_path ,"ground-truth/" + image_id + ".txt") ,"w") as new_f:
+                    for box in gt_boxes:
+                        left ,top ,right ,bottom ,obj = box
+                        obj_name = self.class_names[obj]
+                        obj_name = self.class_names[obj]
+                        new_f.write("%s %s %s %s %s\n" % (obj_name ,left ,top ,right ,bottom))
+                print("Calculate Map")
+                try:
+                    temp_map = get_coco_map(class_names = self.class_names ,path = self.map_out_path)
