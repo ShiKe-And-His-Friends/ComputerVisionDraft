@@ -1,4 +1,6 @@
 import os
+import shutil
+
 import torch
 from matplotlib import pyplot as plt
 from PIL import Image
@@ -172,8 +174,29 @@ class EvalCallback():
                         obj_name = self.class_names[obj]
                         obj_name = self.class_names[obj]
                         new_f.write("%s %s %s %s %s\n" % (obj_name ,left ,top ,right ,bottom))
-                print("Calculate Map")
-                try:
-                    temp_map = get_coco_map(class_names = self.class_names ,path = self.map_out_path)[1]
-                except:
-                    temp_map = get_map(self.MINOVERLAP ,False ,path = self.map_out_path)
+            print("Calculate Map")
+            try:
+                temp_map = get_coco_map(class_names = self.class_names ,path = self.map_out_path)[1]
+            except:
+                temp_map = get_map(self.MINOVERLAP ,False ,path = self.map_out_path)
+            self.maps.append(temp_map)
+            self.epoches.append(epoch)
+
+            with open(os.path.join(self.log_dir ,"epoch_map.txt") ,"a") as f:
+                f.write(str(temp_map))
+                f.write("\n")
+
+            plt.figure()
+            plt.plot(self.epoches ,self.maps ,'red' ,linewidth = 2 ,label= "train map")
+            plt.grid(True)
+            plt.xlabel('Epoch')
+            plt.ylabel('Map s ' % str(self.MINOVERLAP))
+            plt.title("A Map Curve")
+            plt.legend(loc = "upper right")
+
+            plt.savefig(os.path.join(self.log_dir ,"epoch_map.png"))
+            plt.cla()
+            plt.close("all")
+
+            print("Get map done")
+            shutil.rmtree(self.map_out_path)
