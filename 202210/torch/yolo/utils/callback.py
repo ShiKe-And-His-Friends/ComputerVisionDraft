@@ -7,6 +7,7 @@ from tqdm import tqdm
 import scipy.signal
 from .utils import cvtColor,resize_image,preprocess_input
 from utils.utils_bbox import DecodeBox
+from utils.utils_map import get_coco_map ,get_map
 from torch.utils.tensorboard import SummaryWriter
 
 class LossHistory():
@@ -173,4 +174,6 @@ class EvalCallback():
                         new_f.write("%s %s %s %s %s\n" % (obj_name ,left ,top ,right ,bottom))
                 print("Calculate Map")
                 try:
-                    temp_map = get_coco_map(class_names = self.class_names ,path = self.map_out_path)
+                    temp_map = get_coco_map(class_names = self.class_names ,path = self.map_out_path)[1]
+                except:
+                    temp_map = get_map(self.MINOVERLAP ,False ,path = self.map_out_path)
