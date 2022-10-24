@@ -8,7 +8,7 @@ from PIL import ImageDraw ,ImageFont
 
 from net.yolo import YoloBody
 from utils.utils import (cvtColor ,get_anchors ,get_classes ,preprocess_input ,resize_image ,show_config)
-from utils.util_bbox import DecodeBox
+from utils.utils_bbox import DecodeBox
 
 """"
     训练自己的数据集需要按注释操作

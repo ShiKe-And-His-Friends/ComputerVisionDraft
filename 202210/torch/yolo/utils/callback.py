@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 import scipy.signal
 from .utils import cvtColor,resize_image,preprocess_input
-from utils.util_bbox import DecodeBox
+from utils.utils_bbox import DecodeBox
 from torch.utils.tensorboard import SummaryWriter
 
 class LossHistory():
@@ -123,8 +123,6 @@ class EvalCallback():
                     image_shape ,self.letterbox_image ,conf_thres = self.confidence ,nms_thres = self.nms_iou)
             if results[0] is None:
                 return
-<<<<<<< HEAD
-=======
 
             top_label = np.array(results[0][:,6] ,dtype = 'int32')
             top_conf = results[0][:,4] * results[0][: ,5]
@@ -146,7 +144,6 @@ class EvalCallback():
             f.write("%s %s %s %s %s %s\n" %(predict_class , socre[:6] , str(int(left)) , str(int(top)) , str(int(right)) , str(int(bottom))))
         f.close()
         return
->>>>>>> a3dc9b283b52cddc2ece64a1d6f58fd29c48ebc5
 
     def on_epoch_end(self ,epoch ,model_eval):
         if epoch % self.period == 0 and self.eval_flag:
