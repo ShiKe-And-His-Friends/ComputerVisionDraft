@@ -109,9 +109,9 @@ class EvalCallback():
         # 将彩色图片转换灰色图，防止预测时报错
         image = cvtColor(image)
         # 给图像加灰条，实现不失真的resize
-        image_data = resize_image(image, (self.input_shape[1] ,self.input_shape[2]) ,self.letterbox_image)
+        image_data = resize_image(image, (self.input_shape[1] ,self.input_shape[0]) ,self.letterbox_image)
         # 添加上batch_size维度
-        image_data = np.expand_dims(np.transpose(preprocess_input(np.array(image ,dtype='float32')) ,(2,0,1)) ,0)
+        image_data = np.expand_dims(np.transpose(preprocess_input(np.array(image_data ,dtype='float32')) ,(2,0,1)) ,0)
 
         with torch.no_grad():
             images = torch.from_numpy(image_data)

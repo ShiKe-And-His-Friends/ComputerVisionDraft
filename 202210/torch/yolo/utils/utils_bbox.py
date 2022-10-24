@@ -106,8 +106,8 @@ class DecodeBox():
             #  将输出结果归一化成小数形式
             # --------------------------------------#
             _scale = torch.Tensor([input_width ,input_height ,input_width ,input_height]).type(FloatTensor)
-            output = torch.cat((pred_boxes.view(batch_size ,-1 ,4) / _scale .conf.view(batch_size ,-1 ,1) ,pred_cls.view(batch_size ,-1 ,self.num_classes)) ,-1)
-            outputs.append(output)
+            output = torch.cat((pred_boxes.view(batch_size ,-1 ,4) / _scale ,conf.view(batch_size ,-1 ,1) ,pred_cls.view(batch_size ,-1 ,self.num_classes)) ,-1)
+            outputs.append(output.data)
         return outputs
 
     def yolo_correct_boxes(self ,box_xy ,box_wh ,input_shape ,image_shape ,letterbox_image):
