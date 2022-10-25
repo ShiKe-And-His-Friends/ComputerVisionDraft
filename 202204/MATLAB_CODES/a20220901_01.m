@@ -41,12 +41,19 @@ figure,imshow(BW)
 %%
 clc,clear
 I = imread('./data/Fig0217(a).tif');
-imshow(I,[])
 J3 = uint8(filter2(fspecial('gaussian') ,I));
-imshow(J3,[]);
+K = imabsdiff(I,J3);
+imshow(K,[]);
 
+%% image nor
+%%
+clc ,clear
+bw = imread('./data/Fig0217(a).tif');
+bw2 = imcomplement(bw);
+subplot(1 ,2 ,1),imshow(bw)
+subplot(1 ,2 ,2),imshow(bw2)
 
-
-
+%% im2double
+%%
 
 
