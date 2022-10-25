@@ -191,8 +191,8 @@ def draw_plot_func(dictionary, n_classes, window_title, plot_title,  x_label, ou
                 - red -> FP:False Positives (object detected but does not match ground-truth)
                 - orange -> FN: False Negatives (object not detected but present in the ground-turth)
         """
-        fp_sorted = {}
-        tp_sorted = {}
+        fp_sorted = []
+        tp_sorted = []
         for key in sorted_keys:
             fp_sorted.append(dictionary[key] - true_p_bar[key])
             tp_sorted.append(true_p_bar[key])
@@ -306,7 +306,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
 
     for txt_file in ground_truth_files_list:
         file_id = txt_file.split(".txt" ,1)[0]
-        filr_id = os.path.basename(os.path.normpath(file_id))
+        file_id = os.path.basename(os.path.normpath(file_id))
         temp_path = os.path.join(DR_PATH ,(file_id + ".txt"))
         if not os.path.exists(temp_path):
             error_msg = "Error not found:{}\n".format(temp_path)
@@ -376,7 +376,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
             file_id = os.path.basename(os.path.normpath(file_id))
             temp_path = os.path.join(GT_PATH ,(file_id + ".txt") )
             if class_index == 0:
-                if not os.exits(temp_path):
+                if not os.path.exists(temp_path):
                     error_msg = "Error. File not found:{}\n".format(temp_path)
                     error(error_msg)
             lines = file_lines_to_list(txt_file)
@@ -530,7 +530,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                         cv2.waitKey(20)
                         output_img_path = RESULTS_FILES_PATH + "/images/detections_one_by_one/" + class_name + "_detection" + str(idx) + ".jpg"
                         cv2.imwrite(output_img_path ,img)
-                        cv2.imweitr(img_cumulative_path ,img_cumulative)
+                        cv2.imwrite(img_cumulative_path ,img_cumulative)
 
                 cunsum = 0
                 for idx ,val in enumerate(fp):
@@ -555,7 +555,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                 if len(prec) > 0:
                     F1_text = "{0:.2f}".format(F1[score_threhold_idx]) + " = " + class_name + " F1 "
                     Recall_text = "{0:.2f}%".format(rec[score_threhold_idx]*100) + " = " + class_name + " Recall "
-                    Precision_text = "{0:,2f}%".format(prec[score_threhold_idx]*100) + " = " + class_name + " Precision "
+                    Precision_text = "{0:.2f}%".format(prec[score_threhold_idx]*100) + " = " + class_name + " Precision "
                 else :
                     F1_text = "0.00" + " = " + class_name + " F1 "
                     Recall_text = "0.00f" + " = " + class_name + " Recall "
@@ -631,7 +631,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
             text = "m_AP = {0:.2f} %".format(mAP * 100)
             results_file.write(text + "\n")
             print(text)
-        shutil.retree(TEMP_FILES_PATH)
+        shutil.rmtree(TEMP_FILES_PATH)
         """
             Count total of detection-results
         """

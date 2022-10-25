@@ -158,7 +158,14 @@ class EvalCallback():
             if not os.path.exists(os.path.join(self.map_out_path ,"detection-results")):
                 os.makedirs(os.path.join(self.map_out_path ,"detection-results"))
             print("Get map")
+            Debug = True
+            times_ = 25
+            times = 0
             for annotation_line in tqdm(self.val_lines):
+                if Debug:
+                    times += 1
+                    if times_ == times :
+                        break
                 line = annotation_line.split()
                 image_id = os.path.basename(line[0]).split('.')[0]
                 # 读取图片并转换RGB图像
