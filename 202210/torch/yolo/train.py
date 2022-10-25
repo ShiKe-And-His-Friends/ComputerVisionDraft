@@ -360,7 +360,6 @@ if __name__ == '__main__':
                                  drop_last=True ,collate_fn=yolo_dataset_collate ,sampler=train_sampler)
                 gen_val = DataLoader(val_dataset ,shuffle=shuffle ,batch_size=batch_size ,num_workers=num_workers ,pin_memory=True,
                                 drop_last=True ,collate_fn=yolo_dataset_collate ,sampler=val_sampler)
-
                 UnFreeze_flag = True
 
             # --------------------------------#

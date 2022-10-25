@@ -55,7 +55,7 @@ def log_average_miss_rate(precision ,fp_cumsum ,num_images):
         j = np.where(fppi_tmp <= ref_i)[-1][-1]
         ref[i] = mr_tmp[j]
 
-    lamr = math.exp(np.mean(np.log(np.maximun(1e-10 ,ref))))
+    lamr = math.exp(np.mean(np.log(np.maximum(1e-10 ,ref))))
     return lamr ,mr ,fppi
 
 """
@@ -135,10 +135,7 @@ def draw_text_in_image(image ,text ,pos ,color ,line_width):
 
 def preprocess_dr(gt_path ,class_names):
     images_ids = os.listdir(gt_path)
-    results = {}
-
-    images = []
-    bboxes = []
+    results = []
     for i , images_id in enumerate(images_ids):
         lines_list = file_lines_to_list(os.path.join(gt_path ,images_id))
         images_id = os.path.splitext(images_id)[0]
@@ -281,10 +278,10 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
 
     if not os.path.exists(TEMP_FILES_PATH):
         os.makedirs(TEMP_FILES_PATH)
+
     if os.path.exists(RESULTS_FILES_PATH):
         shutil.rmtree((RESULTS_FILES_PATH))
-    else:
-        os.makedirs(RESULTS_FILES_PATH)
+    os.makedirs(RESULTS_FILES_PATH)
 
     if draw_plot :
         try:
@@ -361,10 +358,15 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                     else:
                         counter_images_per_class[class_name] = 1
                     already_seen_classes.append(class_name)
-        with open(TEMP_FILES_PATH+ "/" + file_id + "_gorund_truth.json" ,"w") as outfile:
+        with open(TEMP_FILES_PATH+ "/" + file_id + "_ground_truth.json" ,"w") as outfile:
             json.dump(bounding_boxes ,outfile)
     gt_classes = list(gt_counter_per_class.keys())
     gt_classes = sorted(gt_classes)
+
+
+    print("Debug show informations")
+    Debug = False
+
     n_classes = len(gt_classes)
 
     dr_file_list = glob.glob(DR_PATH + "/*.txt")
@@ -564,11 +566,12 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                 rounded_rec = ['%.2f' % elem for elem in rec]
                 results_file.write(text+"\n Precision: " + str(rounded_prec) + "\bRecall: " + str(rounded_rec) + "\n\n")
 
-                if len(prec) > 0:
-                    print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " +"F1= " + "{0:.2f}".format(F1[score_threhold_idx])\
-                        + " ; Recall = " + "{0:.2f}%".format(rec[score_threhold_idx] * 100) + " ;Precision= " + "{0:.2f}%".format(prec[score_threhold_idx] * 100))
-                else:
-                    print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " + "F1=0.00% ;Recall= 0.00% ; Precision=0.00%")
+                if Debug:
+                    if len(prec) > 0:
+                        print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " +"F1= " + "{0:.2f}".format(F1[score_threhold_idx])\
+                            + " ; Recall = " + "{0:.2f}%".format(rec[score_threhold_idx] * 100) + " ;Precision= " + "{0:.2f}%".format(prec[score_threhold_idx] * 100))
+                    else:
+                        print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " + "F1=0.00% ;Recall= 0.00% ; Precision=0.00%")
                 ap_dictionary[class_name] = ap
 
                 n_images = counter_images_per_class[class_name]
@@ -618,7 +621,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                     axes = plt.gca()
                     axes.set_xlim([0.0 ,1.0])
                     axes.set_ylim([0.0 ,1.05])
-                    fig.savefig(RESULTS_FILES_PATH + "/Precision/" + class_name + '.png"')
+                    fig.savefig(RESULTS_FILES_PATH + "/Precision/" + class_name + '.png')
                     plt.cla()
 
             if show_animation:
@@ -628,9 +631,10 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                 return 0
             results_file.write("\n# mAP of all classes\n")
             mAP = sum_AP / n_classes
-            text = "m_AP = {0:.2f} %".format(mAP * 100)
+            text = "m_AP = {0:.2f}%".format(mAP * 100)
             results_file.write(text + "\n")
-            print(text)
+            if Debug:
+                print(text)
         shutil.rmtree(TEMP_FILES_PATH)
         """
             Count total of detection-results

@@ -104,7 +104,6 @@ class EvalCallback():
                 f.close()
 
     def get_map_txt(self ,image_id ,image ,class_names ,map_out_path):
-        f = open(os.path.join(map_out_path ,"detection-results/" + image_id + ".txt") ,'w',encoding='utf-8')
         image_shape = np.array(np.shape(image)[0:2])
         # 将彩色图片转换灰色图，防止预测时报错
         image = cvtColor(image)
@@ -135,6 +134,7 @@ class EvalCallback():
         top_conf = top_conf[top_100]
         top_label = top_label[top_100]
 
+        f = open(os.path.join(map_out_path, "detection-results/" + image_id + ".txt"), 'w', encoding='utf-8')
         for i ,c in list(enumerate(top_label)):
             predict_class = self.class_names[int(c)]
             box = top_boxes[i]
@@ -157,7 +157,7 @@ class EvalCallback():
                 os.makedirs(os.path.join(self.map_out_path ,"ground-truth"))
             if not os.path.exists(os.path.join(self.map_out_path ,"detection-results")):
                 os.makedirs(os.path.join(self.map_out_path ,"detection-results"))
-            print("Get map")
+            print("\nGet map")
             Debug = True
             times_ = 25
             times = 0
@@ -179,13 +179,12 @@ class EvalCallback():
                     for box in gt_boxes:
                         left ,top ,right ,bottom ,obj = box
                         obj_name = self.class_names[obj]
-                        obj_name = self.class_names[obj]
                         new_f.write("%s %s %s %s %s\n" % (obj_name ,left ,top ,right ,bottom))
-            print("Calculate Map")
+            print("\nCalculate Map")
             try:
                 temp_map = get_coco_map(class_names = self.class_names ,path = self.map_out_path)[1]
             except:
-                temp_map = get_map(self.MINOVERLAP ,False ,path = self.map_out_path)
+                temp_map = get_map(self.MINOVERLAP ,True ,path = self.map_out_path)
             self.maps.append(temp_map)
             self.epoches.append(epoch)
 
@@ -197,7 +196,7 @@ class EvalCallback():
             plt.plot(self.epoches ,self.maps ,'red' ,linewidth = 2 ,label= "train map")
             plt.grid(True)
             plt.xlabel('Epoch')
-            plt.ylabel('Map s ' % str(self.MINOVERLAP))
+            plt.ylabel('Map %s'% str(self.MINOVERLAP))
             plt.title("A Map Curve")
             plt.legend(loc = "upper right")
 

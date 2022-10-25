@@ -15,7 +15,7 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
 
     #TODO kill thie debug variable
     # small samples to train ,delete later
-    DEBUG = True
+    DEBUG = False
     times = 0
 
     for iteration,batch in enumerate(gen):
@@ -88,8 +88,6 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
         pbar.close()
         pbar = tqdm(total=epoch_step_val ,desc=f'Epoch {epoch+1}/{Epoch}' ,postfix=dict ,mininterval=0.3 )
 
-    times = 0
-
     model_train.eval()
     for iteration,batch in enumerate(gen_val):
         if DEBUG:
@@ -129,7 +127,6 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
         pbar.close()
         loss_history.append_loss(epoch+1 ,loss / epoch_step ,val_loss /epoch_step_val)
         eval_callback.on_epoch_end(epoch+1 ,model_train)
-        print('\nEpoch:' + str(epoch+1) + "/"+ str(Epoch))
         print('Total loss: %.3f || Val loss: %.3f ' % (loss / epoch_step ,val_loss /epoch_step_val))
         # --------------------------------#
         #  保存权值
