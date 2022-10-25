@@ -48,8 +48,7 @@ class DecodeBox():
             #  batch_size ,3 ,26 ,26 ,85
             #  batch_size ,3 ,52 ,52 ,85
             # --------------------------------------#
-            prediction = input.view(batch_size ,len(self.anchors_mask[i]) ,
-                        self.bbox_attrs ,input_height ,input_width).permute(0,1,3,4,2).contiguous()
+            prediction = input.view(batch_size ,len(self.anchors_mask[i]) ,self.bbox_attrs ,input_height ,input_width).permute(0,1,3,4,2).contiguous()
 
             # --------------------------------------#
             #  先验框中心位置的调整参数
@@ -68,7 +67,7 @@ class DecodeBox():
             # --------------------------------------#
             #  种类置信度
             # --------------------------------------#
-            pred_cls = torch.sigmoid(prediction[...,5])
+            pred_cls = torch.sigmoid(prediction[...,5:])
 
             FloatTensor = torch.cuda.FloatTensor if x.is_cuda else torch.FloatTensor
             LongTensor  = torch.cuda.LongTensor if x.is_cuda else torch.LongTensor
@@ -79,15 +78,15 @@ class DecodeBox():
             # --------------------------------------#
             grid_x = torch.linspace(0 ,input_width-1 ,input_width).repeat(input_height ,1).repeat(
                 batch_size * len(self.anchors_mask[i]) ,1 ,1).view(x.shape).type(FloatTensor)
-            grid_y = torch.linspace(0 ,input_height-1 ,input_height).repeat(input_width ,1).repeat(
+            grid_y = torch.linspace(0 ,input_height-1 ,input_height).repeat(input_width ,1).t().repeat(
                 batch_size * len(self.anchors_mask[i]) ,1 ,1).view(y.shape).type(FloatTensor)
 
             # --------------------------------------#
             #  根据网格格式生成先验框的宽高
             #  batch_size,3,13,13
             # --------------------------------------#
-            anchor_w = FloatTensor(scaled_anchors).index_select(1,LongTensor[0])
-            anchor_h = FloatTensor(scaled_anchors).index_select(1,LongTensor[1])
+            anchor_w = FloatTensor(scaled_anchors).index_select(1,LongTensor([0]))
+            anchor_h = FloatTensor(scaled_anchors).index_select(1,LongTensor([1]))
             anchor_w = anchor_w.repeat(batch_size ,1).repeat(1 ,1 ,input_height * input_width).view(w.shape)
             anchor_h = anchor_h.repeat(batch_size ,1).repeat(1,1,input_height *input_width).view(h.shape)
 
@@ -96,7 +95,7 @@ class DecodeBox():
             #  首先调整先验框中心，从先验框中心向右下偏移
             #  再调整先验框的宽高
             # --------------------------------------#
-            pred_boxes = FloatTensor(prediction[...,4].shape)
+            pred_boxes = FloatTensor(prediction[...,:4].shape)
             pred_boxes[...,0] = x.data + grid_x
             pred_boxes[...,1] = y.data + grid_y
             pred_boxes[...,2] = torch.exp(w.data) * anchor_w
@@ -147,7 +146,7 @@ class DecodeBox():
         box_corner[:, :, 1] = prediction[:, :, 1] - prediction[:, :, 3] / 2
         box_corner[:, :, 2] = prediction[:, :, 0] + prediction[:, :, 2] / 2
         box_corner[:, :, 3] = prediction[:, :, 1] + prediction[:, :, 3] / 2
-        prediction[:,:,4] = box_corner[:,:,:4]
+        prediction[:,:,:4] = box_corner[:,:,:4]
 
         output = [None for _ in range(len(prediction))]
         for i , image_pred in enumerate(prediction):
@@ -156,7 +155,7 @@ class DecodeBox():
             #  class_conf [num_anchor ,1] 种类置信度
             #  class_pred [num_anchor ,1] 种类
             # --------------------------------------#
-            class_conf ,class_pred = torch.max(image_pred[: ,5 : 5 + num_classes])
+            class_conf ,class_pred = torch.max(image_pred[: ,5 : 5 + num_classes] ,1 ,keepdim=True)
 
             # --------------------------------------#
             #  利用置信度进行第一轮筛选
