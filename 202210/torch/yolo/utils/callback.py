@@ -149,7 +149,7 @@ class EvalCallback():
         return
 
     def on_epoch_end(self ,epoch ,model_eval):
-        if epoch % self.period == 0 and self.eval_flag:
+        if epoch % self.period == 1 and self.eval_flag:
             self.net = model_eval
             if not os.path.exists(self.map_out_path):
                 os.makedirs(self.map_out_path)
@@ -180,17 +180,30 @@ class EvalCallback():
                         left ,top ,right ,bottom ,obj = box
                         obj_name = self.class_names[obj]
                         new_f.write("%s %s %s %s %s\n" % (obj_name ,left ,top ,right ,bottom))
-            print("\nCalculate Map")
-            try:
-                temp_map = get_coco_map(class_names = self.class_names ,path = self.map_out_path)[1]
-            except:
-                temp_map = get_map(self.MINOVERLAP ,True ,path = self.map_out_path)
-            self.maps.append(temp_map)
-            self.epoches.append(epoch)
 
+            # step1 coco module evaluate
+            print("\nCalculate COCO Map")
+            try:
+                temp_coco_map = get_coco_map(class_names = self.class_names ,path = self.map_out_path)[1]
+                with open(os.path.join(self.log_dir, "epoch_coco_map.txt"), "a") as f:
+                    f.write(str(temp_coco_map))
+                    f.write("\n")
+                    f.close()
+                print("Get COCO Map done")
+            except:
+                print("\nCoco evaluate mapping failure.")
+
+            # step2 project module evaluate
+            print("\nCalculate Map")
+            temp_map = get_map(self.MINOVERLAP, True, path=self.map_out_path)
             with open(os.path.join(self.log_dir ,"epoch_map.txt") ,"a") as f:
                 f.write(str(temp_map))
                 f.write("\n")
+                f.close()
+            print("Get Map done")
+
+            self.maps.append(temp_map)
+            self.epoches.append(epoch)
 
             plt.figure()
             plt.plot(self.epoches ,self.maps ,'red' ,linewidth = 2 ,label= "train map")
@@ -204,5 +217,4 @@ class EvalCallback():
             plt.cla()
             plt.close("all")
 
-            print("Get map done")
             # shutil.rmtree(self.map_out_path)

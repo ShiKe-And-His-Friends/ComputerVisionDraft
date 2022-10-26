@@ -134,18 +134,84 @@ def draw_text_in_image(image ,text ,pos ,color ,line_width):
     text_width , _ = cv2.getTextSize(text, font ,fontScale ,lineType)[0]
     return image ,(line_width + text_width)
 
-def preprocess_dr(gt_path ,class_names):
-    images_ids = os.listdir(gt_path)
+def preprocess_gt(gt_path ,class_names):
+    image_ids = os.listdir(gt_path)
+
+    results = {}
+
+    images = []
+    bboxes = []
+    for i ,image_id in enumerate(image_ids):
+        line_list = file_lines_to_list(os.path.join(gt_path ,image_id))
+        bboxes_per_image = []
+        image = {}
+        image_id = os.path.splitext(image_id)[0]
+        image['file_name'] = image_id + ".jpg"
+        image['width'] = 1
+        image['height'] = 1
+        image['id'] = str(image_id)
+
+        for line in line_list:
+            difficult = 0
+            if "difficult" in line:
+                line_split = line.split()
+                left ,top ,right ,bottom ,_difficult = line_split[-5:]
+                class_name = ""
+                for name in line_split[:-5]:
+                    class_name += name + " "
+                class_name = class_name[:-1]
+                difficult = 1
+            else :
+                line_split = line.split()
+                left ,top ,right ,bottom  = line_split[-4:]
+                class_name = ""
+                for name in line_split[:-4]:
+                    class_name += name + " "
+                class_name = class_name[:-1]
+            left ,top ,right ,bottom = float(left) ,float(top) ,float(right) ,float(bottom)
+            if class_name not in class_names:
+                continue
+            cls_id = class_names.index(class_name) + 1
+            bbox = [left ,top ,right-left ,bottom - top , difficult ,str(image_id) ,cls_id , (right-left)*(bottom-top)-10.0]
+            bboxes_per_image.append(bbox)
+        images.append(image)
+        bboxes.extend(bboxes_per_image)
+    results['images'] = images
+
+    categories = []
+    for i , cls in enumerate(class_names):
+        category = {}
+        category['supercategory'] = cls
+        category['name'] = cls
+        category['id'] = i+1
+        categories.append(category)
+    results['categories'] = categories
+
+    annotations = []
+    for i ,box in enumerate(bboxes):
+        annotation = {}
+        annotation['area'] = box[-1]
+        annotation['category_id'] = box[-2]
+        annotation['image_id'] = box[-3]
+        annotation['iscrowd'] = box[-4]
+        annotation['bbox'] = box[:4]
+        annotation['id'] = i
+        annotations.append(annotation)
+    results['annotations'] = annotations
+    return  results
+
+def preprocess_dr(dr_path ,class_names):
+    image_ids = os.listdir(dr_path)
     results = []
-    for i , images_id in enumerate(images_ids):
-        lines_list = file_lines_to_list(os.path.join(gt_path ,images_id))
-        images_id = os.path.splitext(images_id)[0]
+    for i , image_id in enumerate(image_ids):
+        lines_list = file_lines_to_list(os.path.join(dr_path ,image_id))
+        images_id = os.path.splitext(image_id)[0]
         for line in lines_list:
             line_split = line.split()
             confidence , left ,top ,right ,bottom = line_split[-5:]
             class_name = ""
             for name in line_split[:-5]:
-                class_name += name +  " "
+                class_name += name + " "
             class_name = class_name[:-1]
             left ,top ,right ,bottom = float(left),float(top),float(right),float(bottom)
             result = {}
@@ -156,7 +222,7 @@ def preprocess_dr(gt_path ,class_names):
             result["bbox"] = [left ,top ,right - left ,bottom - top]
             result["score"] = float(confidence)
             results.append(result)
-        return results
+    return results
 
 """"
     Plot - 
@@ -590,6 +656,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                     axes.set_ylim([0.0 ,1.05])
                     fig.savefig(RESULTS_FILES_PATH + "/AP/" + class_name + ".png")
                     plt.cla()
+                    plt.close()
 
                     plt.plot(score ,F1 ,"-" ,color = 'orangered')
                     plt.title('class:' + F1_text + "\nscore_threhold=" + str(score_threhold))
@@ -600,6 +667,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                     axes.set_ylim([0.0 ,1.05])
                     fig.savefig(RESULTS_FILES_PATH + "/F1/" + class_name + ".png")
                     plt.cla()
+                    plt.close()
 
                     plt.plot(score ,rec ,"-H" ,color = 'gold')
                     plt.title('class: ' +Recall_text + "\nScore_threhold=" + str(score_threhold) )
@@ -610,6 +678,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                     axes.set_ylim([0.0 ,1.05])
                     fig.savefig(RESULTS_FILES_PATH + "/Recall/" + class_name + ".png")
                     plt.cla()
+                    plt.close()
 
                     plt.plot(score ,prec ,"-s" ,color ='palevioletred')
                     plt.title("class: " + Precision_text + "\nScore_threhold=" + str(score_threhold))
@@ -620,6 +689,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                     axes.set_ylim([0.0 ,1.05])
                     fig.savefig(RESULTS_FILES_PATH + "/Precision/" + class_name + '.png')
                     plt.cla()
+                    plt.close()
 
             if show_animation:
                 cv2.destroyAllWindows()
@@ -749,13 +819,14 @@ def get_coco_map(class_names ,path):
     DR_JOIN_PATH = os.path.join(COCO_PATH ,"instances_dr.json")
 
     with open(GT_JOIN_PATH ,"w") as f:
-        result_gt = preprocess_dr(GT_PATH ,class_names)
+        result_gt = preprocess_gt(GT_PATH ,class_names)
         json.dump(result_gt ,f ,indent = 4)
         f.close()
 
     with open(DR_JOIN_PATH ,"w") as f:
         result_dr = preprocess_dr(DR_PATH ,class_names)
         json.dump(result_dr ,f ,indent = 4)
+        f.close()
         if len(result_dr) == 0:
             print("未检测到任何目标")
             return [0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ]
