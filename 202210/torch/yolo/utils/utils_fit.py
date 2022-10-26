@@ -9,6 +9,9 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
     loss = 0
     val_loss = 0
 
+    if get_debug_switch_state():
+        print('\nDebug small example train')
+
     if local_rank == 0:
         pbar = tqdm(total=epoch_step ,desc=f'Epoch{epoch + 1}/{Epoch}' ,postfix=dict ,mininterval=0.3)
     model_train.train()
@@ -21,7 +24,6 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
         if get_debug_switch_state():
             times += 1
             if times == 3:
-                print('\nDebug small example train')
                 break
         if iteration >= epoch_step:
             break

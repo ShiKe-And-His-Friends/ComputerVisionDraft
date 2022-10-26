@@ -133,7 +133,7 @@ if __name__ == '__main__':
     model_path = 'E:/Torch/yolov4-pytorch-master/model_data/yolo4_weights.pth' # 训练好的权值路径，SOTA数据结果
     save_dir = 'logs' # 保存权值和日志文件
     eval_flag = True # 是否训练时评估，评估对象为验证集
-    eval_period = 2 #10 # 多少次epoch评估一次，不建议频繁。获得验证集的mAP和get_map.py稍有不同,参数更加保守.
+    eval_period = 10 # 多少次epoch评估一次，不建议频繁。获得验证集的mAP和get_map.py稍有不同,参数更加保守.
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # *********************************************************#
