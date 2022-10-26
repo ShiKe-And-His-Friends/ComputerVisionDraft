@@ -597,14 +597,14 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                         cv2.imwrite(output_img_path ,img)
                         cv2.imwrite(img_cumulative_path ,img_cumulative)
 
-                cunsum = 0
+                consum = 0
                 for idx ,val in enumerate(fp):
-                    fp[idx] += cunsum
-                    cunsum += val
-                cunsun = 0
+                    fp[idx] += consum
+                    consum += val
+                consum = 0
                 for idx ,val in enumerate(tp):
-                    tp[idx] += cunsum
-                    cunsum += val
+                    tp[idx] += consum
+                    consum += val
                 rec = tp[:]
                 for idx ,val in enumerate(tp):
                     rec[idx] = float(tp[idx]) / np.maximum(gt_counter_per_class[class_name] ,1)
