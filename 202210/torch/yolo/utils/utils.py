@@ -1,6 +1,10 @@
 import numpy as np
 from PIL import Image
 
+def get_debug_switch_state():
+    debug_now = True
+    return debug_now
+
 def resize_image(image ,size ,letterbox_image):
     iw ,ih = image.size
     w , h = size

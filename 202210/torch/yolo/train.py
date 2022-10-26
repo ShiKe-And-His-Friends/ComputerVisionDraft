@@ -14,7 +14,7 @@ import torch.backends.cudnn as cudnn
 import torch.optim as optim
 import torch.distributed as dist
 from utils.dataloader import YoloDataset ,yolo_dataset_collate
-from utils.utils import get_anchors, get_classes ,show_config
+from utils.utils import get_anchors, get_classes ,show_config ,get_debug_switch_state
 from torch.utils.data import DataLoader
 from net.yolo import YoloBody
 from net.yolo_training import YoloLoss
@@ -375,7 +375,8 @@ if __name__ == '__main__':
                           ,scaler ,save_period ,save_dir
                           ,0 #local_rank
             )
-
+            if get_debug_switch_state():
+                break
         # done for
 
         if local_rank == 0:

@@ -9,6 +9,7 @@ import math
 
 import matplotlib
 import numpy as np
+from .utils import get_debug_switch_state
 from matplotlib import pyplot as plt
 try:
     from pycocotools.coco import COCO
@@ -363,10 +364,6 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
     gt_classes = list(gt_counter_per_class.keys())
     gt_classes = sorted(gt_classes)
 
-
-    print("Debug show informations")
-    Debug = False
-
     n_classes = len(gt_classes)
 
     dr_file_list = glob.glob(DR_PATH + "/*.txt")
@@ -566,7 +563,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                 rounded_rec = ['%.2f' % elem for elem in rec]
                 results_file.write(text+"\n Precision: " + str(rounded_prec) + "\bRecall: " + str(rounded_rec) + "\n\n")
 
-                if Debug:
+                if not get_debug_switch_state():
                     if len(prec) > 0:
                         print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " +"F1= " + "{0:.2f}".format(F1[score_threhold_idx])\
                             + " ; Recall = " + "{0:.2f}%".format(rec[score_threhold_idx] * 100) + " ;Precision= " + "{0:.2f}%".format(prec[score_threhold_idx] * 100))
@@ -633,7 +630,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
             mAP = sum_AP / n_classes
             text = "m_AP = {0:.2f}%".format(mAP * 100)
             results_file.write(text + "\n")
-            if Debug:
+            if not get_debug_switch_state():
                 print(text)
         shutil.rmtree(TEMP_FILES_PATH)
         """
