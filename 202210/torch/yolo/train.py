@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     train_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_train.txt' # 训练图片和路径
     val_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_val.txt'  # 验证图片和路径
-    Cuda = False # 是否使用GPU
+    Cuda = True # 是否使用GPU
     num_workers = 4 #多线程读取
     # ------------------------------------------------------------------------------------------------------------------------------------#
     #  训练分两个部分，分别是冻结阶段和解冻阶段。设置冻结阶段是为了满足机器性能不足的设备的训练需求。
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     #                  Adam可以使用较小的UnFreeze_Epoch
     #   Unfreeze_batch_size 模型解冻的batch_size
     # -------------------------------------------------------#
-    UnFreeze_Epoch = 150
+    UnFreeze_Epoch = 62
     Unfreeze_batch_size = 12
     # -------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
@@ -126,7 +126,7 @@ if __name__ == '__main__':
     optimizer_type = "sgd"
     momentum = 0.937
     weight_decay = 5e-4
-    save_period = 10 #多少次epoch保存一次权值
+    save_period = 15 #多少次epoch保存一次权值
     input_shape = [416, 416]
     anchors_mask = [[6,7,8] ,[3,4,5] ,[0,1,2]] #用于帮助代码找到对应的先验框，一般不修改
 
