@@ -6,8 +6,8 @@ from matplotlib import pyplot as plt
 from PIL import Image
 import numpy as np
 from tqdm import tqdm
-import scipy.signal
-from .utils import cvtColor,resize_image,preprocess_input
+from scipy.signal import savgol_filter
+from .utils import cvtColor,resize_image,preprocess_input,get_debug_switch_state
 from utils.utils_bbox import DecodeBox
 from utils.utils_map import get_coco_map ,get_map
 from torch.utils.tensorboard import SummaryWriter
@@ -57,8 +57,8 @@ class LossHistory():
                 num = 5
             else:
                 num = 15
-            plt.plot(iters,scipy.signal.savgol_filter(self.losses ,num ,3))
-            plt.plot(iters,scipy.signal.savgol_filter(self.val_loss ,num ,3))
+            plt.plot(iters,savgol_filter(self.losses ,num ,3))
+            plt.plot(iters,savgol_filter(self.val_loss ,num ,3))
         except:
             print("Exception: loss plot methods")
             pass
@@ -72,8 +72,8 @@ class LossHistory():
 
 class EvalCallback():
 
-    def __init__(self ,net ,input_shape ,anchors ,anchors_mask ,class_names ,num_classes ,val_lines ,log_dir ,cuda ,\
-                 map_out_path=".temp_map_out" ,max_boxes = 100 ,confidence = 0.05 ,nms_iou=0.5 ,letterbox_image=True ,MINOVERLAP=0.5 ,eval_flag=True ,period=1):
+    def __init__(self ,net ,input_shape ,anchors ,anchors_mask ,class_names ,num_classes ,val_lines ,log_dir ,cuda \
+                 ,map_out_path=".temp_map_out" ,max_boxes = 100 ,confidence = 0.05 ,nms_iou=0.5 ,letterbox_image=True ,MINOVERLAP=0.5 ,eval_flag=True ,period=1):
         super(EvalCallback ,self).__init__()
 
         self.net = net
@@ -158,11 +158,11 @@ class EvalCallback():
             if not os.path.exists(os.path.join(self.map_out_path ,"detection-results")):
                 os.makedirs(os.path.join(self.map_out_path ,"detection-results"))
             print("\nGet map")
-            Debug = True
-            times_ = 25
+
+            times_ = 3
             times = 0
             for annotation_line in tqdm(self.val_lines):
-                if Debug:
+                if get_debug_switch_state():
                     times += 1
                     if times_ == times :
                         break
@@ -205,4 +205,4 @@ class EvalCallback():
             plt.close("all")
 
             print("Get map done")
-            shutil.rmtree(self.map_out_path)
+            # shutil.rmtree(self.map_out_path)
