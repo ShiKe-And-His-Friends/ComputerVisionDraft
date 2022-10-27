@@ -5,16 +5,18 @@ import torch
 from PIL import Image
 import numpy as np
 from matplotlib import pyplot as plt
+from torch.utils.data.dataset import Dataset
 from utils.utils import cvtColor ,preprocess_input
 
 class YoloDataset(Dataset):
     def __init__(self ,annotation_lines ,input_shape ,num_classes ,train = True):
-		super(YoloDataset ,self).__init__()
+        super(YoloDataset ,self).__init__()
         self.annotation_lines = annotation_lines
         self.input_shape = input_shape
         self.num_classes = num_classes
         self.train = train
         self.length = len(self.annotation_lines)
+
     def __len__(self):
         return self.length
 

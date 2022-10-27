@@ -260,7 +260,7 @@ class YOLO(object):
             score = np.max(sigmoid(sub_output[... ,4]) ,-1)
             score = cv2.resize(score ,(image.size[0] ,image.size[1]))
             normed_score = (score * 255).astype('uint8')
-            mask = np,maximun(mask ,normed_score)
+            mask = np.maximun(mask ,normed_score)
 
         plt.imshow(mask ,alpha = 0.5 ,interpolation='nearest' ,cmap="jet")
 
