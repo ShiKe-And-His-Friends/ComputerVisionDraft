@@ -49,7 +49,7 @@ def log_average_miss_rate(precision ,fp_cumsum ,num_images):
     mr = (1 - precision)
 
     fppi_tmp = np.insert(fppi ,0 ,-1.0)
-    mr_tmp = np.insert(mr,0,0)
+    mr_tmp = np.insert(mr,0,1.0) # fix bug : miss rate 
 
     ref = np.logspace(-2.0 ,0.0 ,num=9)
     for i ,ref_i in enumerate(ref):
@@ -73,8 +73,8 @@ def voc_ap(rec ,prec):
         for i = numel(mpre)-1:-1:1
             mpre(i) = max(mpre(i) ,mpre(i+1));
         end
-        i = find((mrec(2:end) != mrec(1:end-1) + 1));
-        ap = sum((mrec(i) - mrec(i-1)).*mprec(i))
+        i = find(mrec(2:end) ~= mrec(1:end-1))+ 1;
+        ap = sum((mrec(i) - mrec(i-1)).*mpre(i));
     '''
     rec.insert(0 ,0.0) # insert 0.0 at begining of list
     rec.append(1.0) # insert 1.0 at end of list
@@ -85,7 +85,7 @@ def voc_ap(rec ,prec):
     '''
         Thie part makes the precision monotonically decreasing
         for i = numel(mpre)-1 : -1 : 1
-            mpre(i) = max(mpre(i) ,mpre(i+1))
+            mpre(i) = max(mpre(i) ,mpre(i+1));
     '''
     for i in range(len(mpre)-2 ,-1 ,-1):
         mpre[i] = max(mpre[i],mpre[i+1])
@@ -203,7 +203,7 @@ def preprocess_gt(gt_path ,class_names):
 def preprocess_dr(dr_path ,class_names):
     image_ids = os.listdir(dr_path)
     results = []
-    for i , image_id in enumerate(image_ids):
+    for image_id in image_ids:
         lines_list = file_lines_to_list(os.path.join(dr_path ,image_id))
         images_id = os.path.splitext(image_id)[0]
         for line in lines_list:

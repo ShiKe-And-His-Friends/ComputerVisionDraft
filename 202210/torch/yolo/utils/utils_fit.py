@@ -139,5 +139,3 @@ def fit_one_epoch(model_train ,model ,yolo_loss ,loss_history ,eval_callback ,op
             print('Save best model to best_epoch_weight.pth')
             torch.save(model.state_dict() ,os.path.join(save_dir ,"last_epoch_weights.pth"))
         torch.save(model.state_dict() ,os.path.join(save_dir ,"last_epoch_weights.pth"))
-
-    return None

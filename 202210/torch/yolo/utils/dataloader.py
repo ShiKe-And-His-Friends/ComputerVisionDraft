@@ -7,8 +7,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from utils.utils import cvtColor ,preprocess_input
 
-class YoloDataset():
+class YoloDataset(Dataset):
     def __init__(self ,annotation_lines ,input_shape ,num_classes ,train = True):
+		super(YoloDataset ,self).__init__()
         self.annotation_lines = annotation_lines
         self.input_shape = input_shape
         self.num_classes = num_classes

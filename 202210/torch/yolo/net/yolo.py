@@ -54,7 +54,7 @@ class Upsample(nn.Module):
             nn.Upsample(scale_factor=2 ,mode='nearest')
         )
 
-    def forward(self,x):
+    def forward(self,x,):
         x = self.upsample(x)
         return x
 
@@ -62,7 +62,7 @@ class Upsample(nn.Module):
 def yolo_head(filters_list ,in_filters):
     m = nn.Sequential(
         conv2d(in_filters ,filters_list[0] ,3),
-        nn.Conv2d(filters_list[0],filters_list[1] ,1)
+        nn.Conv2d(filters_list[0],filters_list[1] ,1),
     )
     return m
 

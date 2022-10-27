@@ -35,7 +35,7 @@ class YoloLoss(nn.Module):
 
     def clip_by_tensor(self ,t ,t_min ,t_max):
         t = t.float()
-        result = (t > t_min).float() * t + (t < t_min).float() * t_min
+        result = (t >= t_min).float() * t + (t < t_min).float() * t_min
         result = (result <= t_max).float() * result + (result > t_max).float() * t_max
         return result
 
@@ -91,9 +91,9 @@ class YoloLoss(nn.Module):
             # 中心距离
             center_distance = torch.sum(torch.pow(center_wh ,2) ,axis = -1)
             # 对角线距离
-            enclose_diagonal = torch.sum(torch.pow(center_wh,2) ,axis = -1)
+            enclose_diagonal = torch.sum(torch.pow(enclose_wh,2) ,axis = -1) # fix bug : enclose line length
             ciou = iou - 1.0 * (center_distance) / torch.clamp(enclose_diagonal ,min = 1e-6)
-            v = (4/math.pi ** 2) * torch.pow((torch.atan(b1_wh[...,0] / torch.clamp(b1_wh[...,1] ,min = 1e-6)) - torch.atan(b2_wh[...,0] / torch.clamp(b2_wh[...,1] ,min=1e-6))) ,2)
+            v = (4/ (math.pi ** 2)) * torch.pow((torch.atan(b1_wh[...,0] / torch.clamp(b1_wh[...,1] ,min = 1e-6)) - torch.atan(b2_wh[...,0] / torch.clamp(b2_wh[...,1] ,min=1e-6))) ,2) # fix bug : X pow 2 
             alpha = v / torch.clamp((1.0 - iou + v) ,min= 1e-6)
             out = ciou - alpha * v
         elif self.iou_type == 'siou':
@@ -319,10 +319,10 @@ class YoloLoss(nn.Module):
                 y_true[b, k, j, i, 2] = batch_target[t, 2]
                 y_true[b, k, j, i, 3] = batch_target[t, 3]
                 y_true[b, k, j, i, 4] = 1
-                y_true[b, k, j, i, c + 4] = 1
+                y_true[b, k, j, i, c + 5] = 1 # fix bug : anchor center values
 
                 # 用于获取xywh的比例，大目标loss权值小/小目标loss权值大
-                box_loss_scale[b , k ,j ,i] = batch_target[t ,2] * batch_target[t ,3] / in_h / in_w
+                box_loss_scale[b , k ,j ,i] = batch_target[t ,2] * batch_target[t ,3] / in_w / in_h # fix bug : w h exchange
         return y_true ,noobj_mask ,box_loss_scale
 
     def get_ignore(self ,l ,x ,y ,h ,w ,targets ,scaled_anchors ,in_h ,in_w ,noobj_mask):
@@ -415,7 +415,7 @@ def get_lr_scheduler(lr_decay_type ,lr ,min_lr ,total_iters ,warmup_iters_ratio=
     else:
         decay_rate = (min_lr /lr) ** (1/(step_num - 1))
         step_size = total_iters / step_num
-        func = partial(step_lr ,decay_rate ,step_size)
+        func = partial(step_lr ,lr ,step_size)
     return func
 def set_optimizer_lr(optimizer ,lr_scheduler_func ,epoch):
     lr = lr_scheduler_func(epoch)
