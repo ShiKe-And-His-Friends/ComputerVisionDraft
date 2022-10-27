@@ -104,6 +104,7 @@ class EvalCallback():
                 f.close()
 
     def get_map_txt(self ,image_id ,image ,class_names ,map_out_path):
+        f = open(os.path.join(map_out_path, "detection-results/" + image_id + ".txt"), 'w', encoding='utf-8')
         image_shape = np.array(np.shape(image)[0:2])
         # 将彩色图片转换灰色图，防止预测时报错
         image = cvtColor(image)
@@ -134,7 +135,6 @@ class EvalCallback():
         top_conf = top_conf[top_100]
         top_label = top_label[top_100]
 
-        f = open(os.path.join(map_out_path, "detection-results/" + image_id + ".txt"), 'w', encoding='utf-8')
         for i ,c in list(enumerate(top_label)):
             predict_class = self.class_names[int(c)]
             box = top_boxes[i]

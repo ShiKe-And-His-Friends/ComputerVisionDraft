@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     train_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_train.txt' # 训练图片和路径
     val_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_val.txt'  # 验证图片和路径
-    Cuda = False # 是否使用GPU
+    Cuda = True # 是否使用GPU
     num_workers = 4 #多线程读取
     # ------------------------------------------------------------------------------------------------------------------------------------#
     #  训练分两个部分，分别是冻结阶段和解冻阶段。设置冻结阶段是为了满足机器性能不足的设备的训练需求。
