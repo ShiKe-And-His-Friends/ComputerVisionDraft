@@ -89,7 +89,7 @@ if __name__ == '__main__':
     #   Unfreeze_batch_size 模型解冻的batch_size
     # -------------------------------------------------------#
     UnFreeze_Epoch = 62
-    Unfreeze_batch_size = 12
+    Unfreeze_batch_size = 10
     # -------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
     #                   默认先冻结主干后解冻训练
@@ -126,14 +126,16 @@ if __name__ == '__main__':
     optimizer_type = "sgd"
     momentum = 0.937
     weight_decay = 5e-4
-    save_period = 15 #多少次epoch保存一次权值
+    save_period = 5 #多少次epoch保存一次权值
     input_shape = [416, 416]
     anchors_mask = [[6,7,8] ,[3,4,5] ,[0,1,2]] #用于帮助代码找到对应的先验框，一般不修改
 
-    model_path = 'E:/Torch/yolov4-pytorch-master/model_data/yolo4_weights.pth' # 训练好的权值路径，SOTA数据结果
+    # 训练好的权值路径，SOTA数据结果 'E:/Torch/yolov4-pytorch-master/model_data/yolo4_weights.pth'
+    model_path = ''
+
     save_dir = 'logs' # 保存权值和日志文件
     eval_flag = True # 是否训练时评估，评估对象为验证集
-    eval_period = 10 # 多少次epoch评估一次，不建议频繁。获得验证集的mAP和get_map.py稍有不同,参数更加保守.
+    eval_period = 5 # 多少次epoch评估一次，不建议频繁。获得验证集的mAP和get_map.py稍有不同,参数更加保守.
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # *********************************************************#

@@ -14,7 +14,7 @@ from utils.utils_bbox import DecodeBox
     训练自己的数据集需要按注释操作
 """
 class YOLO(object):
-    _default = {
+    _defaults = {
         #-------------------------------------------------------------------------#
         #  自己的模型训练要修改model_path 和 classes_path
         #  model_path指向log下的权值文件，classes_path指向model_data下的txt
@@ -54,8 +54,8 @@ class YOLO(object):
 
     @classmethod
     def get_defaults(cls ,n):
-        if n in cls._default:
-            return cls._default[n]
+        if n in cls._defaults:
+            return cls._defaults[n]
         else:
             return "Unrecognized attribute name '"+ n + "'"
 
@@ -63,27 +63,27 @@ class YOLO(object):
     #  初始化YOLO
     # ---------------------------------------------#
     def __init__(self, **kwargs):
-        self.__dict__.update(self._default)
+        self.__dict__.update(self._defaults)
         for name ,value in kwargs.items():
             setattr(self ,name ,value)
-            self._default[name] = value
+            self._defaults[name] = value
 
-            # -----------------------------------#
-            #  获得先验框种类和数量
-            # -----------------------------------#
-            self.class_names ,self.num_classes  = get_classes(self.classes_path)
-            self.anchors ,self.num_anchors      = get_anchors(self.anchors_path)
-            self.bbox_util                      = DecodeBox(self.anchors ,self.num_classes ,(self.input_shape[0] ,self.input_shape[1]) ,self.anchors_mask)
+        # -----------------------------------#
+        #  获得先验框种类和数量
+        # -----------------------------------#
+        self.class_names ,self.num_classes  = get_classes(self.classes_path)
+        self.anchors ,self.num_anchors      = get_anchors(self.anchors_path)
+        self.bbox_util                      = DecodeBox(self.anchors ,self.num_classes ,(self.input_shape[0] ,self.input_shape[1]) ,self.anchors_mask)
 
-            # -----------------------------------#
-            #  画框设置不同的颜色
-            # -----------------------------------#
-            hsv_tuples = [(x / self.num_classes ,1. ,1 )for x in range(self.num_classes)]
-            self.colors = list(map(lambda x : colorsys.hsv_to_rgb(*x) ,hsv_tuples))
-            self.colors = list(map(lambda x : (int(x[0] * 255) ,int(x[1] * 255) ,int(x[2] * 255)) ,self.colors))
-            self.generate()
+        # -----------------------------------#
+        #  画框设置不同的颜色
+        # -----------------------------------#
+        hsv_tuples = [(x / self.num_classes ,1. ,1. )for x in range(self.num_classes)]
+        self.colors = list(map(lambda x : colorsys.hsv_to_rgb(*x) ,hsv_tuples))
+        self.colors = list(map(lambda x : (int(x[0] * 255) ,int(x[1] * 255) ,int(x[2] * 255)) ,self.colors))
+        self.generate()
 
-            show_config(**self._default)
+        show_config(**self._defaults)
 
     # ---------------------------------------------#
     #  生成模型
@@ -158,7 +158,7 @@ class YOLO(object):
             for i in range(self.num_classes):
                 num = np.sum(top_label == i)
                 if num > 0:
-                    print(self.class_names[i] ,":" ,num)
+                    print(self.class_names[i] ," : " ,num)
                 classes_nums[i] = num
             print("classes_nums:" ,classes_nums)
         # -----------------------------------#
@@ -175,7 +175,7 @@ class YOLO(object):
                 dir_save_path = "img_crop"
                 if not os.path.exists(dir_save_path):
                     os.makedirs(dir_save_path)
-                crop_image = images.crop([left ,top ,right ,bottom])
+                crop_image = image.crop([left ,top ,right ,bottom])
                 crop_image.save(os.path.join(dir_save_path ,"crop_"+str(i)) + ".png")
                 print("save crop_" + str(i) + ".png to " + dir_save_path)
         # -----------------------------------#
@@ -196,12 +196,12 @@ class YOLO(object):
             draw = ImageDraw.Draw(image)
             label_size = draw.textsize(label ,font)
             label = label.encode('utf-8')
-            print(label ,top ,left ,bottom ,right)
+            print("anchor ",label ,top ,left ,bottom ,right)
 
             if top-label_size[1] >= 0 :
-                text_origin = np.array([left ,top-label_size[1]])
+                text_origin = np.array([left ,top - label_size[1]])
             else:
-                text_origin = np.array([left ,top+1])
+                text_origin = np.array([left ,top + 1])
             for i in range(thickness):
                 draw.rectangle([left+i ,top+i ,right-i ,bottom-i] ,outline=self.colors[c])
             draw.rectangle([tuple(text_origin) ,tuple(text_origin+label_size)] ,fill = self.colors[c])

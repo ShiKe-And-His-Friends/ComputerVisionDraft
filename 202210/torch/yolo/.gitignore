@@ -1,4 +1,6 @@
 .idea
 .temp_map_out
 .map_output
+img_crop
 logs
+*.mp4

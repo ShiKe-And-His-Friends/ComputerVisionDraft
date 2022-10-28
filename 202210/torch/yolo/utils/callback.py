@@ -58,9 +58,9 @@ class LossHistory():
             else:
                 num = 15
             plt.plot(iters,savgol_filter(self.losses ,num ,3),'green' ,linstyle= '--' ,label = 'smooth train loss')
-            plt.plot(iters,savgol_filter(self.val_loss ,num ,3) ,label = 'smooth val loss')
-        except:
-            print("Exception: loss plot methods")
+            plt.plot(iters,savgol_filter(self.val_loss ,num ,3) ,'red' ,linstyle= '--' ,label = 'smooth val loss')
+        except Exception as e:
+            print("Exception: loss plot methods. \n" ,e.__class__.__name__ ,e)
             pass
         plt.grid(True)
         plt.xlabel('Epoch')
