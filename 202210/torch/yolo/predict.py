@@ -43,6 +43,7 @@ if __name__ == "__main__":
     video_save_path = "a2.mp4v"
     video_fps = 5.0
 
+
     # -------------------------------------------------------------------------#
     #   test_interval     ： 指定fps,图片检测数量。
     #   fps_image_path    ： 指定测试的fps图片
@@ -121,6 +122,9 @@ if __name__ == "__main__":
             frame = cv2.cvtColor(frame ,cv2.COLOR_BGR2RGB)
             # to Image
             frame = Image.fromarray(np.uint8(frame))
+            # video
+            frame = np.array(yolo.detect_image(frame))
+
             #RGBtoBGR cv show
             frame = cv2.cvtColor(frame ,cv2.COLOR_RGB2BGR)
 
