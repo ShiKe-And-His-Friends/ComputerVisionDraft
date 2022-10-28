@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     train_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_train.txt' # 训练图片和路径
     val_annotation_path = 'E:/Torch/yolov4-pytorch-master/2007_val.txt'  # 验证图片和路径
-    Cuda = False # 是否使用GPU
+    Cuda = True # 是否使用GPU
     num_workers = 4 #多线程读取
     # ------------------------------------------------------------------------------------------------------------------------------------#
     #  训练分两个部分，分别是冻结阶段和解冻阶段。设置冻结阶段是为了满足机器性能不足的设备的训练需求。
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     #   Unfreeze_batch_size 模型解冻的batch_size
     # -------------------------------------------------------#
     UnFreeze_Epoch = 62
-    Unfreeze_batch_size = 12
+    Unfreeze_batch_size = 10
     # -------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
     #                   默认先冻结主干后解冻训练
@@ -130,7 +130,9 @@ if __name__ == '__main__':
     input_shape = [416, 416]
     anchors_mask = [[6,7,8] ,[3,4,5] ,[0,1,2]] #用于帮助代码找到对应的先验框，一般不修改
 
-    model_path = 'E:/Torch/yolov4-pytorch-master/model_data/yolo4_weights.pth' # 训练好的权值路径，SOTA数据结果
+    # 训练好的权值路径，SOTA数据结果 'E:/Torch/yolov4-pytorch-master/model_data/yolo4_weights.pth'
+    model_path = ''
+
     save_dir = 'logs' # 保存权值和日志文件
     eval_flag = True # 是否训练时评估，评估对象为验证集
     eval_period = 10 # 多少次epoch评估一次，不建议频繁。获得验证集的mAP和get_map.py稍有不同,参数更加保守.
