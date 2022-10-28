@@ -49,7 +49,7 @@ def log_average_miss_rate(precision ,fp_cumsum ,num_images):
     mr = (1 - precision)
 
     fppi_tmp = np.insert(fppi ,0 ,-1.0)
-    mr_tmp = np.insert(mr,0,1.0) # fix bug : miss rate 
+    mr_tmp = np.insert(mr, 0 ,1.0) # fix bug : miss rate
 
     ref = np.logspace(-2.0 ,0.0 ,num=9)
     for i ,ref_i in enumerate(ref):
@@ -271,7 +271,7 @@ def draw_plot_func(dictionary, n_classes, window_title, plot_title,  x_label, ou
         fig = plt.gcf()  # gcf - get current figure
         axes = plt.gca()
         r = fig.canvas.manager.get_renderer()
-        for i ,val in enumerate(sorted_keys):
+        for i ,val in enumerate(sorted_values):
             fp_val = fp_sorted[i]
             tp_val = tp_sorted[i]
             fp_str_val = " " + str(fp_val)
@@ -519,8 +519,8 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                         iw = bi[2] - bi[0] + 1
                         ih = bi[3] - bi[1] + 1
                         if iw > 0 and ih > 0:
-                            ua = (bb[2] - bb[0] + 1) * (bb[3] - bb[1] + 1) + (bbgt[2] - bbgt[0] + 1) \
-                                * (bbgt[3] - bbgt[1] + 1) - iw * ih
+                            ua = (bb[2] - bb[0] + 1) * (bb[3] - bb[1] + 1) + (bbgt[2] - bbgt[0] + 1) * (bbgt[3] - bbgt[1] + 1) \
+                                 - iw * ih
                             ov = iw * ih /ua
 
                             if ov > ovmax:
@@ -543,153 +543,153 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                             fp[idx] = 1
                             if show_animation:
                                 status = "REPEATED MATCH!"
-                    else:
-                        fp[idx] =1
-                        if ovmax > 0:
-                            status = "INSUFFICIENT OVERLAP"
-                    """
-                        draw image to show animation
-                    """
-                    if show_animation:
-                        height ,width = img.shape[:2]
-                        white = (255 ,255 ,255)
-                        light_blue = (255,200,100)
-                        green = (0,255,0)
-                        light_red = (30,30,255)
-                        margin = 10
-                        # 1nd line
-                        v_pos = int(height - margin - (bottom_border / 2.0))
-                        text = "Image: "+ ground_truth_img[0] + " "
-                        img,line_width = draw_text_in_image(img ,text ,(margin ,v_pos) ,white ,0)
-                        text = "Class [" + str(class_index) + "/" + str(n_classes) + "]:" + class_name + " "
-                        img ,line_width = draw_text_in_image(img ,text ,(margin+ line_width,v_pos) ,light_blue ,line_width)
-                        if ovmax != -1:
-                            color = light_red
-                            if status == "UFFICIENT OVERLAP":
-                                text = "IOU:{0:.2f} %".format(ovmax*100) + " < {0:.2f}% ".format(min_overlap * 100)
-                            else:
-                                text = "IOU:{0:.2f} %".format(ovmax*100) + ">={0:.2f}% ".format(min_overlap * 100)
-                                color = green
-                            img , _ = draw_text_in_image(img ,text ,(margin+line_width ,v_pos) ,color ,line_width)
-                        # 2nd line
-                        v_pos  += int(bottom_border / 2.0)
-                        rank_pos = str(idx+1)
-                        text = "Detection #rank:" + rank_pos + " confidecne:{0:.2f} %".format(float(detection["confidence"])* 100)
-                        img ,line_width = draw_text_in_image(img ,text ,(margin ,v_pos) ,white ,0)
+                else:
+                    fp[idx] =1
+                    if ovmax > 0:
+                        status = "INSUFFICIENT OVERLAP"
+                """
+                    draw image to show animation
+                """
+                if show_animation:
+                    height ,width = img.shape[:2]
+                    white = (255 ,255 ,255)
+                    light_blue = (255,200,100)
+                    green = (0,255,0)
+                    light_red = (30,30,255)
+                    margin = 10
+                    # 1nd line
+                    v_pos = int(height - margin - (bottom_border / 2.0))
+                    text = "Image: "+ ground_truth_img[0] + " "
+                    img,line_width = draw_text_in_image(img ,text ,(margin ,v_pos) ,white ,0)
+                    text = "Class [" + str(class_index) + "/" + str(n_classes) + "]:" + class_name + " "
+                    img ,line_width = draw_text_in_image(img ,text ,(margin+ line_width,v_pos) ,light_blue ,line_width)
+                    if ovmax != -1:
                         color = light_red
-                        if status == "MATCH!":
+                        if status == "UFFICIENT OVERLAP":
+                            text = "IOU:{0:.2f} %".format(ovmax*100) + " < {0:.2f}% ".format(min_overlap * 100)
+                        else:
+                            text = "IOU:{0:.2f} %".format(ovmax*100) + ">={0:.2f}% ".format(min_overlap * 100)
                             color = green
-                        text = "Result:" + status + " "
-                        img,line_width = draw_text_in_image(img ,text ,(margin+line_width ,v_pos) ,color ,line_width)
-                        font = cv2.FONT_HERSHEY_SIMPLEX
-                        if ovmax > 0:
-                            bbgt = [int(round(float(x))) for x in gt_match['bbox'].split()]
-                            cv2.rectangle(img ,(bbgt[0] ,bbgt[1]) ,(bbgt[2] ,bbgt[3]) ,light_blue ,2)
-                            cv2.rectangle(img_cumulative ,(bbgt[0] ,bbgt[1]) ,(bbgt[2] ,bbgt[3]) ,light_blue ,2)
-                            cv2.putText(img_cumulative ,class_name ,(bbgt[0] ,bbgt[1] - 5) , font ,0.6 ,light_blue ,1 ,cv2.LINE_AA)
-                        bb = [int(i) for i in bb]
-                        cv2.rectangle(img ,(bb[0] ,bb[1]) ,(bb[2] ,bb[3]) ,color ,2)
-                        cv2.rectangle(img_cumulative ,(bb[0] ,bb[1]) ,(bb[2],bb[3]) ,color ,2)
-                        cv2.putText(img_cumulative ,class_name ,(bb[0],bb[1] -5) ,font ,0.6 ,color ,1 ,cv2.LINE_AA)
-                        cv2.imshow("Animation",img)
-                        cv2.waitKey(20)
-                        output_img_path = RESULTS_FILES_PATH + "/images/detections_one_by_one/" + class_name + "_detection" + str(idx) + ".jpg"
-                        cv2.imwrite(output_img_path ,img)
-                        cv2.imwrite(img_cumulative_path ,img_cumulative)
+                        img , _ = draw_text_in_image(img ,text ,(margin+line_width ,v_pos) ,color ,line_width)
+                    # 2nd line
+                    v_pos  += int(bottom_border / 2.0)
+                    rank_pos = str(idx+1)
+                    text = "Detection #rank:" + rank_pos + " confidecne:{0:.2f} %".format(float(detection["confidence"])* 100)
+                    img ,line_width = draw_text_in_image(img ,text ,(margin ,v_pos) ,white ,0)
+                    color = light_red
+                    if status == "MATCH!":
+                        color = green
+                    text = "Result:" + status + " "
+                    img,line_width = draw_text_in_image(img ,text ,(margin+line_width ,v_pos) ,color ,line_width)
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    if ovmax > 0:
+                        bbgt = [int(round(float(x))) for x in gt_match['bbox'].split()]
+                        cv2.rectangle(img ,(bbgt[0] ,bbgt[1]) ,(bbgt[2] ,bbgt[3]) ,light_blue ,2)
+                        cv2.rectangle(img_cumulative ,(bbgt[0] ,bbgt[1]) ,(bbgt[2] ,bbgt[3]) ,light_blue ,2)
+                        cv2.putText(img_cumulative ,class_name ,(bbgt[0] ,bbgt[1] - 5) , font ,0.6 ,light_blue ,1 ,cv2.LINE_AA)
+                    bb = [int(i) for i in bb]
+                    cv2.rectangle(img ,(bb[0] ,bb[1]) ,(bb[2] ,bb[3]) ,color ,2)
+                    cv2.rectangle(img_cumulative ,(bb[0] ,bb[1]) ,(bb[2],bb[3]) ,color ,2)
+                    cv2.putText(img_cumulative ,class_name ,(bb[0],bb[1] -5) ,font ,0.6 ,color ,1 ,cv2.LINE_AA)
+                    cv2.imshow("Animation",img)
+                    cv2.waitKey(20)
+                    output_img_path = RESULTS_FILES_PATH + "/images/detections_one_by_one/" + class_name + "_detection" + str(idx) + ".jpg"
+                    cv2.imwrite(output_img_path ,img)
+                    cv2.imwrite(img_cumulative_path ,img_cumulative)
 
-                cunsum = 0
-                for idx ,val in enumerate(fp):
-                    fp[idx] += cunsum
-                    cunsum += val
-                cunsum = 0
-                for idx ,val in enumerate(tp):
-                    tp[idx] += cunsum
-                    cunsum += val
-                rec = tp[:]
-                for idx ,val in enumerate(tp):
-                    rec[idx] = float(tp[idx]) / np.maximum(gt_counter_per_class[class_name] ,1)
-                prec = tp[:]
-                for idx ,val in enumerate(tp):
-                    prec[idx] = float(tp[idx]) / np.maximum((fp[idx] + tp[idx]) ,1)
-                ap ,mrec ,mprec = voc_ap(rec[:] ,prec[:])
+            cunsum = 0
+            for idx ,val in enumerate(fp):
+                fp[idx] += cunsum
+                cunsum += val
+            cunsum = 0
+            for idx ,val in enumerate(tp):
+                tp[idx] += cunsum
+                cunsum += val
+            rec = tp[:]
+            for idx ,val in enumerate(tp):
+                rec[idx] = float(tp[idx]) / np.maximum(gt_counter_per_class[class_name] ,1)
+            prec = tp[:]
+            for idx ,val in enumerate(tp):
+                prec[idx] = float(tp[idx]) / np.maximum((fp[idx] + tp[idx]) ,1)
+            ap ,mrec ,mprec = voc_ap(rec[:] ,prec[:])
 
-                F1 = np.array(rec) * np.array(prec)*2 / np.where((np.array(prec) + np.array(rec)) == 0 ,1,(np.array(prec) + np.array(rec)))
-                sum_AP += ap
-                text = "{0:.2f} %".format(ap*100) + " = " + class_name + " AP " #class_name + "AP = {0:.2f}%".format(ap*100)
+            F1 = np.array(rec) * np.array(prec)*2 / np.where((np.array(prec) + np.array(rec)) == 0 ,1,(np.array(prec) + np.array(rec)))
+            sum_AP += ap
+            text = "{0:.2f} %".format(ap*100) + " = " + class_name + " AP " #class_name + "AP = {0:.2f}%".format(ap*100)
 
-                if len(prec) > 0:
-                    F1_text = "{0:.2f}".format(F1[score_threhold_idx]) + " = " + class_name + " F1 "
-                    Recall_text = "{0:.2f}%".format(rec[score_threhold_idx]*100) + " = " + class_name + " Recall "
-                    Precision_text = "{0:.2f}%".format(prec[score_threhold_idx]*100) + " = " + class_name + " Precision "
-                else :
-                    F1_text = "0.00" + " = " + class_name + " F1 "
-                    Recall_text = "0.00f" + " = " + class_name + " Recall "
-                    Precision_text = "0.00%" + " = " + class_name + " Precision "
-                rounded_prec = ['%.2f' % elem for elem in prec]
-                rounded_rec = ['%.2f' % elem for elem in rec]
-                results_file.write(text+"\n Precision: " + str(rounded_prec) + "\bRecall: " + str(rounded_rec) + "\n\n")
+            if len(prec) > 0:
+                F1_text = "{0:.2f}".format(F1[score_threhold_idx]) + " = " + class_name + " F1 "
+                Recall_text = "{0:.2f}%".format(rec[score_threhold_idx]*100) + " = " + class_name + " Recall "
+                Precision_text = "{0:.2f}%".format(prec[score_threhold_idx]*100) + " = " + class_name + " Precision "
+            else :
+                F1_text = "0.00" + " = " + class_name + " F1 "
+                Recall_text = "0.00%" + " = " + class_name + " Recall "
+                Precision_text = "0.00%" + " = " + class_name + " Precision "
+            rounded_prec = ['%.2f' % elem for elem in prec]
+            rounded_rec = ['%.2f' % elem for elem in rec]
+            results_file.write(text+"\n Precision: " + str(rounded_prec) + "\n Recall: " + str(rounded_rec) + "\n\n")
 
-                if not get_debug_switch_state():
-                    if len(prec) > 0:
-                        print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " +"F1= " + "{0:.2f}".format(F1[score_threhold_idx]) \
-                            + " ; Recall = " + "{0:.2f}%".format(rec[score_threhold_idx] * 100) + " ;Precision= " + "{0:.2f}%".format(prec[score_threhold_idx] * 100))
-                    else:
-                        print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " + "F1=0.00% ;Recall= 0.00% ; Precision=0.00%")
-                ap_dictionary[class_name] = ap
+            if len(prec) > 0:
+                print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " +"F1= " + "{0:.2f}".format(F1[score_threhold_idx]) \
+                    + " ; Recall = " + "{0:.2f}%".format(rec[score_threhold_idx] * 100) + " ;Precision= " + "{0:.2f}%".format(prec[score_threhold_idx] * 100))
+            else:
+                print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " + "F1=0.00% ;Recall= 0.00% ; Precision=0.00%")
+            ap_dictionary[class_name] = ap
 
-                n_images = counter_images_per_class[class_name]
-                lamr ,mr ,fppi = log_average_miss_rate(np.array(rec) ,np.array(fp) ,n_images)
-                lamr_dictionary[class_name] = lamr
-                if draw_plot:
-                    plt.plot(rec,prec ,"-o")
-                    area_under_curve_x = mrec[:-1] + [mrec[-2]] + [mrec[-1]]
-                    area_under_curve_y = mprec[:-1] + [0.0] + [mprec[-1]]
-                    plt.fill_between(area_under_curve_x ,0 ,area_under_curve_y ,alpha=0.2 ,edgecolor ='r' )
+            n_images = counter_images_per_class[class_name]
+            lamr ,mr ,fppi = log_average_miss_rate(np.array(rec) ,np.array(fp) ,n_images)
+            lamr_dictionary[class_name] = lamr
 
-                    fig = plt.gcf()
-                    fig.canvas.manager.set_window_title("AP_" + class_name)
-                    plt.title('class:' + text)
-                    plt.xlabel('Recall')
-                    plt.ylabel("Precision")
-                    axes = plt.gca()
-                    axes.set_xlim([0.0 ,1.0])
-                    axes.set_ylim([0.0 ,1.05])
-                    fig.savefig(RESULTS_FILES_PATH + "/AP/" + class_name + ".png")
-                    plt.cla()
-                    plt.close()
+            if draw_plot:
+                plt.plot(rec,prec ,"-o")
+                area_under_curve_x = mrec[:-1] + [mrec[-2]] + [mrec[-1]]
+                area_under_curve_y = mprec[:-1] + [0.0] + [mprec[-1]]
+                plt.fill_between(area_under_curve_x ,0 ,area_under_curve_y ,alpha=0.2 ,edgecolor ='r' )
 
-                    plt.plot(score ,F1 ,"-" ,color = 'orangered')
-                    plt.title('class:' + F1_text + "\nscore_threhold=" + str(score_threhold))
-                    plt.xlabel("Score_threhold")
-                    plt.ylabel("F1")
-                    axes = plt.gca()
-                    axes.set_xlim([0.0 ,1.0])
-                    axes.set_ylim([0.0 ,1.05])
-                    fig.savefig(RESULTS_FILES_PATH + "/F1/" + class_name + ".png")
-                    plt.cla()
-                    plt.close()
+                fig = plt.gcf()
+                fig.canvas.manager.set_window_title("AP_" + class_name)
+                plt.title('class:' + text)
+                plt.xlabel('Recall')
+                plt.ylabel("Precision")
+                axes = plt.gca()
+                axes.set_xlim([0.0 ,1.0])
+                axes.set_ylim([0.0 ,1.05])
+                fig.savefig(RESULTS_FILES_PATH + "/AP/" + class_name + ".png")
+                plt.cla()
+                plt.close()
 
-                    plt.plot(score ,rec ,"-H" ,color = 'gold')
-                    plt.title('class: ' +Recall_text + "\nScore_threhold=" + str(score_threhold) )
-                    plt.xlabel("score_Threhold")
-                    plt.ylabel("Recall")
-                    axes =plt.gca()
-                    axes.set_xlim([0.0 ,1.0])
-                    axes.set_ylim([0.0 ,1.05])
-                    fig.savefig(RESULTS_FILES_PATH + "/Recall/" + class_name + ".png")
-                    plt.cla()
-                    plt.close()
+                plt.plot(score ,F1 ,"-" ,color = 'orangered')
+                plt.title('class:' + F1_text + "\nscore_threhold=" + str(score_threhold))
+                plt.xlabel("Score_threhold")
+                plt.ylabel("F1")
+                axes = plt.gca()
+                axes.set_xlim([0.0 ,1.0])
+                axes.set_ylim([0.0 ,1.05])
+                fig.savefig(RESULTS_FILES_PATH + "/F1/" + class_name + ".png")
+                plt.cla()
+                plt.close()
 
-                    plt.plot(score ,prec ,"-s" ,color ='palevioletred')
-                    plt.title("class: " + Precision_text + "\nScore_threhold=" + str(score_threhold))
-                    plt.xlabel("Score_Threhold")
-                    plt.ylabel("Precision")
-                    axes = plt.gca()
-                    axes.set_xlim([0.0 ,1.0])
-                    axes.set_ylim([0.0 ,1.05])
-                    fig.savefig(RESULTS_FILES_PATH + "/Precision/" + class_name + '.png')
-                    plt.cla()
-                    plt.close()
+                plt.plot(score ,rec ,"-H" ,color = 'gold')
+                plt.title('class: ' +Recall_text + "\nScore_threhold=" + str(score_threhold) )
+                plt.xlabel("score_Threhold")
+                plt.ylabel("Recall")
+                axes =plt.gca()
+                axes.set_xlim([0.0 ,1.0])
+                axes.set_ylim([0.0 ,1.05])
+                fig.savefig(RESULTS_FILES_PATH + "/Recall/" + class_name + ".png")
+                plt.cla()
+                plt.close()
+
+                plt.plot(score ,prec ,"-s" ,color ='palevioletred')
+                plt.title("class: " + Precision_text + "\nScore_threhold=" + str(score_threhold))
+                plt.xlabel("Score_Threhold")
+                plt.ylabel("Precision")
+                axes = plt.gca()
+                axes.set_xlim([0.0 ,1.0])
+                axes.set_ylim([0.0 ,1.05])
+                fig.savefig(RESULTS_FILES_PATH + "/Precision/" + class_name + '.png')
+                plt.cla()
+                plt.close()
 
             if show_animation:
                 cv2.destroyAllWindows()
@@ -700,8 +700,8 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
             mAP = sum_AP / n_classes
             text = "m_AP = {0:.2f}%".format(mAP * 100)
             results_file.write(text + "\n")
-            if not get_debug_switch_state():
-                print(text)
+            print(text)
+
         shutil.rmtree(TEMP_FILES_PATH)
         """
             Count total of detection-results
@@ -794,7 +794,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
             plot_title = "mAP= {0:.2f}%".format(mAP*100)
             x_label = "Average Precision"
             output_path = RESULTS_FILES_PATH + "/mAP.png"
-            to_show = True
+            to_show = False
             plot_color = 'royalblue'
             draw_plot_func(
                 ap_dictionary,
@@ -816,23 +816,23 @@ def get_coco_map(class_names ,path):
 
     if not os.path.exists(COCO_PATH):
         os.makedirs(COCO_PATH)
-    GT_JOIN_PATH = os.path.join(COCO_PATH ,"instances_gt.json")
-    DR_JOIN_PATH = os.path.join(COCO_PATH ,"instances_dr.json")
+    GT_JSON_PATH = os.path.join(COCO_PATH ,"instances_gt.json")
+    DR_JSON_PATH = os.path.join(COCO_PATH ,"instances_dr.json")
 
-    with open(GT_JOIN_PATH ,"w") as f:
+    with open(GT_JSON_PATH ,"w") as f:
         result_gt = preprocess_gt(GT_PATH ,class_names)
         json.dump(result_gt ,f ,indent = 4)
         f.close()
 
-    with open(DR_JOIN_PATH ,"w") as f:
+    with open(DR_JSON_PATH ,"w") as f:
         result_dr = preprocess_dr(DR_PATH ,class_names)
         json.dump(result_dr ,f ,indent = 4)
         f.close()
         if len(result_dr) == 0:
             print("未检测到任何目标")
             return [0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ]
-    cocoGt = COCO(GT_JOIN_PATH)
-    cocoDt = cocoGt.loadRes(DR_JOIN_PATH)
+    cocoGt = COCO(GT_JSON_PATH)
+    cocoDt = cocoGt.loadRes(DR_JSON_PATH)
     cocoEval = COCOeval(cocoGt ,cocoDt ,"bbox")
     cocoEval.evaluate()
     cocoEval.accumulate()
