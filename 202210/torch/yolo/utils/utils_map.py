@@ -794,7 +794,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
             plot_title = "mAP= {0:.2f}%".format(mAP*100)
             x_label = "Average Precision"
             output_path = RESULTS_FILES_PATH + "/mAP.png"
-            to_show = True
+            to_show = False
             plot_color = 'royalblue'
             draw_plot_func(
                 ap_dictionary,
@@ -816,23 +816,23 @@ def get_coco_map(class_names ,path):
 
     if not os.path.exists(COCO_PATH):
         os.makedirs(COCO_PATH)
-    GT_JOIN_PATH = os.path.join(COCO_PATH ,"instances_gt.json")
-    DR_JOIN_PATH = os.path.join(COCO_PATH ,"instances_dr.json")
+    GT_JSON_PATH = os.path.join(COCO_PATH ,"instances_gt.json")
+    DR_JSON_PATH = os.path.join(COCO_PATH ,"instances_dr.json")
 
-    with open(GT_JOIN_PATH ,"w") as f:
+    with open(GT_JSON_PATH ,"w") as f:
         result_gt = preprocess_gt(GT_PATH ,class_names)
         json.dump(result_gt ,f ,indent = 4)
         f.close()
 
-    with open(DR_JOIN_PATH ,"w") as f:
+    with open(DR_JSON_PATH ,"w") as f:
         result_dr = preprocess_dr(DR_PATH ,class_names)
         json.dump(result_dr ,f ,indent = 4)
         f.close()
         if len(result_dr) == 0:
             print("未检测到任何目标")
             return [0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ]
-    cocoGt = COCO(GT_JOIN_PATH)
-    cocoDt = cocoGt.loadRes(DR_JOIN_PATH)
+    cocoGt = COCO(GT_JSON_PATH)
+    cocoDt = cocoGt.loadRes(DR_JSON_PATH)
     cocoEval = COCOeval(cocoGt ,cocoDt ,"bbox")
     cocoEval.evaluate()
     cocoEval.accumulate()
