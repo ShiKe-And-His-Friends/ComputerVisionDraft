@@ -124,9 +124,9 @@ def draw_text_in_image(image ,text ,pos ,color ,line_width):
     font = cv2.FONT_HERSHEY_PLAIN
     fontScale = 1
     lineType = 1
-    bottomLeftCOrnerOfText = pos
+    bottomLeftCornerOfText = pos
     cv2.putText(image ,text,
-                bottomLeftCOrnerOfText,
+                bottomLeftCornerOfText,
                 font,
                 fontScale,
                 color,
@@ -230,7 +230,7 @@ def preprocess_dr(dr_path ,class_names):
 def adjust_axes(r ,t ,fig ,axes):
     # get text width for re-scaling
     bb = t.get_window_extent(renderer=r)
-    text_width_inches = bb.widht / fig.dpi
+    text_width_inches = bb.width / fig.dpi
     # get axis width in inches
     current_fig_width = fig.get_figwidth()
     new_fig_width = current_fig_width + text_width_inches
@@ -261,8 +261,8 @@ def draw_plot_func(dictionary, n_classes, window_title, plot_title,  x_label, ou
             fp_sorted.append(dictionary[key] - true_p_bar[key])
             tp_sorted.append(true_p_bar[key])
 
-        plt.barh(range(n_classes) ,fp_sorted ,align='center' ,color = 'crimson' ,label='Fasle Positvie')
-        plt.barh(range(n_classes) ,tp_sorted ,align='center' ,color = 'forestgreen' ,label='TruePisitive' ,left=fp_sorted )
+        plt.barh(range(n_classes) ,fp_sorted ,align='center' ,color = 'crimson' ,label='False Positvie')
+        plt.barh(range(n_classes) ,tp_sorted ,align='center' ,color = 'forestgreen' ,label='TruePositive' ,left=fp_sorted )
         # add legend
         plt.legend(loc="lower right")
         """
@@ -279,7 +279,7 @@ def draw_plot_func(dictionary, n_classes, window_title, plot_title,  x_label, ou
             # trick to paint multicolor with offset:
             # first paint everything and then repaint the first number
             t = plt.text(val ,i ,tp_str_val ,color = "forestgreen" ,va="center" ,fontweight="bold")
-            plt.text(val ,i ,tp_str_val ,color = "crimson" ,va= "center" ,fontweight = "bold")
+            plt.text(val ,i ,fp_str_val ,color = "crimson" ,va= "center" ,fontweight = "bold")
             if i == (len(sorted_values) -1): # largest bar
                 adjust_axes(r,t,fig ,axes)
         else:
@@ -352,7 +352,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
 
     if draw_plot :
         try:
-            matplotlib.use("TKAgg")
+            matplotlib.use("TkAgg")
         except:
             pass
         os.makedirs(os.path.join(RESULTS_FILES_PATH ,"AP"))
@@ -360,7 +360,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
         os.makedirs(os.path.join(RESULTS_FILES_PATH, "Recall"))
         os.makedirs(os.path.join(RESULTS_FILES_PATH, "Precision"))
     if show_animation:
-        os.makedirs(os.path.join(RESULTS_FILES_PATH ,"images" ,"detection_one_by_one"))
+        os.makedirs(os.path.join(RESULTS_FILES_PATH ,"images" ,"detections_one_by_one"))
     ground_truth_files_list = glob.glob(GT_PATH + "/*.txt")
     if len(ground_truth_files_list) == 0:
         error("Error:No ground-truth files found.")
@@ -574,7 +574,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                         # 2nd line
                         v_pos  += int(bottom_border / 2.0)
                         rank_pos = str(idx+1)
-                        text = "Detection #rank:" + rank_pos + " confidecne:(0:.2f) %".format(float(detection["confidence"])* 100)
+                        text = "Detection #rank:" + rank_pos + " confidecne:{0:.2f} %".format(float(detection["confidence"])* 100)
                         img ,line_width = draw_text_in_image(img ,text ,(margin ,v_pos) ,white ,0)
                         color = light_red
                         if status == "MATCH!":
@@ -597,14 +597,14 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                         cv2.imwrite(output_img_path ,img)
                         cv2.imwrite(img_cumulative_path ,img_cumulative)
 
-                consum = 0
+                cunsum = 0
                 for idx ,val in enumerate(fp):
-                    fp[idx] += consum
-                    consum += val
-                consum = 0
+                    fp[idx] += cunsum
+                    cunsum += val
+                cunsum = 0
                 for idx ,val in enumerate(tp):
-                    tp[idx] += consum
-                    consum += val
+                    tp[idx] += cunsum
+                    cunsum += val
                 rec = tp[:]
                 for idx ,val in enumerate(tp):
                     rec[idx] = float(tp[idx]) / np.maximum(gt_counter_per_class[class_name] ,1)
@@ -631,7 +631,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
 
                 if not get_debug_switch_state():
                     if len(prec) > 0:
-                        print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " +"F1= " + "{0:.2f}".format(F1[score_threhold_idx])\
+                        print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " +"F1= " + "{0:.2f}".format(F1[score_threhold_idx]) \
                             + " ; Recall = " + "{0:.2f}%".format(rec[score_threhold_idx] * 100) + " ;Precision= " + "{0:.2f}%".format(prec[score_threhold_idx] * 100))
                     else:
                         print(text + "\t||\tscore_threhold=" + str(score_threhold) + " : " + "F1=0.00% ;Recall= 0.00% ; Precision=0.00%")
@@ -790,6 +790,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
             Draw mAP plot (show AP's of all classes in decreasing order)
         """
         if draw_plot:
+            window_title = "mAP"
             plot_title = "mAP= {0:.2f}%".format(mAP*100)
             x_label = "Average Precision"
             output_path = RESULTS_FILES_PATH + "/mAP.png"
