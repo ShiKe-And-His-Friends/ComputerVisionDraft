@@ -19,7 +19,7 @@ if __name__ == "__main__":
     #   'heatmap'     ： 进行预测结果的热力图可视化
     #   'export_mode' ： 模型到处onnx，需要pytorch1.7.1以上
     # -------------------------------------------------------------------------#
-    mode = 'predict'
+    mode = 'video'
 
     # -------------------------------------------------------------------------#
     #   crop        ： 是否预测单张图片后对目标截取
@@ -39,8 +39,8 @@ if __name__ == "__main__":
     #
     #        video_path video_save_path video_fps 仅在 mode='video'时有效
     # -------------------------------------------------------------------------#
-    video_path = 0
-    video_save_path = "a.mp4"
+    video_path = "a1.mp4"
+    video_save_path = "a.mp4v"
     video_fps = 10.0
 
     # -------------------------------------------------------------------------#
@@ -121,6 +121,9 @@ if __name__ == "__main__":
             frame = cv2.cvtColor(frame ,cv2.COLOR_BGR2RGB)
             # to Image
             frame = Image.fromarray(np.uint8(frame))
+            # video
+            frame = np.array(yolo.detect_image(frame))
+
             #RGBtoBGR cv show
             frame = cv2.cvtColor(frame ,cv2.COLOR_RGB2BGR)
 
