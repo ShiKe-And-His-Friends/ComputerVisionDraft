@@ -91,8 +91,8 @@ class TransformerEncoderLayer(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
-    def __init__(self ,multihead_attn ,FFN ,\
-                 d_model = 512, num_encoder_layer=6 , activation="relu",\
+    def __init__(self ,multihead_attn ,FFN ,
+                 d_model = 512, num_encoder_layer=6 , activation="relu",
                  self_posembed=None):
         super(TransformerEncoder, self).__init__()
         encoder_layer = TransformerEncoderLayer(
