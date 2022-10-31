@@ -60,7 +60,7 @@ class RelationUnit(nn.Modle):
         self.temp = 1
         self.WK = nn.Linear(feature_dim ,key_feature_dim ,bias=False)
         self.WQ = nn.Linear(feature_dim ,key_feature_dim ,bias=False)
-        self.WV = nn.Linear(feature_dim ,key_feature_dim ,bias=False)
+        self.WV = nn.Linear(feature_dim ,feature_dim ,bias=False)
         self.after_norm = nn.BatchNorm1d(feature_dim)
         self.trans_conv = nn.Linear(feature_dim ,feature_dim ,bias=False)
 
