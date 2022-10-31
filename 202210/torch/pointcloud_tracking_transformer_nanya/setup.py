@@ -2,6 +2,7 @@
     构建本地包的动态库
 
     # python setup.py build_ext --inplace
+    #            -----> _ext.cp38-win_amd64.pyd
 
 """
 from setuptools import setup , find_packages
