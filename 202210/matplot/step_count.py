@@ -9,7 +9,7 @@ import csv
 from math import sqrt
 
 THRESHOLD = 0.85
-base_step = [15.756 , 13.755 ,11.755 ,9.755 ,7.755 ,5.755 ,3.755] # 平面拟合的大致数值
+base_step = [14.753 , 12.753 ,10.753 ,8.753 ,6.753 ,4.753 ,2.752] # 平面拟合的大致数值
 pcd_cloud_dir = "C:/Users/s05559/source/repos/PCL_Learning_Project/PCB点云文件" # 阶差规的点云文件目录
 
 def mean_calc(values):
