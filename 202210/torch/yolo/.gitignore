@@ -2,6 +2,6 @@
 .temp_map_out
 .map_output
 img_crop
-logs
+log
 *.mp4
 *.mp4v

@@ -88,7 +88,7 @@ if __name__ == '__main__':
     #                  Adam可以使用较小的UnFreeze_Epoch
     #   Unfreeze_batch_size 模型解冻的batch_size
     # -------------------------------------------------------#
-    UnFreeze_Epoch = 62
+    UnFreeze_Epoch = 300
     Unfreeze_batch_size = 10
     # -------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练

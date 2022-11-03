@@ -270,7 +270,7 @@ def draw_plot_func(dictionary, n_classes, window_title, plot_title,  x_label, ou
         """
         fig = plt.gcf()  # gcf - get current figure
         axes = plt.gca()
-        r = fig.canvas.manager.get_renderer()
+        r = fig.canvas.get_renderer()
         for i ,val in enumerate(sorted_values):
             fp_val = fp_sorted[i]
             tp_val = tp_sorted[i]
@@ -289,7 +289,7 @@ def draw_plot_func(dictionary, n_classes, window_title, plot_title,  x_label, ou
             """
             fig = plt.gcf()
             axes = plt.gca()
-            r = fig.canvas.manager.get_renderer()
+            r = fig.canvas.get_renderer()
             for i,val in enumerate(sorted_values):
                 str_val = " " + str(val) #add a space figure
                 if val < 1.0:
@@ -299,7 +299,7 @@ def draw_plot_func(dictionary, n_classes, window_title, plot_title,  x_label, ou
                 if i == (len(sorted_values) - 1):
                     adjust_axes(r ,t ,fig ,axes)
         # set windows title
-        fig.canvas.manager.set_window_title(window_title)
+        fig.canvas.set_window_title(window_title)
         # write classes in y axis
         tick_font_size = 12
         plt.yticks(range(n_classes) ,sorted_keys ,fontsize = tick_font_size)
@@ -647,7 +647,7 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                 plt.fill_between(area_under_curve_x ,0 ,area_under_curve_y ,alpha=0.2 ,edgecolor ='r' )
 
                 fig = plt.gcf()
-                fig.canvas.manager.set_window_title("AP_" + class_name)
+                fig.canvas.set_window_title("AP_" + class_name)
                 plt.title('class:' + text)
                 plt.xlabel('Recall')
                 plt.ylabel("Precision")
@@ -656,7 +656,6 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                 axes.set_ylim([0.0 ,1.05])
                 fig.savefig(RESULTS_FILES_PATH + "/AP/" + class_name + ".png")
                 plt.cla()
-                plt.close()
 
                 plt.plot(score ,F1 ,"-" ,color = 'orangered')
                 plt.title('class:' + F1_text + "\nscore_threhold=" + str(score_threhold))
@@ -667,7 +666,6 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                 axes.set_ylim([0.0 ,1.05])
                 fig.savefig(RESULTS_FILES_PATH + "/F1/" + class_name + ".png")
                 plt.cla()
-                plt.close()
 
                 plt.plot(score ,rec ,"-H" ,color = 'gold')
                 plt.title('class: ' +Recall_text + "\nScore_threhold=" + str(score_threhold) )
@@ -678,7 +676,6 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                 axes.set_ylim([0.0 ,1.05])
                 fig.savefig(RESULTS_FILES_PATH + "/Recall/" + class_name + ".png")
                 plt.cla()
-                plt.close()
 
                 plt.plot(score ,prec ,"-s" ,color ='palevioletred')
                 plt.title("class: " + Precision_text + "\nScore_threhold=" + str(score_threhold))
@@ -689,8 +686,8 @@ def get_map(MINOVERLAP , draw_plot ,score_threhold = 0.5 ,path = './map_out'):
                 axes.set_ylim([0.0 ,1.05])
                 fig.savefig(RESULTS_FILES_PATH + "/Precision/" + class_name + '.png')
                 plt.cla()
-                plt.close()
 
+            plt.close()
             if show_animation:
                 cv2.destroyAllWindows()
             if n_classes == 0:
