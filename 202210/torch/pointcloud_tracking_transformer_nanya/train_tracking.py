@@ -156,7 +156,7 @@ def one_sample_step(input_dict ,model ,optimizer ,train=False):
 
 for epoch in range(opt.nepoch):
     scheduler.step(epoch)
-    print("===============>>>>>>> Online epoch: # %d ,lr=%d <<<<<<<<=====================" % (epoch ,scheduler.get_lr()[0]))
+    print("===============>>>>>>> Online epoch: # %d ,lr=%f <<<<<<<<=====================" % (epoch ,scheduler.get_lr()[0]))
     # switch to train model
     # torch.cuda.synchronize()
     netR.train()
