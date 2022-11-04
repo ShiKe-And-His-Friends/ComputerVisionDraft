@@ -49,3 +49,12 @@ train_dataloader = torch.utils.data.DataLoader(
 )
 
 print('#Train data:' ,len(train_data))
+
+#TODO test data loader
+
+netR = get_model(
+    name="T",
+    input_channels = opt.input_feature_num,
+    use_xyz = use_xyz,
+    input_size =opt.input_size
+)
