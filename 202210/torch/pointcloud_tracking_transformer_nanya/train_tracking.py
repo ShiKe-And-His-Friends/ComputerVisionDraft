@@ -1,6 +1,8 @@
+import os
 import argparse
 
 import torch.utils.data
+from pointnet2.models import get_model
 
 from Dataset import SiameseTrain
 
@@ -31,6 +33,7 @@ print(opt)
 #   加载数据集
 #
 #==================================================================#
+save_dir = opt.save_root_dir
 train_data = SiameseTrain(
     input_size = opt.input_size,
     path = opt.data_dir,
@@ -55,6 +58,12 @@ print('#Train data:' ,len(train_data))
 netR = get_model(
     name="T",
     input_channels = opt.input_feature_num,
-    use_xyz = use_xyz,
+    use_xyz = True,
     input_size =opt.input_size
 )
+netR = torch.nn.DataParallel(netR)
+if opt.model != "":
+    netR.load_state_dict(torch.load(os.path.join(save_dir ,opt.model)))
+netR.cuda()
+
+#TODO optimizer = optim.Adam
