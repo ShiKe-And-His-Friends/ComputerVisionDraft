@@ -130,7 +130,7 @@ def one_sample_step(input_dict ,model ,optimizer ,train=False):
     objectness_label = label_cla
 
     box_mask = label_cla
-    loss_objective = criterion_objective(estimation_box[: ,: , ,4] ,objectness_label)
+    loss_objective = criterion_objective(estimation_box[: ,: ,4] ,objectness_label)
     loss_objective = torch.sum(loss_objective * objectness_mask) / (torch.sum(objectness_mask) + 1e-6)
     loss_box = criterion_box(estimation_box[: ,: ,0:4] ,label_reg[: ,0:K ,:])
     loss_box = (loss_box.mean(2) * box_mask).sum() / (box_mask.sum() + 1e-06)

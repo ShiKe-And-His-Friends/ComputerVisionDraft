@@ -9,11 +9,21 @@ from setuptools import setup , find_packages
 from torch.utils.cpp_extension import BuildExtension ,CppExtension ,CUDAExtension
 import glob
 
-_ext_src_root = '_ext-src'
+# 作者的工具etw_pythorch_utils
+try:
+    import builtins
+except:
+    import __builtins__ as builtins
+builtins.__POINTNET2_SETUP__ = True
+
+# 导入环境包，可以跳过
+import pointnet2
+
+_ext_src_root = 'pointnet2/_ext-src'
 _ext_source = glob.glob("{}/src/*cxx".format(_ext_src_root)) + glob.glob("{}/src/*.cu".format(_ext_src_root))
 _ext_header = glob.glob("{}/include/*".format(_ext_src_root))
 
-requirements = ["h5py" ,"pprint" ,"enum34" ,"future"]
+requirements = ["etw_pytorch_utils==1.1.1","h5py" ,"pprint" ,"enum34" ,"future"]
 
 setup(
     name= "pointnet2",
@@ -22,7 +32,8 @@ setup(
     packages=find_packages(),
     install_requires = requirements,
     ext_modules=[
-        CppExtension(
+        CUDAExtension(
+        #CppExtension(
             name = "pointnet2._ext",
             sources = _ext_source,
             extra_compile_args = {

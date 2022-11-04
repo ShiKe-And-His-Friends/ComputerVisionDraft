@@ -5,5 +5,5 @@ from __future__ import (
     print_function,
     unicode_literals,
 )
-from pointnet2.models import pointnet2_utils
-from pointnet2.models import pointnet2_module
+from . import pointnet2_utils
+from . import pointnet2_modules
