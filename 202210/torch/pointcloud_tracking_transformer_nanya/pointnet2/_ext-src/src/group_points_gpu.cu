@@ -12,7 +12,7 @@ __global__ void group_points_kernel(int b ,int c,int n ,int npoints ,
     float *__restrict__ out){
     int batch_index = blockIdx.x;
     points += batch_index * n * c;
-    idx += batch_index * npoints * nsamples;
+    idx += batch_index * npoints * nsample;
     out += batch_index * npoints * nsample * c;
 
     const int index = threadIdx.y * blockDim.x + threadIdx.x;
@@ -28,10 +28,21 @@ __global__ void group_points_kernel(int b ,int c,int n ,int npoints ,
     }
 }
 
+void group_points_kernel_wrapper(int b, int c, int n, int npoints, int nsample,
+    const float *points, const int *idx,
+    float *out) {
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+    group_points_kernel<<<b, opt_block_config(npoints, c), 0, stream>>>(
+        b, c, n, npoints, nsample, points, idx, out);
+
+    CUDA_CHECK_ERRORS();
+}
+
 // input : grad_out(b ,c ,npoints ,nsample ) ,idx(b ,npoints ,nsample)
 // outpit : grad_points(b ,c ,n)
 __global__ void group_points_grad_kernel(
-    int b, int x ,int n, int npoints,
+    int b, int c ,int n, int npoints,
     int nsample ,
     const float *__restrict__ grad_out,
     const int *__restrict__ idx,
@@ -49,8 +60,7 @@ __global__ void group_points_grad_kernel(
         const int j = i % npoints;
         for (int k = 0 ; k < nsample ; k++) {
             int ii = idx[j * nsample + k];
-            atomicAdd(grad_points + ; * n + ii,
-                grad_out[(l * npoints + j) * nsample + k]);
+            atomicAdd(grad_points + l * n + ii,grad_out[(l * npoints + j) * nsample + k]);
         }
     }
 }
@@ -58,7 +68,7 @@ __global__ void group_points_grad_kernel(
 void group_points_grad_kernel_wrapper(int b, int c, int n ,int npoints ,
     int nsample ,const float *grad_out ,
     const int *idx ,float *grad_points) {
-    cudaStrean_t stream = at::cuda::getCurrentCUDAStream();
+    cudaStream_t stream = at::cuda::getCurrentCUDAStream();
 
     group_points_grad_kernel<<< b ,opt_block_config(npoints ,c) ,0 ,stream >>> (
         b ,c ,n ,npoints ,nsample ,grad_out ,idx ,grad_points

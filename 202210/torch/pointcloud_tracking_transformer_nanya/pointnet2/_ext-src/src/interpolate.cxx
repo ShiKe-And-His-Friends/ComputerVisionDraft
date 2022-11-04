@@ -1,5 +1,5 @@
 #include <interpolate.hpp>
-#include <utils.h>
+#include <utils.hpp>
 
 void three_nn_kernel_wrapper(int b, int n ,int m ,const float *unknown ,
     const float *knows ,float *dist2 ,int *idx);
@@ -22,10 +22,10 @@ std::vector<at::Tensor> three_nn(at::Tensor unknowns ,at::Tensor knows){
         CHECK_CUDA(knows);
     }
     at::Tensor idx =
-        torch.zeros({unknowns.size(0) ,unknowns.size(1) ,3},
+        torch::zeros({unknowns.size(0) ,unknowns.size(1) ,3},
             at::device(unknowns.device()).dtype(at::ScalarType::Int) );
     at::Tensor dist2 =
-        torch.zeros({unknowns.size(0) ,unknowns,size(1) ,3},
+        torch::zeros({unknowns.size(0) ,unknowns.size(1) ,3},
             at::device(unknowns.device()).dtype(at::ScalarType::Float)
             );
     if (unknowns.type().is_cuda()){
@@ -35,7 +35,7 @@ std::vector<at::Tensor> three_nn(at::Tensor unknowns ,at::Tensor knows){
             dist2.data<float>() ,idx.data<int>()
             );
     }else {
-        AT_CHECK(false ,"Three NN : CPU not supported.");
+        TORCH_CHECK(false ,"Three NN : CPU not supported.");
     }
     return {dist2 ,idx};
 }
@@ -66,7 +66,7 @@ at::Tensor three_interpolate(at::Tensor points ,at::Tensor idx ,at::Tensor weigh
             );
 
     } else {
-        AT_CHECK(false ,"three interpolate : CPU not supported.");
+        TORCH_CHECK(false ,"three interpolate : CPU not supported.");
     }
     return output;
 }
@@ -98,7 +98,7 @@ at::Tensor three_interpolate_grad(at::Tensor grad_out ,at::Tensor idx,at::Tensor
             output.data<float>()
             );
     } else {
-        AT_CHECK(false ,"Three Interpolate Grad:CPU not supported");
+        TORCH_CHECK(false ,"Three Interpolate Grad:CPU not supported");
     }
     return output;
 }

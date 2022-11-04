@@ -21,13 +21,13 @@ __global__ void three_nn_kernel(
     int index = threadIdx.x;
     int stride = blockDim.x;
 
-    for (int j = index ,j < n ; j += stride) {
+    for (int j = index ;j < n ; j += stride) {
         float ux = unknown[j * 3 + 0];
         float uy = unknown[j * 3 + 1];
         float uz = unknown[j * 3 + 2];
 
         double best1  = 1e40, best2 = 1e40 ,best3 =1e40;
-        int besti1 = 0 ,besti2 = 0.besti3=0;
+        int besti1 = 0 ,besti2 = 0 ,besti3=0;
         for (int k = 0 ; k < m ; k++) {
             float x = known[k * 3 + 0];
             float y = known[k * 3 + 1];
@@ -63,8 +63,7 @@ __global__ void three_nn_kernel(
 void three_nn_kernel_wrapper(int b ,int n ,int m ,const float *unknown,
     const float *known ,float *dist2 ,int *idx) {
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
-    three_nn_kernel<<<< b,opt_n_threads(n) ,0 ,stream >>>
-        (b ,n ,m ,unknown ,known ,dist2 ,idx);
+    three_nn_kernel<<< b,opt_n_threads(n) ,0 ,stream >>>(b ,n ,m ,unknown ,known ,dist2 ,idx);
     CUDA_CHECK_ERRORS();
 }
 
@@ -107,7 +106,7 @@ void three_interpolate_kernel_wrapper(int b ,int c,int m ,int n,
     const float *weight ,float *out) {
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
     three_interpolate_kernel<<< b,opt_block_config(n,c) ,0 ,stream >>>(
-        b ,c ,m ,n ,points ,idx ,weight ,out);
+        b ,c ,m ,n ,point ,idx ,weight ,out);
     CUDA_CHECK_ERRORS();
 }
 
@@ -126,7 +125,7 @@ __global__ void three_interpolate_grad_kernel(
     weight += batch_index *n *3;
     grad_points += batch_index * m * c;
 
-    const int index = threadIdx,y * blockDim.x + threadIdx.x;
+    const int index = threadIdx.y * blockDim.x + threadIdx.x;
     const int stride = blockDim.y * blockDim.x;
 
     for (int i = index ; i < c * n ; i += stride) {

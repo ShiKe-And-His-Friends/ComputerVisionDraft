@@ -21,7 +21,7 @@ at::Tensor group_points(at::Tensor points ,at::Tensor idx) {
         CHECK_CUDA(idx);
     }
     at::Tensor output =
-        torch.zeros({points.size(0) ,points.size(1) ,idx.size(1) ,idx.size(2)},
+        torch::zeros({points.size(0) ,points.size(1) ,idx.size(1) ,idx.size(2)},
             at::device(points.device()).dtype(at::ScalarType::Float)
             );
     if (points.type().is_cuda()) {
@@ -30,7 +30,7 @@ at::Tensor group_points(at::Tensor points ,at::Tensor idx) {
         idx.data<int>() ,output.data<float>()
         );
     } else {
-        AT_CHECK(false ,"Group Point: CPU not supported");
+        TORCH_CHECK(false ,"Group Point: CPU not supported");
     }
     return output;
 }
@@ -39,7 +39,7 @@ at::Tensor group_points_grad(at::Tensor grad_out ,at::Tensor idx ,const int n) {
     CHECK_CONTIGUOUS(grad_out);
     CHECK_CONTIGUOUS(idx);
     CHECK_IS_FLOAT(grad_out);
-    CHECK_IS_INI(idx);
+    CHECK_IS_INT(idx);
 
     if (grad_out.type().is_cuda() ) {
         CHECK_CUDA(idx);
@@ -54,6 +54,6 @@ at::Tensor group_points_grad(at::Tensor grad_out ,at::Tensor idx ,const int n) {
             grad_out.data<float>() ,idx.data<int>() ,output.data<float>()
             );
     } else {
-        AT_CHECK(false ,"Grad Out : CPU not supported.");
+        TORCH_CHECK(false ,"Grad Out : CPU not supported.");
     }
 }

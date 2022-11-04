@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "cuda_utils.h"
+#include "cuda_utils.hpp"
 
 // input: new_xyz(b ,m ,3) xyz(b , n ,3)
 // output:  idx(b ,m ,nsample)
@@ -48,5 +48,5 @@ void query_ball_point_score_kernel_wrapper(int b ,int n ,int m ,float radius ,in
     query_ball_point_score_kernel<<< b ,opt_n_threads(m) ,0 ,stream >>>(
         b ,n ,m ,radius , nsample ,new_xyz ,xyz ,score ,unique_score
     );
-    CUDA_CHECK_ERRORES();
+    CUDA_CHECK_ERRORS();
 }

@@ -1,4 +1,4 @@
-#include <matg.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -48,5 +48,5 @@ void query_ball_point_kernel_wrapper(int b ,int n ,int m ,float radius ,
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
     query_ball_point_kernel<<< b, opt_n_threads(m) ,0 ,stream >>>(
         b , n ,m ,radius ,nsample ,new_xyz ,xyz ,idx);
-    CUDA_CHECK_ERROES();
+    CUDA_CHECK_ERRORS();
 }

@@ -5,18 +5,18 @@
 #include "ball_query_score.hpp"
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME , m) {
-    m.def("gather_points" ,&gather_points);
-    m.def("gather_points_grab" ,&gather_points_grab);
-    m.def("furthest_point_sampling" ,&furthest_point_sampling);
+    m.def("gather_points" ,&gather_points ,"gather points");
+    m.def("gather_points_grad" ,&gather_points_grad ,"gather points grab");
+    m.def("furthest_point_sampling" ,&furthest_point_sampling ,"furtheast point sampling");
 
-    m.def("three_nn" ,&three_nn);
-    m.def("three_interpolate" ,&three_interpolate);
-    m.def("three_interpolate_grab" ,&three_interpolate_grab);
+    m.def("three_nn" ,&three_nn ,"three nn");
+    m.def("three_interpolate" ,&three_interpolate ,"three interpolate");
+    m.def("three_interpolate_grad" ,&three_interpolate_grad ,"three interplate grab");
 
-    m.def("ball_query" ,&ball_query);
-    m.def("ball_query_score" ,&ball_query_score);
+    m.def("ball_query" ,&ball_query ,"ball query");
+    m.def("ball_query_score" ,&ball_query_score ,"ball query score");
 
-    m.def("group_points" ,&group_points);
-    m.def("group_points_grad" ,&group_points_grad);
+    m.def("group_points" ,&group_points ,"group socre");
+    m.def("group_points_grad" ,&group_points_grad ,"group points grad");
 
 }
