@@ -39,7 +39,7 @@ if __name__ == "__main__":
     #
     #        video_path video_save_path video_fps 仅在 mode='video'时有效
     # -------------------------------------------------------------------------#
-    video_path = "行人检测测试视频.mp4v"
+    video_path = 0 #"行人检测测试视频.mp4v"
     video_save_path = "a2.mp4v"
     video_fps = 25.0
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     #        test_interval fps_image_path 仅在 mode='fps'时有效
     # -------------------------------------------------------------------------#
     test_interval = 100
-    fps_image_path = "street01.jpg"
+    fps_image_path = "E:\Torch\yolov4-pytorch-master\img\street.jpg"
 
     # -------------------------------------------------------------------------#
     #   dir_origin_path     ： 指定检测图片的路径文件夹。
@@ -59,7 +59,7 @@ if __name__ == "__main__":
     #
     #        dir_origin_path dir_save_path 仅在 mode='dir_predict'时有效
     # -------------------------------------------------------------------------#
-    dir_origin_path = "img/"
+    dir_origin_path = "E:\Torch\yolov4-pytorch-master\img"
     dir_save_path = "img_out/"
 
     # -------------------------------------------------------------------------#
@@ -162,7 +162,7 @@ if __name__ == "__main__":
         from tqdm import tqdm
         img_names = os.listdir(dir_origin_path)
         for img_name in tqdm(img_names):
-            if img_name.lower().endsWith(('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff', )):
+            if img_name.lower().endswith(('.bmp', '.dib', '.png', '.jpg', '.jpeg', '.pbm', '.pgm', '.ppm', '.tif', '.tiff', )):
                 image_path = os.path.join(dir_origin_path ,img_name)
                 image = Image.open(image_path)
                 r_image = yolo.detect_image(image)
@@ -182,7 +182,7 @@ if __name__ == "__main__":
             else:
                 yolo.detect_heatmap(image ,heatmap_save_path)
 
-    elif mode == "export_onnx":
+    elif mode == "export_mode":
         print("\nExport Onnx Mode. \n")
         yolo.covert_to_onnx(simplify ,onnx_save_path)
 

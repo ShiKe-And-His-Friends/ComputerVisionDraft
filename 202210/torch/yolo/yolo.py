@@ -219,7 +219,7 @@ class YOLO(object):
         with torch.no_grad():
             images =torch.from_numpy(image_data)
             if self.cuda:
-                images = images.__cuda_array_interface__
+                images = images.cuda()
                 outputs = self.net(images)
                 outputs = self.bbox_util.decode_box(outputs)
                 results = self.bbox_util.non_max_suppression(torch.cat(outputs ,1) ,self.num_classes ,self.input_shape,
@@ -250,7 +250,7 @@ class YOLO(object):
                 images = images.cuda()
             outputs = self.net(images)
 
-        plt.imshow(images,alpha=1)
+        plt.imshow(image,alpha=1)
         plt.axis('off')
         mask = np.zeros((image.size[1] ,image.size[0]))
 
@@ -261,7 +261,7 @@ class YOLO(object):
             score = np.max(sigmoid(sub_output[... ,4]) ,-1)
             score = cv2.resize(score ,(image.size[0] ,image.size[1]))
             normed_score = (score * 255).astype('uint8')
-            mask = np.maximun(mask ,normed_score)
+            mask = np.maximum(mask ,normed_score)
 
         plt.imshow(mask ,alpha = 0.5 ,interpolation='nearest' ,cmap="jet")
 
@@ -289,7 +289,7 @@ class YOLO(object):
             training = torch.onnx.TrainingMode.EVAL,
             do_constant_folding=True,
             input_names= input_layer_names,
-            output_layer_names = output_layer_names,
+            output_names = output_layer_names,
             dynamic_axes=None
         )
         model_onnx = onnx.load(model_path) # load onnx model
