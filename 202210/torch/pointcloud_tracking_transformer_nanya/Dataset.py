@@ -82,7 +82,7 @@ class kittiDataset():
             label_file = os.path.join(self.KITTI_label ,scene+".txt")
             df = pd.read_csv(
                 label_file,
-                sep='',
+                sep=' ',
                 names = [
                     "frame" ,"track_id" ,"type" ,"truncated" ,"occluded",
                     "alpha" ,"bbox_left" ,"bbox_top" ,"bbox_right",
@@ -133,7 +133,7 @@ class SiameseDataset(Dataset):
         self.regress = regress
 
         self.list_of_tracklet_anno = self.dataset.getListOfAnno(
-            self.sceneID ,category_name
+            self.sceneID ,self.category_name
         )
         self.list_of_anno = [
             anno for tracklet_anno in self.list_of_tracklet_anno
