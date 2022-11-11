@@ -100,7 +100,7 @@ setup(
     long_description='',
     packages=find_packages('src'),
     package_dir={'':'src'},
-    ext_modules=[CMakeExtension('pygcransac/pygcransac')],
+    ext_modules=[CMakeExtension('pygcransac_sample/pygcransac_sample')],
     cmdclass=dict(build_ext=CMakeBuild),
     #test_suite='tests',
     zip_safe=False,

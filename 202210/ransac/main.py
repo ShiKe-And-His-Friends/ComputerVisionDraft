@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
-import pygcransac
+import pygcransac_sample
 from time import time
 
 img1 = cv2.cvtColor(cv2.imread('data/adam1.png') ,cv2.COLOR_BGR2RGB)
@@ -85,7 +85,7 @@ def verify_pygcransac(kps1, kps2, tentatives, h1, w1, h2, w2, sampler_id):
     if sampler_id == 3 or sampler_id == 4:
         inlier_probabilities = get_probabilities(tentatives)
 
-    H, mask = pygcransac.findHomography(
+    H, mask = pygcransac_sample.findHomography(
         np.ascontiguousarray(correspondences),
         h1, w1, h2, w2,
         use_sprt = False,
