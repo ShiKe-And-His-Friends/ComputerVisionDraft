@@ -11,6 +11,7 @@ from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 from setuptools.command.test import test as TestCommand
 from shutil import copyfile, copymode
+# python3 ./setup.py install
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):

@@ -2,3 +2,4 @@
 build
 dist
 venv
+src/pygcransac_sample.egg-info/
