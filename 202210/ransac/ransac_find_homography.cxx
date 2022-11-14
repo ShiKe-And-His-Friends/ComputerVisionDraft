@@ -13,9 +13,9 @@ int main() {
 
 	Mat img1 = imread("D:\\computerVisionAll\\ComputerVisionDraft\\202210\\ransac\\data\\adam1.png" ,COLOR_BGR2RGB);
 	Mat img2 = imread("D:\\computerVisionAll\\ComputerVisionDraft\\202210\\ransac\\data\\adam2.png" , COLOR_BGR2RGB);
-	imshow("1", img1);
-	imshow("2", img2);
-	waitKey(0);
+	
+	cvtColor(img1 ,img1 ,COLOR_BGR2GRAY);
+	cvtColor(img2, img2, COLOR_BGR2GRAY);
 
 	Ptr<SIFT> sift = SIFT::create(8000);
 
@@ -24,11 +24,15 @@ int main() {
 	sift->detectAndCompute(img1 ,Mat() ,keypoint1 ,descriptor1);
 	sift->detectAndCompute(img2, Mat(), keypoint2, descriptor2);
 
+	std::cout << "detect1  " << descriptor1.size() << std::endl;
+	std::cout << "detect2  " << descriptor2.size() << std::endl;
+
+	/*****
 	std::vector<DMatch> mathes;
 	Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce-Hamming");
 	matcher->match(descriptor1, descriptor2, mathes, Mat());
 
 	std::cout << "mathes " << mathes.size() << std::endl;
-
+	****/
 	return 0;
 }
