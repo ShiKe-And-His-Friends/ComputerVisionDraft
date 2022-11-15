@@ -8,6 +8,31 @@
 
 using namespace cv;
 
+void draw_matches(std::vector<KeyPoint> kps1, std::vector<KeyPoint> kps2 ,std::vector<DMatch> matches , Mat img1 ,Mat img2 ,Mat H ,Mat mask) {
+	if (H.empty()){
+		std::cout << "No homography found" << std::endl;
+		return;
+	}
+	/***
+		Mat matchesMask = mask.ravel().tolist()
+		h, w, ch = img1.shape
+		pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]] ).reshape(-1, 1, 2)
+		dst = cv2.perspectiveTransform(pts, H)
+		#Ground truth transformation
+		dst_GT = cv2.perspectiveTransform(pts, H_gt)
+		img2_tr = cv2.polylines(decolorize(img2), [np.int32(dst)], True, (0, 0, 255), 3, cv2.LINE_AA)
+		img2_tr = cv2.polylines(deepcopy(img2_tr), [np.int32(dst_GT)], True, (0, 255, 0), 3, cv2.LINE_AA)
+		# Blue is estimated, green is ground truth homography
+		draw_params = dict(matchColor = (255, 255, 0), # draw matches in yellow color
+			singlePointColor = None,
+			matchesMask = matchesMask, # draw only inliers
+			flags = 2)
+		img_out = cv2.drawMatches(decolorize(img1), kps1, img2_tr, kps2, tentatives, None, **draw_params)
+		plt.figure(figsize = (12, 8))
+		plt.imshow(img_out)
+	***/
+}
+
 int main() {
 
 	std::cout << "Ransac find homography." << std::endl;
@@ -39,18 +64,30 @@ int main() {
 	imshow("matches", imMatches);
 	waitKey(1000);
 
+	/// ///////////// Ransac  ///////////////////////////////
+
 	std::vector<Point2f> points1, points2;
 	for (size_t i = 0; i < matches.size(); i++) {
 		points1.push_back(keypoint1[matches[i].queryIdx].pt);
 		points2.push_back(keypoint2[matches[i].trainIdx].pt);
 	}
 	
-	Mat h = findHomography(points1 ,points2 ,RANSAC);
+	Mat mask;
+	Mat h = findHomography(points1 ,points2 ,mask ,RANSAC ,1.0);
+	
 	Mat prespectMat;
 	warpPerspective(img1 ,prespectMat ,h ,img2.size());
 	imshow("input" ,img2);
 	imshow("algined Image", prespectMat);
-	waitKey(0);
+
+	draw_matches(keypoint1, keypoint2, matches, img1, img2, h, mask);
+
+	waitKey(6000);
+	destroyAllWindows();
+
+
+	/// ///////////// Py-Ransac  ///////////////////////////////
+
 
 	return 0;
 }
