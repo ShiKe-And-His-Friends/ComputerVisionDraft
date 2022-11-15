@@ -9,7 +9,7 @@
 
 using namespace cv;
 
-void verify_pygcransac(std::vector<KeyPoint> kps1,
+Mat verify_pygcransac(std::vector<KeyPoint> kps1,
 	std::vector<KeyPoint> kps2,
 	std::vector<DMatch> tentatives,
 	int h1,int w1 ,
@@ -27,8 +27,8 @@ void verify_pygcransac(std::vector<KeyPoint> kps1,
 	double spatial_coherence_weight = 0.1;
 	double threshold = 0.5;
 	double conf = 0.5;
-	int max_iters = 9000;
-	int min_iters = 100;
+	int max_iters = 900000;
+	int min_iters = 10000;
 	bool use_sprt = false;
 	double min_inlier_ratio_for_sprt = 1;
 	int sampler = sampler_id;
@@ -68,13 +68,19 @@ void verify_pygcransac(std::vector<KeyPoint> kps1,
 		lo_number);
 
 	std::cout << "H :" << std::endl;
-	for (int i = 1; i <= 9; i++) {
-		std::cout << H[i - 1] << " ";
-		if (i % 3 == 0) {
-			std::cout << " " << std::endl;
-		}
+	Mat H_mat(3, 3 ,CV_32FC1 ,Scalar(0));
+	for (int i = 0; i < 3; i++) {
+		//float* ptr1 = H_mat.ptr<float>(i);
+		for (int j = 0; j < 3; j++) {
+			H_mat.at<float>(i, j) = H[i * 3 + j];
+			std::cout << H[i *3 + j] << " ";
+		}		
+	}
+	for (int i = 0;i < inliers.size(); i++) {
+		std::cout << inliers.at(i) << " ";
 	}
 
+	return H_mat;
 	/****
 	py::array_t<bool> inliers_ = py::array_t<bool>(NUM_TENTS);
 	py::buffer_info buf3 = inliers_.request();
@@ -100,8 +106,15 @@ void draw_matches(std::vector<KeyPoint> kps1, std::vector<KeyPoint> kps2 ,std::v
 		std::cout << "No homography found" << std::endl;
 		return;
 	}
-	/***
-		Mat matchesMask = mask.ravel().tolist()
+
+	for (int i = 0; i < mask.rows; i++) {
+		for (int j = 0; j < mask.cols; j++) {
+			bool values = mask.ptr(i, j);
+			std::cout << values << " ";
+		}
+	}
+	/****
+		Mat matchesMask = mask.ravel().tolist();
 		h, w, ch = img1.shape
 		pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]] ).reshape(-1, 1, 2)
 		dst = cv2.perspectiveTransform(pts, H)
@@ -117,7 +130,7 @@ void draw_matches(std::vector<KeyPoint> kps1, std::vector<KeyPoint> kps2 ,std::v
 		img_out = cv2.drawMatches(decolorize(img1), kps1, img2_tr, kps2, tentatives, None, **draw_params)
 		plt.figure(figsize = (12, 8))
 		plt.imshow(img_out)
-	***/
+	****/
 }
 
 int main() {
@@ -130,7 +143,7 @@ int main() {
 	cvtColor(img1 ,img1 ,COLOR_BGR2GRAY);
 	cvtColor(img2, img2, COLOR_BGR2GRAY);
 
-	Ptr<SIFT> sift = SIFT::create(800);
+	Ptr<SIFT> sift = SIFT::create(500);
 
 	std::vector<KeyPoint> keypoint1, keypoint2;
 	Mat descriptor1, descriptor2;
@@ -169,13 +182,18 @@ int main() {
 
 	draw_matches(keypoint1, keypoint2, matches, img1, img2, h, mask);
 
-	waitKey(6000);
+	waitKey(3000);
 	destroyAllWindows();
 
 
 	/// ///////////// Py-Ransac  ///////////////////////////////
-	verify_pygcransac(keypoint1 ,keypoint2 , matches ,img1.rows ,img1.cols ,img2.rows ,img2.cols ,2);
+	Mat h2 = verify_pygcransac(keypoint1 ,keypoint2 , matches ,img1.rows ,img1.cols ,img2.rows ,img2.cols ,2);
 
+	warpPerspective(img1, prespectMat, h2, img2.size());
+	imshow("input_py", img2);
+	imshow("algined Image py", prespectMat);
+	waitKey(5000);
+	destroyAllWindows();
 
 	return 0;
 }
