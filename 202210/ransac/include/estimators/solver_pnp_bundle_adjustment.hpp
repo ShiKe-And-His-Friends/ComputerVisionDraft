@@ -27,10 +27,10 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma once
 
-#include "solver_engine.h"
-#include "perspective_n_point_estimator.h"
-#include "solver_p3p.h"
-#include "solver_dls_pnp.h"
+#include "solver_engine.hpp"
+#include "perspective_n_point_estimator.hpp"
+#include "solver_p3p.hpp"
+#include "solver_dls_pnp.hpp"
 #include <iostream>
 
 namespace gcransac

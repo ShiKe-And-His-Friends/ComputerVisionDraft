@@ -43,10 +43,10 @@
 #include <unsupported/Eigen/Polynomials>
 #include <Eigen/Eigen>
 
-#include "estimator.h"
-#include "model.h"
+#include "estimator.hpp"
+#include "model.hpp"
 
-#include "solver_rigid_transformation_svd.h"
+#include "solver_rigid_transformation_svd.hpp"
 
 namespace gcransac
 {

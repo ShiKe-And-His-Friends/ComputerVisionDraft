@@ -41,9 +41,9 @@
 #include <memory>
 #include <vector>
 #include <iostream>
-#include "estimator.h"
-#include "quality_measurement.h"
-#include "sampler.h"
+#include "estimator.hpp"
+#include "quality_measurement.hpp"
+#include "sampler.hpp"
 
 namespace theia
 {

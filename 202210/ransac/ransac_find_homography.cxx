@@ -5,8 +5,11 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/calib3d.hpp>
+#include <gcransac_python.hpp>
 
 using namespace cv;
+
+
 
 void draw_matches(std::vector<KeyPoint> kps1, std::vector<KeyPoint> kps2 ,std::vector<DMatch> matches , Mat img1 ,Mat img2 ,Mat H ,Mat mask) {
 	if (H.empty()){
@@ -74,7 +77,7 @@ int main() {
 	
 	Mat mask;
 	Mat h = findHomography(points1 ,points2 ,mask ,RANSAC ,1.0);
-	
+	std::cout << "H;" << std::endl << h << std::endl;
 	Mat prespectMat;
 	warpPerspective(img1 ,prespectMat ,h ,img2.size());
 	imshow("input" ,img2);
@@ -87,6 +90,7 @@ int main() {
 
 
 	/// ///////////// Py-Ransac  ///////////////////////////////
+	verify_pygcransac(keypoint1 ,keypoint2 , matches ,img1.rows ,img1.cols ,img2.rows ,img2.cols ,2);
 
 
 	return 0;

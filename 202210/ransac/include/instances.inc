@@ -1,4 +1,4 @@
-#include "graph.h"
+#include "graph.hpp"
 
 #ifdef _MSC_VER
 #pragma warning(disable: 4661)

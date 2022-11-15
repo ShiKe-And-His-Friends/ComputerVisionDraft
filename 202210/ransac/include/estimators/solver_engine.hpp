@@ -42,7 +42,7 @@
 #include <unsupported/Eigen/Polynomials>
 #include <Eigen/Eigen>
 
-#include "model.h"
+#include "model.hpp"
 
 namespace gcransac
 {

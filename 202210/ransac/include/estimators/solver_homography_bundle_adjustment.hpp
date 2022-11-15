@@ -33,10 +33,10 @@
 // Author: Daniel Barath (barath.daniel@sztaki.mta.hu)
 #pragma once
 
-#include "solver_engine.h"
-#include "homography_estimator.h"
-#include "../relative_pose/bundle.h"
-#include "../relative_pose/essential.h"
+#include "solver_engine.hpp"
+#include "homography_estimator.hpp"
+#include "../relative_pose/bundle.hpp"
+#include "../relative_pose/essential.hpp"
 
 namespace gcransac
 {

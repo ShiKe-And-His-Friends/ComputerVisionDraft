@@ -4,3 +4,4 @@ dist
 venv
 src/pygcransac_sample.egg-info/
 src/pygcransac.egg-info/
+PyRansac

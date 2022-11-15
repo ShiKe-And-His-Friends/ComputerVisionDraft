@@ -33,8 +33,8 @@
 // Author: Daniel Barath (barath.daniel@sztaki.mta.hu)
 #pragma once
 
-#include "estimators/solver_engine.h"
-#include "estimators/fundamental_estimator.h"
+#include "estimators/solver_engine.hpp"
+#include "estimators/fundamental_estimator.hpp"
 
 namespace gcransac
 {

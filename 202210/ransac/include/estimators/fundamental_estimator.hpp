@@ -43,17 +43,17 @@
 #include <unsupported/Eigen/Polynomials>
 #include <Eigen/Eigen>
 
-#include "estimator.h"
-#include "homography_estimator.h"
-#include "model.h"
-#include "../neighborhood/grid_neighborhood_graph.h"
-#include "../samplers/uniform_sampler.h"
+#include "estimator.hpp"
+#include "homography_estimator.hpp"
+#include "model.hpp"
+#include "../neighborhood/grid_neighborhood_graph.hpp"
+#include "../samplers/uniform_sampler.hpp"
 
-#include "GCRANSAC.h"
+#include "GCRANSAC.hpp"
 
-#include "solver_fundamental_matrix_seven_point.h"
-#include "solver_fundamental_matrix_plane_and_parallax.h"
-#include "solver_fundamental_matrix_eight_point.h"
+#include "solver_fundamental_matrix_seven_point.hpp"
+#include "solver_fundamental_matrix_plane_and_parallax.hpp"
+#include "solver_fundamental_matrix_eight_point.hpp"
 
 namespace gcransac
 {

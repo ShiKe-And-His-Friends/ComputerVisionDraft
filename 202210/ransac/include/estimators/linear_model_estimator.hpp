@@ -43,13 +43,13 @@
 #include <unsupported/Eigen/Polynomials>
 #include <Eigen/Eigen>
 
-#include "estimator.h"
-#include "solver_linear_model.h"
-#include "model.h"
-#include "../neighborhood/grid_neighborhood_graph.h"
-#include "../samplers/uniform_sampler.h"
+#include "estimator.hpp"
+#include "solver_linear_model.hpp"
+#include "model.hpp"
+#include "../neighborhood/grid_neighborhood_graph.hpp"
+#include "../samplers/uniform_sampler.hpp"
 
-#include "GCRANSAC.h"
+#include "GCRANSAC.hpp"
 
 
 namespace gcransac

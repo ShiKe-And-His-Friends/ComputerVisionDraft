@@ -33,8 +33,8 @@
 // Author: Daniel Barath (barath.daniel@sztaki.mta.hu)
 #pragma once
 
-#include "solver_engine.h"
-#include "linear_model_estimator.h"
+#include "solver_engine.hpp"
+#include "linear_model_estimator.hpp"
 
 namespace gcransac
 {

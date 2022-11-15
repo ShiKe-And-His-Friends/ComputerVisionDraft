@@ -35,8 +35,8 @@
 
 #include <iostream>
 
-#include "solver_engine.h"
-#include "fundamental_estimator.h"
+#include "solver_engine.hpp"
+#include "fundamental_estimator.hpp"
 
 namespace gcransac
 {

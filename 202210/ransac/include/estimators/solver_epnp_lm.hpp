@@ -33,8 +33,8 @@
 // Author: Daniel Barath (barath.daniel@sztaki.mta.hu)
 #pragma once
 
-#include "solver_engine.h"
-#include "fundamental_estimator.h"
+#include "solver_engine.hpp"
+#include "fundamental_estimator.hpp"
 #include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/calib3d.hpp>

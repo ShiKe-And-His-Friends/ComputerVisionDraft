@@ -34,8 +34,8 @@
 #pragma once
 
 #include <Eigen/Eigen>
-#include "solver_engine.h"
-#include "fundamental_estimator.h"
+#include "solver_engine.hpp"
+#include "fundamental_estimator.hpp"
 #include "unsupported/Eigen/Polynomials"
 
 namespace gcransac

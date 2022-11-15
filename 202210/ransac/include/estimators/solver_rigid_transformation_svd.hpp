@@ -35,7 +35,7 @@
 
 #include <iostream>
 
-#include "solver_engine.h"
+#include "solver_engine.hpp"
 
 namespace gcransac
 {

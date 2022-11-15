@@ -33,9 +33,9 @@
 // Author: Daniel Barath (barath.daniel@sztaki.mta.hu)
 #pragma once
 
-#include "solver_engine.h"
-#include "fundamental_estimator.h"
-#include "../maths/sturm_polynomial_solver.h"
+#include "solver_engine.hpp"
+#include "fundamental_estimator.hpp"
+#include "../maths/sturm_polynomial_solver.hpp"
 
 namespace gcransac
 {

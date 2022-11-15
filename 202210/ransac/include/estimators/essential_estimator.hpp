@@ -44,8 +44,8 @@
 #include <unsupported/Eigen/Polynomials>
 #include <Eigen/Eigen>
 
-#include "estimator.h"
-#include "model.h"
+#include "estimator.hpp"
+#include "model.hpp"
 
 namespace gcransac
 {

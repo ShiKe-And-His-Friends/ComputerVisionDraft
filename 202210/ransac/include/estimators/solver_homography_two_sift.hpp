@@ -33,9 +33,9 @@
 // Author: Daniel Barath (barath.daniel@sztaki.mta.hu)
 #pragma once
 
-#include "estimators/solver_engine.h"
-#include "estimators/homography_estimator.h"
-#include "math_utils.h"
+#include "estimators/solver_engine.hpp"
+#include "estimators/homography_estimator.hpp"
+#include "math_utils.hpp"
 
 namespace gcransac
 {
