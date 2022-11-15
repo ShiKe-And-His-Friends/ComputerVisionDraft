@@ -19,8 +19,8 @@ void verify_pygcransac(std::vector<KeyPoint> kps1,
 	std::vector<double> correspindences;
 	for (int i = 0; i < tentatives.size(); i++) {
 		correspindences.push_back(kps1.at(tentatives[i].queryIdx).pt.x);
-		correspindences.push_back(kps2.at(tentatives[i].trainIdx).pt.x);
 		correspindences.push_back(kps1.at(tentatives[i].queryIdx).pt.y);
+		correspindences.push_back(kps2.at(tentatives[i].trainIdx).pt.x);
 		correspindences.push_back(kps2.at(tentatives[i].trainIdx).pt.y);	
 	}
 
