@@ -11,12 +11,13 @@ from setuptools import setup, Extension, find_packages
 from setuptools.command.build_ext import build_ext
 from setuptools.command.test import test as TestCommand
 from shutil import copyfile, copymode
-# python3 ./setup.py install
+
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
         Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
+
 
 class CMakeBuild(build_ext):
     def run(self):
@@ -90,9 +91,8 @@ class CMakeBuild(build_ext):
         copyfile(src_file, dest_file)
         copymode(src_file, dest_file)
 
-
 setup(
-    name='pygcransac_sample',
+    name='pygcransac',
     version='0.1',
     #author='Daniel Barath, Dmytro Mishkin',
     #author_email='barath.daniel@sztaki.mta.hu',
@@ -100,7 +100,7 @@ setup(
     long_description='',
     packages=find_packages('src'),
     package_dir={'':'src'},
-    ext_modules=[CMakeExtension('pygcransac_sample/pygcransac_sample')],
+    ext_modules=[CMakeExtension('ransac/ransac')],
     cmdclass=dict(build_ext=CMakeBuild),
     #test_suite='tests',
     zip_safe=False,

@@ -38,7 +38,7 @@ find_package(Eigen3 REQUIRED)
 set(EIGEN_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
 
 
-SET(SOURCE_DIR "src/pygcransac_sample")
+SET(SOURCE_DIR "src/pygcransac")
 # Tell cmake that headers are in alse in source_dir
 include_directories(${SOURCE_DIR}/include)
 
@@ -93,3 +93,6 @@ if (CREATE_SAMPLE_PROJECT)
 
 	add_dependencies(SampleProject ${PROJECT_NAME})
 endif (CREATE_SAMPLE_PROJECT)
+
+
+

@@ -1,1 +1,0 @@
-from pygcransac_sample import *
