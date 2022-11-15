@@ -4,6 +4,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/calib3d.hpp>
 
 using namespace cv;
 
@@ -17,7 +18,7 @@ int main() {
 	cvtColor(img1 ,img1 ,COLOR_BGR2GRAY);
 	cvtColor(img2, img2, COLOR_BGR2GRAY);
 
-	Ptr<SIFT> sift = SIFT::create(8000);
+	Ptr<SIFT> sift = SIFT::create(800);
 
 	std::vector<KeyPoint> keypoint1, keypoint2;
 	Mat descriptor1, descriptor2;
@@ -26,13 +27,30 @@ int main() {
 
 	std::cout << "detect1  " << descriptor1.size() << std::endl;
 	std::cout << "detect2  " << descriptor2.size() << std::endl;
+		
+	std::vector<DMatch> matches;
+	Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create(DescriptorMatcher::MatcherType::BRUTEFORCE_SL2);
+	matcher->match(descriptor1, descriptor2, matches, Mat());
+	std::sort(matches.begin() ,matches.end());
+	std::cout << "mathes " << matches.size() << std::endl;
+	
+	Mat imMatches;
+	drawMatches(img1 ,keypoint1 ,img2 ,keypoint2 ,matches ,imMatches);
+	imshow("matches", imMatches);
+	waitKey(1000);
 
-	/*****
-	std::vector<DMatch> mathes;
-	Ptr<DescriptorMatcher> matcher = DescriptorMatcher::create("BruteForce-Hamming");
-	matcher->match(descriptor1, descriptor2, mathes, Mat());
+	std::vector<Point2f> points1, points2;
+	for (size_t i = 0; i < matches.size(); i++) {
+		points1.push_back(keypoint1[matches[i].queryIdx].pt);
+		points2.push_back(keypoint2[matches[i].trainIdx].pt);
+	}
+	
+	Mat h = findHomography(points1 ,points2 ,RANSAC);
+	Mat prespectMat;
+	warpPerspective(img1 ,prespectMat ,h ,img2.size());
+	imshow("input" ,img2);
+	imshow("algined Image", prespectMat);
+	waitKey(0);
 
-	std::cout << "mathes " << mathes.size() << std::endl;
-	****/
 	return 0;
 }
