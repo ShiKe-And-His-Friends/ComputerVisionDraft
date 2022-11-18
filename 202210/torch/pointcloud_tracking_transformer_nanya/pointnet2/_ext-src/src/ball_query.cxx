@@ -1,7 +1,7 @@
-#include <ball_query.hpp>
-#include <utils.hpp>
+#include "ball_query.hpp"
+#include "utils.hpp"
 
-void query_ball_point_kernel_wrapper(int b, int n, int m, float radius, int nsample, const float* new_xyz, const float* xyz, int* idx);
+void query_ball_point_kernel_wrapper(int b, int n, int m, float radius, int nsample, const float *new_xyz, const float *xyz, int *idx);
 
 at::Tensor ball_query(at::Tensor new_xyz, at::Tensor xyz, const float radius,
 	const int nsample) {

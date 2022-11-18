@@ -29,7 +29,7 @@ class KalmanFiltering(SearchSpace):
         self.mean = np.zeros(len(self.bnd))
         self.cov = np.diag(self.bnd)
         if len(self.bnd) == 2:
-            self.data =  np.array([] ,[]).T
+            self.data =  np.array([[] ,[]]).T
         else:
-            self.data = np.array([] ,[] ,[]).T
+            self.data = np.array([[] ,[] ,[]]).T
         self.score = np.array([])

@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 from pointnet2.utils import pointnet2_utils
 import etw_pytorch_utils as pt_utils
@@ -12,7 +13,7 @@ class _PointnetSAModuleBase(nn.Module):
 
 class PointnetSAModuleMSG(_PointnetSAModuleBase):
     """
-    Pointnet set abstraction layer with multiscale grouping
+    Pointnet set abstrction layer with multiscale grouping
 
     :parameters
     npoint: int
@@ -22,7 +23,7 @@ class PointnetSAModuleMSG(_PointnetSAModuleBase):
     nsamples : list of int32
             Number of samples in each ball query
     mlps:
-            Spec fo the pointnet before the global max_pool for each scale
+            Spec of the pointnet before the global max_pool for each scale
     bn: bool
             Use batchnorm
     """
@@ -36,19 +37,19 @@ class PointnetSAModuleMSG(_PointnetSAModuleBase):
         self.mlps = nn.ModuleList()
         for i in range(len(radii)):
             radius = radii[i]
-            nsamples = nsamples[i]
+            nsample = nsamples[i]
             if vote is False:
                 self.groupers.append(
-                    pointnet2_utils.QueryAndGroup(radius ,nsamples ,use_xyz = use_xyz)
+                    pointnet2_utils.QueryAndGroup(radius ,nsample ,use_xyz = use_xyz)
                 )
             else:
                 self.groupers.append(
-                    pointnet2_utils.QueryAndGroup_score(radius ,nsamples ,use_xyz = use_xyz)
+                    pointnet2_utils.QueryAndGroup_score(radius ,nsample ,use_xyz = use_xyz)
                 )
             mlp_spec = mlps[i]
             if use_xyz:
                 mlp_spec[0] += 3
-            self.mlps.append(pt_utils.ShareMLP(mlp_spec ,bn=bn)) #TODO replace this
+            self.mlps.append(pt_utils.SharedMLP(mlp_spec ,bn=bn)) #TODO replace this
 
 
 class PointnetSAModule(PointnetSAModuleMSG):

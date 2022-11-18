@@ -1,5 +1,5 @@
-#include <interpolate.hpp>
-#include <utils.hpp>
+#include "interpolate.hpp"
+#include "utils.hpp"
 
 void three_nn_kernel_wrapper(int b, int n ,int m ,const float *unknown ,
     const float *knows ,float *dist2 ,int *idx);
@@ -9,7 +9,7 @@ void three_interpolate_kernel_wrapper(int b ,int c ,int m,int n,
     const float *weight ,float *out);
 
 void three_interpolate_grad_kernel_wrapper(int b, int c,int n ,int m,
-    const float &grad_out, const int *idx , const float *weight,
+    const float *grad_out, const int *idx , const float *weight,
     float *grad_points);
 
 std::vector<at::Tensor> three_nn(at::Tensor unknowns ,at::Tensor knows){

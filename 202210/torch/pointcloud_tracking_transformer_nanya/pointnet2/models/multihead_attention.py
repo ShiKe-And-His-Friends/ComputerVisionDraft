@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import math
 import torch.nn.functional as F
+import numpy as np
 
 class TransNonlinear(nn.Module):
     def __init__(self,d_model ,dim_feedforward ,dropout=0.1):
@@ -32,7 +33,7 @@ class MultiheadAttention(nn.Module):
         for N in range(self.Nh):
             self.head.append(RelationUnit(feature_dim ,key_feature_dim))
             if extra_nonlinear:
-                self.extra_nonlinear.append(TransNonLinear(feature_dim ,key_feature_dim))
+                self.extra_nonlinear.append(TransNonlinear(feature_dim ,key_feature_dim))
             else:
                 self.extra_nonlinear = None
 
@@ -54,7 +55,7 @@ class MultiheadAttention(nn.Module):
         return output
 
 
-class RelationUnit(nn.Modle):
+class RelationUnit(nn.Module):
     def __init__(self ,feature_dim=512 ,key_feature_dim=64):
         super(RelationUnit, self).__init__()
         self.temp = 1

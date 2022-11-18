@@ -44,33 +44,6 @@ class kittiDataset():
         PC ,box = self.getPCandBBfromPandas(anno ,transf_mat)
         return PC ,box
 
-    def getPCandBBfromPandas(self ,box ,calib):
-        center = [box["x"] ,box["y"] - box["height"] / 2 ,box["z"]]
-        size = [box["width"] ,box["length"] ,box["height"]]
-        orientation = \
-            Quaternion(
-                axis = [0 ,1 ,0],
-                radians = box["rotation_y"]) * \
-            Quaternion(
-                axis = [1 ,0 ,0],
-                radians = np.pi / 2
-            )
-        BB = Box(center ,size ,orientation)
-
-        try:
-            # VELODYNE PointCloud
-            velodyne_path = os.path.join(self.KITTI_velo ,box["scene"],
-                                         "{:06}.bin".format(box["frame"]))
-            PC = PointCloud(
-                np.fromfile(velodyne_path ,dtype=np.float32).reshape(-1 ,4).T
-            )
-            PC.transform(calib)
-        except :
-            # in case the point cloud is missing
-            # (0001/[000177-000180].bin)
-            PC = PointCloud(np.array([[0,0,0]]).T)
-        return PC ,BB
-
     def getListOfAnno(self ,sceneID ,category_name = "Car"):
         list_of_scene = [
             path for path in os.listdir(self.KITTI_velo)
@@ -99,6 +72,32 @@ class kittiDataset():
                 list_of_tracklet_anno.append(tracklet_anno)
         return list_of_tracklet_anno
 
+ def getPCandBBfromPandas(self ,box ,calib):
+        center = [box["x"] ,box["y"] - box["height"] / 2 ,box["z"]]
+        size = [box["width"] ,box["length"] ,box["height"]]
+        orientation = \
+            Quaternion(
+                axis = [0 ,1 ,0],
+                radians = box["rotation_y"]) * \
+            Quaternion(
+                axis = [1 ,0 ,0],
+                radians = np.pi / 2
+            )
+        BB = Box(center ,size ,orientation)
+
+        try:
+            # VELODYNE PointCloud
+            velodyne_path = os.path.join(self.KITTI_velo ,box["scene"],
+                                         "{:06}.bin".format(box["frame"]))
+            PC = PointCloud(
+                np.fromfile(velodyne_path ,dtype=np.float32).reshape(-1 ,4).T
+            )
+            PC.transform(calib)
+        except :
+            # in case the point cloud is missing
+            # (0001/[000177-000180].bin)
+            PC = PointCloud(np.array([[0,0,0]]).T)
+        return PC ,BB
     def read_calib_file(self ,filepath):
         """ Read in a calibration file and parse into a dictionary """
         data = {}
@@ -127,7 +126,7 @@ class SiameseDataset(Dataset):
         self.input_size = input_size
         self.split = split
         self.sceneID = self.dataset.getSceneID(split = split)
-        self.geyBBandPC = self.dataset.getBBandPC
+        self.getBBandPC = self.dataset.getBBandPC
 
         self.category_name = category_name
         self.regress = regress
@@ -162,11 +161,11 @@ class SiameseTrain(SiameseDataset):
             offset_BB = offset_BB,
             scale_BB = scale_BB
         )
-        self.sigama_Gaussian = sigma_Gaussian
+        self.sigma_Gaussian = sigma_Gaussian
         self.offset_BB = offset_BB
         self.scale_BB = scale_BB
 
-        self.num_camdidates_perframe = 4 # ??
+        self.num_candidates_perframe = 4 # ??
         # logging
         self.list_of_PCs = [None ] * len(self.list_of_anno)
         self.list_of_BBs = [None ] * len(self.list_of_anno)
@@ -231,7 +230,7 @@ class SiameseTrain(SiameseDataset):
 
         random_downsample = np.random.uniform() < 0.0
         def _random_sample_pts(pc ,num):
-            p = np.array(pc.points ,dtypes = np.float32)
+            p = np.array(pc.points ,dtype = np.float32)
             if p.shape[1] < 10:
                 return pc
             new_idx = np.random.randint(low=0 ,high=p.shape[1] ,size=num ,dtype=np.int64)
@@ -271,7 +270,7 @@ class SiameseTrain(SiameseDataset):
             gt_PC = random_downsample_pc_func(gt_PC)
         if gt_PC.nbr_points() <= 20 :
             return self.getitem(np.random.randint(0 ,self.__len__()))
-        gt_PC = utils.regularizePCwithlabel(gt_PC ,self.input_size)
+        gt_PC = utils.regularizePC(gt_PC ,self.input_size)
 
         ret = {
             'search':sample_PC,
@@ -282,10 +281,10 @@ class SiameseTrain(SiameseDataset):
         return ret # sample_PC sample_label sample_reg gt_PC
     def __len__(self):
         nb_anno = len(self.list_of_anno)
-        return nb_anno * self.num_camdidates_perframe
+        return nb_anno * self.num_candidates_perframe
 
     def getAnnotationIndex(self ,index):
-        return int(index / (self.num_camdidates_perframe))
+        return int(index / (self.num_candidates_perframe))
 
     def getSearchSpaceIndex(self ,index):
-        return int(index % self.num_camdidates_perframe)
+        return int(index % self.num_candidates_perframe)

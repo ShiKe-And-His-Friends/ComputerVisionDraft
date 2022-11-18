@@ -7,7 +7,7 @@
 **/
 
 #include <torch/extension.h>
-#include <Aten/cuda/CUDAContext.h>
+#include <ATen/cuda/CUDAContext.h>
 
 #define CHECK_CUDA(x) \
   do { \
@@ -21,7 +21,7 @@
 
 #define CHECK_IS_INT(x) \
   do { \
-    TORCH_CHECK(x.scalar_type() == at::ScalarType::Int, #x" must be an int tensor"); \
+    TORCH_CHECK(x.scalar_type() == at::ScalarType::Int, #x " must be an int tensor"); \
   } while(0)
 
 #define CHECK_IS_FLOAT(x)\

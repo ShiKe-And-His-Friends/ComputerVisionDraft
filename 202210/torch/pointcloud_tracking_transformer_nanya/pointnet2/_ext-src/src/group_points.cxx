@@ -56,4 +56,5 @@ at::Tensor group_points_grad(at::Tensor grad_out ,at::Tensor idx ,const int n) {
     } else {
         TORCH_CHECK(false ,"Grad Out : CPU not supported.");
     }
+	return output;
 }

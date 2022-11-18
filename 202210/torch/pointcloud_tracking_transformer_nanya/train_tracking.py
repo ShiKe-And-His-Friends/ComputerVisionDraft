@@ -18,6 +18,7 @@ parser.add_argument("--batch_size" ,type=int ,default= 64 ,help="input batch siz
 parser.add_argument("--workers" ,type=int ,default=4 ,help="number of data loading workers")
 parser.add_argument("--nepoch" ,type=int ,default=160 ,help = "numbers of epoch to train for")
 parser.add_argument("--learning_rate" ,type=float ,default=0.001 ,help="learning rate at t=0")
+parser.add_argument("--input_feature_num" ,type=int ,default = 0 ,help="number of input point features")
 parser.add_argument("--data_dir" ,type=str ,default="D:/KITTI_velodyne/data/kitti/training" ,help="dataset path")
 parser.add_argument("--category_name" ,type=str ,default="Car" ,help="Object to Track(Car/Pedestrian/Van/Cyclist)")
 parser.add_argument("--save_root_dir" ,type=str ,default="results" ,help="output folder")
@@ -104,7 +105,7 @@ if opt.optimizer != "":
     optimizer.load_state_dict(torch.load(os.path.join(save_dir ,opt.optimizer)))
 scheduler = lr_scheduler.StepLR(optimizer ,step_size=40 ,gamma=0.2)
 
-def one_sample_step(input_dict ,model ,optimizer ,train=False):
+def one_sample_step(input_dict ,model ,optimizer ,train=True):
     optimizer.zero_grad()
     output_dict = model(input_dict)
     label_cla = output_dict["cls_label"]
@@ -209,7 +210,7 @@ for epoch in range(opt.nepoch):
     print('====> time to learn 1 sample = %f (ms)'%(timer*1000))
 
     if epoch and (epoch % opt.save_interval == 0 or epoch ==opt.nepoch -1):
-        torch.save(netR.state_dict() ,"%s/netR_%d.path" % (save_dir ,epoch))
+        torch.save(netR.state_dict() ,"%s/netR_%d.pth" % (save_dir ,epoch))
 
     netR.eval()
     test_cla_loss = 0.0

@@ -4,8 +4,8 @@
 
 #include "cuda_utils.hpp"
 
-// input : unknows(b ,n ,3) known(b ,m ,3)
-// output : dist2(n ,n ,3) idx(b ,n ,3)
+// input : unknown(b ,n ,3) known(b ,m ,3)
+// output : dist2(b ,n ,3) idx(b ,n ,3)
 __global__ void three_nn_kernel(
     int b ,int n ,int m ,
     const float *__restrict__ unknown,
@@ -68,7 +68,7 @@ void three_nn_kernel_wrapper(int b ,int n ,int m ,const float *unknown,
 }
 
 // input: points(b ,c ,m) idx(b ,n ,3) weight(b ,n ,3)
-// ouput : out(b ,c ,n)
+// output : out(b ,c ,n)
 __global__ void three_interpolate_kernel(
     int b ,int c ,int m ,int n,
     const float *__restrict__ points,
@@ -102,11 +102,11 @@ __global__ void three_interpolate_kernel(
 }
 
 void three_interpolate_kernel_wrapper(int b ,int c,int m ,int n,
-    const float *point ,const int *idx,
+    const float *points ,const int *idx,
     const float *weight ,float *out) {
     cudaStream_t stream = at::cuda::getCurrentCUDAStream();
     three_interpolate_kernel<<< b,opt_block_config(n,c) ,0 ,stream >>>(
-        b ,c ,m ,n ,point ,idx ,weight ,out);
+        b ,c ,m ,n ,points ,idx ,weight ,out);
     CUDA_CHECK_ERRORS();
 }
 
@@ -138,9 +138,9 @@ __global__ void three_interpolate_grad_kernel(
         int i2 = idx[j * 3 + 1];
         int i3 = idx[j * 3 + 2];
 
-        atomicAdd(grad_points + 1 * m + i1 ,grad_out[i] *w1);
-        atomicAdd(grad_points + 1 * m + i2 ,grad_out[i] *w2);
-        atomicAdd(grad_points + 1 * m + i3 ,grad_out[i] *w3);
+        atomicAdd(grad_points + l * m + i1 ,grad_out[i] *w1);
+        atomicAdd(grad_points + l * m + i2 ,grad_out[i] *w2);
+        atomicAdd(grad_points + l * m + i3 ,grad_out[i] *w3);
     }
 }
 

@@ -37,7 +37,7 @@ at::Tensor gather_points(
 
     at::Tensor output =
         torch::zeros(
-            {points.size(0) ,points.size(1)},
+            {points.size(0) ,points.size(1) ,idx.size(1)},
             at::device(points.device()).dtype(at::ScalarType::Float)
             );
     if (points.type().is_cuda() ) {

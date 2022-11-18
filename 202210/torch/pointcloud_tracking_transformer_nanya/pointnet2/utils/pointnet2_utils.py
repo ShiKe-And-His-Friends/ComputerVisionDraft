@@ -18,7 +18,10 @@ from torch.autograd import Function
 import torch.nn as nn
 import etw_pytorch_utils as pt_utils
 import sys
-import builtins
+try:
+	import builtins
+except:
+	import __builtin__ as builtins
 
 try:
     import pointnet2._ext as _ext
@@ -48,10 +51,10 @@ class FurthestPointSampling(Function):
     def forward(ctx ,xyz ,npoint):
         # type: (Any , torch.Tensor ,int) -> torch.Tensor
         r"""
-        Uses iterative furthest point sampling to select a set of npoints features that have the largest
+        Uses iterative furthest point sampling to select a set of npoint features that have the largest
         minimum distance
 
-        Parameter
+        Parameters
         ------------------
         xyz: torch.Tensor
                 (B N 3) tensor where N > npoint
@@ -91,7 +94,8 @@ class GatherOperation(Function):
         """
         _ , C ,N = features.size()
         ctx.for_backwards = (idx ,C ,N)
-        ctx.mark_non_differentiable(features ,idx)
+		ctx.mark_non_differentiable(idx)
+        return _ext.gather_points(features ,idx)
 
     @staticmethod
     def backward(ctx ,grad_out):
@@ -102,7 +106,7 @@ class GatherOperation(Function):
 gather_operation = GatherOperation.apply
 class ThreeNN(Function):
     @staticmethod
-    def forwar(ctx ,unknown ,known):
+    def forward(ctx ,unknown ,known):
         # type (Any ,torch.Tensor ,torch.Tensor) -> Tuple[torch.Tensor ,torch.Tensor ,]
         r"""
         Find the three nearest neighbors of unknow in know
@@ -168,7 +172,7 @@ class ThreeInterpolate(Function):
 three_interpolate = ThreeInterpolate.apply
 class GroupingOperation(Function):
     @staticmethod
-    def forwar(ctx ,features ,idx):
+    def forward(ctx ,features ,idx):
         # type : (Any ,torch.Tensor ,torch.Tensor) -> torch.Tensor
         r"""
         Parameters
@@ -270,7 +274,7 @@ class BallQuery_score(Function):
 
     @staticmethod
     def backward(ctx ,a=None):
-        return None ,None ,None ,None
+        return None ,None ,None ,None ,None
 
 ball_query_score = BallQuery_score.apply
 
@@ -295,16 +299,16 @@ class QueryAndGroup(nn.Module):
         r"""
         :parameters
         ---------------
-        xyz: torch.tensor
+        xyz: torch.Tensor
                 xyz coordinates of the features (B N 3)
-        new_xyz: torch.tensor
-                centriods (B npoints 3)
-        features: torch.tensor
+        new_xyz: torch.Tensor
+                centriods (B npoint, 3)
+        features: torch.Tensor
                 Descriptors of the features (B C N)
 
         :return:
         ----------------
-        new_features : torch.tensor
+        new_features : torch.Tensor
                 (B ,3+C ,npoints , nsample) tensor
         """
         idx = ball_query(self.radius ,self.nsample ,xyz ,new_xyz)
@@ -323,7 +327,7 @@ class QueryAndGroup(nn.Module):
         else :
             assert (
                 self.use_xyz
-            ), "Cannot have not features and not use xyz as a features!"
+            ), "Cannot have not features and not use xyz as a feature!"
             new_features = grouped_xyz
 
         return new_features

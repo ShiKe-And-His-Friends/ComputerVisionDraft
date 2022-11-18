@@ -4,7 +4,7 @@
 
 #include "cuda_utils.hpp"
 
-// input:new_xyz(b , m 3) xyz(b , n ,3)
+// input:new_xyz(b , m , 3) xyz(b , n ,3)
 // output: idx(b , m ,nsample)
 __global__ void query_ball_point_kernel(int b , int n ,int m ,float radius,
     int nsample ,const float *__restrict__ new_xyz,

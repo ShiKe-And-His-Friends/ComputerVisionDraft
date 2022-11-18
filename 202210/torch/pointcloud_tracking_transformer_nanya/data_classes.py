@@ -86,7 +86,7 @@ class Box:
 
     def translate(self ,x):
         """
-        Applies a tranlations
+        Applies a translation
         :param x: <np.float:3,1> Translation in x,y,z direction
         :return: <None>
         """

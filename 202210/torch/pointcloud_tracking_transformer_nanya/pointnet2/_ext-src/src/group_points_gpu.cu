@@ -3,7 +3,7 @@
 
 #include "cuda_utils.hpp"
 
-// input : points(b ,c ,n)  idx(b , points ,nsample)
+// input : points(b ,c ,n)  idx(b , npoints ,nsample)
 // output : out (b ,c ,npoints ,nsample)
 
 __global__ void group_points_kernel(int b ,int c,int n ,int npoints ,
@@ -40,7 +40,7 @@ void group_points_kernel_wrapper(int b, int c, int n, int npoints, int nsample,
 }
 
 // input : grad_out(b ,c ,npoints ,nsample ) ,idx(b ,npoints ,nsample)
-// outpit : grad_points(b ,c ,n)
+// output : grad_points(b ,c ,n)
 __global__ void group_points_grad_kernel(
     int b, int c ,int n, int npoints,
     int nsample ,
@@ -48,7 +48,7 @@ __global__ void group_points_grad_kernel(
     const int *__restrict__ idx,
     float *__restrict__ grad_points
     ) {
-    int batch_index = blockDim.x;
+    int batch_index = blockIdx.x;
     grad_out += batch_index * npoints * nsample * c;
     idx += batch_index * npoints * nsample;
     grad_points += batch_index * n * c;

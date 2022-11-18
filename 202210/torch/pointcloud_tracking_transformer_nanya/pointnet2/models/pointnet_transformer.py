@@ -8,11 +8,12 @@
 """
 import torch
 import torch.nn as nn
+import torch.nn.f
 import etw_pytorch_utils as pt_utils
+from pointnet2.models.transformer import TransformerEncoder ,TransformerDecoder
+from pointnet2.models.multihead_attention import MultiheadAttention
 from pointnet2.utils.pointnet2_modules import PointnetSAModule
 from pointnet2.utils import pointnet2_utils
-from pointnet2.models.multihead_attention import MultiheadAttention
-from pointnet2.models.trainsformer import TransformerEncoder ,TransformerDecoder
 
 class Pointnet_Backbone(nn.Module):
     def __init__(self
@@ -50,17 +51,17 @@ class Pointnet_Backbone(nn.Module):
                 sample_method=sample_method,
             )
         )
-        self.cov_final = nn.Conv2d(256 ,256, kernel_size=1)
+        self.cov_final = nn.Conv1d(256 ,256, kernel_size=1)
         self.sample_method = sample_method
 
 class PositionEmbeddingLearned(nn.Module):
     """
-    Absokute pos embedding ,learned.
+    Absolute pos embedding ,learned.
     """
-    def __init__(self ,input_chennel=3 ,num_pos_feats = 256):
+    def __init__(self ,input_channel=3 ,num_pos_feats = 256):
         super(PositionEmbeddingLearned, self).__init__()
         self.position_embedding_head = nn.Sequential(
-            nn.Conv1d(input_chennel ,num_pos_feats ,kernel_size=1),
+            nn.Conv1d(input_channel ,num_pos_feats ,kernel_size=1),
             nn.BatchNorm1d(num_pos_feats),
             nn.ReLU(inplace=True),
             nn.Conv1d(num_pos_feats ,num_pos_feats ,kernel_size=1)
@@ -117,14 +118,14 @@ class PointnetTransformerSiamese(nn.Module):
         self.group3 = pointnet2_utils.QueryAndGroup(0.3 ,8 ,use_xyz=use_xyz)
         self.group1 = pointnet2_utils.QueryAndGroup(0.1 ,16 ,use_xyz=use_xyz)
 
-        self.vote_aggreagetion = PointnetSAModule(
+        self.vote_aggregation = PointnetSAModule(
             radius=0.3,
             nsample=16,
             mlp = [1+256 ,256 ,256 ,256],
             use_xyz=use_xyz,
             sample_method=vote_sample_method
         )
-        self.num_proposal = input_channels //16 #64
+        self.num_proposal = input_size //16 #64
         self.FC_proposal = (
             pt_utils.Seq(256+1+256 + 3 + 256 + 3) # + 128+3
             .conv1d(256 ,bn=True)
@@ -133,7 +134,7 @@ class PointnetTransformerSiamese(nn.Module):
             .conv1d(256 ,bn=True)
             .conv1d(3+1+1 ,activation=None)
         )
-        multiheaad_attn = MultiheadAttention(
+        multihead_attn = MultiheadAttention(
             feature_dim = d_model,
             n_head = 1,
             key_feature_dim = 128
@@ -146,16 +147,17 @@ class PointnetTransformerSiamese(nn.Module):
             decoder_pos_embed = None
 
         self.encoder = TransformerEncoder(
-            multihead_attn=multiheaad_attn,
+            multihead_attn=multihead_attn,
             FFN = None,
             d_model=d_model,
-            num_encoder_layer= num_layers,
+            num_encoder_layers= num_layers,
             self_posembed= encoder_pos_embed
         )
         self.decoder = TransformerDecoder(
-            multihead_attn=multiheaad_attn,
+            multihead_attn=multihead_attn,
             FFN=None,
             d_model=d_model,
-            num_decoder_layers=num_layers,
-            self_posembed=decoder_pos_embed
-        )
+			num_decoder_layers=num_layers,
+			self_posembed=decoder_pos_embed)
+			
+		#TODO ...

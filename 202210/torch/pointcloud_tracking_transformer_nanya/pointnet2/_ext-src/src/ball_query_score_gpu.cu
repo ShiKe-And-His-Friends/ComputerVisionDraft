@@ -26,8 +26,8 @@ __global__ void query_ball_point_score_kernel(int b ,int n ,int m ,float radius,
     float radius2 = radius * radius;
     for(int  j = index ; j < m ; j += stride) {
         float new_x = new_xyz[j * 3 + 0];
-        float new_y = new_xyz[j * 3 + 0];
-        float new_z = new_xyz[j * 3 + 0];
+        float new_y = new_xyz[j * 3 + 1];
+        float new_z = new_xyz[j * 3 + 2];
         for (int k = 0 ,cnt = 0 ; k < n && cnt < nsample ; k++) {
             float x = xyz[k * 3 + 0];
             float y = xyz[k * 3 + 1];

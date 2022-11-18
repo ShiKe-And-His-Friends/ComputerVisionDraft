@@ -15,7 +15,7 @@ import glob
 try:
     import builtins
 except:
-    import __builtins__ as builtins
+    import __builtin__ as builtins
 builtins.__POINTNET2_SETUP__ = True
 
 # 导入环境包，可以跳过
@@ -41,7 +41,7 @@ setup(
             include_dirs=_ext_header,
             extra_compile_args = {
                 "cxx":["-O1" ,"-I{}".format("{}/include".format(_ext_src_root))],
-                "nvcc":["-O1" ,"-I{}".format("{}/include").format(_ext_src_root)]
+                "nvcc":["-O1" ,"-I{}".format("{}/include".format(_ext_src_root)]
             },
         )
     ],

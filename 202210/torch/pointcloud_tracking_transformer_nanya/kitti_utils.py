@@ -91,16 +91,16 @@ def cropPC(PC ,box ,offset=0 ,scale=1.0):
 
     x_filt_max = PC.points[0 ,:] < maxi[0]
     x_filt_min = PC.points[0 ,:] > mini[0]
-    y_flit_max = PC.points[1 ,:] < maxi[1]
-    y_flit_min = PC.points[1 ,:] > mini[1]
-    z_flit_max = PC.points[2 ,:] < maxi[2]
-    z_flit_min = PC.points[2 ,:] > mini[2]
+    y_filt_max = PC.points[1 ,:] < maxi[1]
+    y_filt_min = PC.points[1 ,:] > mini[1]
+    z_filt_max = PC.points[2 ,:] < maxi[2]
+    z_filt_min = PC.points[2 ,:] > mini[2]
 
     close = np.logical_and(x_filt_min ,x_filt_max)
-    close = np.logical_and(close ,y_flit_min)
-    close = np.logical_and(close ,y_flit_max)
-    close = np.logical_and(close ,z_flit_min)
-    close = np.logical_and(close ,z_flit_max)
+    close = np.logical_and(close ,y_filt_min)
+    close = np.logical_and(close ,y_filt_max)
+    close = np.logical_and(close ,z_filt_min)
+    close = np.logical_and(close ,z_filt_max)
 
     new_PC = PointCloud(PC.points[: ,close])
     return new_PC
@@ -121,7 +121,7 @@ def getlabelPC(PC ,box ,offset=0 ,scale=1.0):
     new_PC.translate(trans)
     box_tmp.translate(trans)
     new_PC.rotate(rot_mat)
-    box_tmp.rotation(Quaternion(matrix=(rot_mat)))
+    box_tmp.rotate(Quaternion(matrix=(rot_mat)))
 
     box_tmp.wlh = box_tmp.wlh * scale
     maxi = np.max(box_tmp.corners() ,1) + offset
@@ -129,16 +129,16 @@ def getlabelPC(PC ,box ,offset=0 ,scale=1.0):
 
     x_filt_max = new_PC.points[0, :] < maxi[0]
     x_filt_min = new_PC.points[0, :] > mini[0]
-    y_flit_max = new_PC.points[1, :] < maxi[1]
-    y_flit_min = new_PC.points[1, :] > mini[1]
-    z_flit_max = new_PC.points[2, :] < maxi[2]
-    z_flit_min = new_PC.points[2, :] > mini[2]
+    y_filt_max = new_PC.points[1, :] < maxi[1]
+    y_filt_min = new_PC.points[1, :] > mini[1]
+    z_filt_max = new_PC.points[2, :] < maxi[2]
+    z_filt_min = new_PC.points[2, :] > mini[2]
 
     close = np.logical_and(x_filt_min, x_filt_max)
-    close = np.logical_and(close, y_flit_min)
-    close = np.logical_and(close, y_flit_max)
-    close = np.logical_and(close, z_flit_min)
-    close = np.logical_and(close, z_flit_max)
+    close = np.logical_and(close, y_filt_min)
+    close = np.logical_and(close, y_filt_max)
+    close = np.logical_and(close, z_filt_min)
+    close = np.logical_and(close, z_filt_max)
 
     new_label = np.zeros(new_PC.points.shape[1])
     new_label[close] = 1
@@ -148,20 +148,20 @@ def cropPCwithlabel(PC ,box ,label ,offset=0 ,scale=1.0):
     box_tmp = copy.deepcopy(box)
     box_tmp.wlh = box_tmp.wlh * scale
     maxi = np.max(box_tmp.corners() ,1) + offset
-    mini = np.max(box_tmp.corners() ,1) - offset
+    mini = np.min(box_tmp.corners() ,1) - offset
 
     x_filt_max = PC.points[0, :] < maxi[0]
     x_filt_min = PC.points[0, :] > mini[0]
-    y_flit_max = PC.points[1, :] < maxi[1]
-    y_flit_min = PC.points[1, :] > mini[1]
-    z_flit_max = PC.points[2, :] < maxi[2]
-    z_flit_min = PC.points[2, :] > mini[2]
+    y_filt_max = PC.points[1, :] < maxi[1]
+    y_filt_min = PC.points[1, :] > mini[1]
+    z_filt_max = PC.points[2, :] < maxi[2]
+    z_filt_min = PC.points[2, :] > mini[2]
 
     close = np.logical_and(x_filt_min, x_filt_max)
-    close = np.logical_and(close, y_flit_min)
-    close = np.logical_and(close, y_flit_max)
-    close = np.logical_and(close, z_flit_min)
-    close = np.logical_and(close, z_flit_max)
+    close = np.logical_and(close, y_filt_min)
+    close = np.logical_and(close, y_filt_max)
+    close = np.logical_and(close, z_filt_min)
+    close = np.logical_and(close, z_filt_max)
     new_PC = PointCloud(PC.points[:, close])
     new_label = label[close]
     return new_PC ,new_label
@@ -169,7 +169,7 @@ def cropPCwithlabel(PC ,box ,label ,offset=0 ,scale=1.0):
 def cropAndCenterPC(PC,box ,offset= 0 ,scale=1.0 ,normalize = False):
     new_PC = cropPC(PC ,box ,offset = 2 * offset ,scale = 4 * scale)
     new_box = copy.deepcopy(box)
-    rot_mat = np.transpose(new_box.rotate_matrix)
+    rot_mat = np.transpose(new_box.rotation_matrix)
     trans = -new_box.center
 
     # align data
@@ -198,7 +198,7 @@ def cropAndCenterPC_label(PC ,sample_box ,gt_box ,sample_offsets,
 
     new_label = getlabelPC(new_PC , gt_box ,offset = offset ,scale=1.0)
     new_box_gt = copy.deepcopy(gt_box)
-    rot_mat = np.transpose(new_box.rotate_matrix)
+    rot_mat = np.transpose(new_box.rotation_matrix)
     trans = -new_box.center
 
     # align data
