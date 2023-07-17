@@ -1,0 +1,19 @@
+%% 统计滤波的高度差等信息
+
+fid = fopen("C:\Users\s05559\Desktop\分布信息\分布信息_金属台阶块.a","r");
+%%data = textread("C:\Users\s05559\Desktop\分布信息\分布信息_金属台阶块.a" ,'%f' ,4000);
+data = textscan(fid ,repmat('%f' ,1 ,8640000));
+data2 = data';
+
+x = 0:1:8639999;
+x2 = x';
+
+real_data_cell_x = cell2mat(data);
+
+%% plot(x1(0:1000),data(0:1000));
+
+sort_data = sort(real_data_cell_x);
+
+%% plot(x , real_data_cell_x);
+
+scatter(x , sort_data);
