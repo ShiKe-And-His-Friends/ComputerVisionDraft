@@ -1,0 +1,37 @@
+clc;
+clear;
+close all;
+
+%% 目录
+str = 'D:\01Work_Plane_Groupby_Data\202306\验证单应矩阵的变换效果\实际坐标.a';
+fid = fopen(str);
+
+txt_file = textscan(fid ,"%f %f");
+
+%% 元胞转矩阵
+X_coordinate =txt_file{1};
+Z_coordinate =txt_file{2};
+
+%% 转换成35X35
+X_coordinate = reshape(X_coordinate ,35 ,35);
+Z_coordinate = reshape(Z_coordinate ,35 ,35);
+X_coordinate = X_coordinate';
+Z_coordinate = Z_coordinate';
+
+%% 统计均值
+X_mean = zeros(35,1);
+for i = 1:35
+   X_mean(i) = mean(Z_coordinate(i , :));
+end
+
+X_mean_shift = circshift(X_mean ,1);
+X_interval = X_mean(:) - X_mean_shift;
+
+%% 直线拟合工具
+fitline_coordinate = 0:34 ;
+fitline_coordinate = fitline_coordinate';
+
+%% 结论：近端像素差距与远端像素差距在Z方向，差4个像素
+%% 应该是光条提取中心算法的问题
+
+
