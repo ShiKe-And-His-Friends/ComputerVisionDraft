@@ -58,3 +58,13 @@ ORB:
 	基于FAST喝BRIEF的开源
 	速度更快
 	使用Sobel算子，也使用弦弧
+	
+SimpleBolb:
+	斑点检测
+	阈值： 面积、颜色、曲率
+
+FREAK:
+
+DenseFeature：
+
+

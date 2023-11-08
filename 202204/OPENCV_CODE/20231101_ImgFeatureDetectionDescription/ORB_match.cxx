@@ -14,6 +14,7 @@ int main(int argc, char** argv) {
 	Mat img1 = cv::imread("..//..//20231101_ImgFeatureDetectionDescription//box_img1.png", -1);
 	Mat img2 = cv::imread("..//..//20231101_ImgFeatureDetectionDescription//box_img2.png", -1);
 
+
 	if (!img1.data || !img2.data) {
 		std::cout << "no photo." << std::endl;
 		return -1;
