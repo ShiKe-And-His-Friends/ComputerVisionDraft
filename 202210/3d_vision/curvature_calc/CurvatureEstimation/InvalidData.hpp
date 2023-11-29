@@ -1,0 +1,2 @@
+#define INVALID_POINTS -10000
+#define RADIUS_ANGLE 22.5
