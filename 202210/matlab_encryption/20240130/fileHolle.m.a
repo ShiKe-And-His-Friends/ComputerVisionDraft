@@ -1,0 +1,61 @@
+%% 孔洞填充
+clear all;
+
+I = imread('F:\20230106\20240102-小面\05-样品856052\椭圆位置.bmp');%彩图
+subplot(1,3,1);
+imshow(I);
+title("原图");
+
+%%孔洞填充
+I1 = imfill(I ,'holes');
+image = I1-I;
+subplot(1,3,2);
+imshow(iamge);
+titile("孔洞提取");
+
+[L ,num] = bwlabel(I);
+[L1 ,num1] = bwlabel(img);
+img_reg = regionprops(L , 'area' ,'boundingbox');
+img_reg1 = regionprops(L1 ,'Centroid' ,'area' ,'boundingbox');
+
+points = cat(1 ,img_reg1.Centroid); %孔洞的中心点
+xq = points(: ,1);
+yq = points(: ,2);
+
+rects = round(cat(1 ,img_reg.BoundingBox)); %连通域左上角的x y 长度宽度
+
+for i = 1:size(rects ,1)
+    area_min = [rects(i,1) ,rects(i,2)];
+    area_max = [rects(i,1)+ rects(i,3) ,rects(i,2)+rects(i,4)];
+    for j = 1:size(xq)
+        %如果中心点在连通域中，中心点的x值大于左上角的x像素值，小于右下角的像素值
+        if (area_min(1) < xq(j) && xq(j) < area_max(1))
+            if (area_min(2) <yq(j) && yq(j) < area_max(2))
+                if(area_min(2) < yq(j) && yq(j) < area_max(2))
+                    flag(i) =1; %检测到连通域有孔洞，标记为有孔洞
+                    break;
+                end
+            end
+        else 
+        end
+    end
+end
+subplot(1,3,3);
+imshow(I);
+title("有孔和无孔的分类");
+for i = 1:size(rects,1)
+    if (flag(i) == 0) %flag为0时，无孔，用红色标记出
+        rectangle('position' ,rects(i,:) ,'EdgeColor' ,'r','LineWidth',1);
+    else %flag为1时，有孔，用红色标记出
+        rectangle('position' ,rects(i,:) ,'EdgeColor' ,'g','LineWidth',1);
+    end
+end
+
+
+
+
+
+
+
+
+
