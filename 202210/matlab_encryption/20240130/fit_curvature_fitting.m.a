@@ -1,0 +1,94 @@
+clc;
+clear;
+close all;
+
+%% 目录
+%str = 'C:\Users\s05559\Desktop\distance8.a';
+
+str = 'F:\20230106\20231211-相机表面喷漆\硅锭静态重复性测试\10\ID621142_0.000000_均值滤波_100.a';
+
+fid = fopen(str);
+txt_file = textscan(fid ,"%f");
+
+%% 元胞转矩阵
+STD_coordinate =txt_file{1};
+
+STD_coordinate = STD_coordinate';
+
+STD_Coordinate_Sort = sort(STD_coordinate);
+
+ [rows ,cols] = size(STD_coordinate);
+
+index_x = 1:cols;
+
+%对数据进行一维的滤波
+num = 9;
+sigma = 3.0;
+kernel = gaussianKernel(num ,sigma);
+
+%中值滤波进行一维滤波
+num = 150;
+kernel = MedianFilrer(num);
+
+%对一维数据高斯滤波
+STD_coordinate_gaussian = filter_1D(STD_coordinate ,kernel);
+
+%判断误差
+for i = 1 : length(STD_coordinate_gaussian)
+    if STD_coordinate_gaussian(i) == 0 
+        STD_coordinate_gaussian(i) = 10000;
+    end
+end
+
+%打印数据到图片
+plot(index_x ,STD_coordinate);
+axis([0 2000 110 113]);
+
+%hist(STD_Coordinate_Sort ,10);
+
+%% 计算导数和二次导数
+
+%%一维滤波
+function reuslt = filter_1D(data_,kernel_) 
+    data_gaussian_ = zeros(length(data_));
+    
+    disp(length(kernel_)/2)
+    kernel_size = length(kernel_);
+    kernel_half_size = round(kernel_size/2);
+    all_size = length(data_);
+
+    for i = 1 : all_size
+        value_sum = 0.0;
+        kernel_sum = 0.0;
+        for j = 1 : kernel_size
+            index = i+j-kernel_half_size;
+            if index <1
+                index = -index+1;
+            end
+            if index > all_size
+                index = 2*all_size - index;
+            end
+            kernel_sum = kernel_sum + kernel_(j);
+            value_sum = value_sum + data_(index)*kernel_(j);
+        end
+        gaussian_value = value_sum / kernel_sum;
+        data_gaussian_(i) = gaussian_value; 
+    end
+    reuslt = data_gaussian_;
+end
+
+%%一维高斯滤波核心
+function K = gaussianKernel(x, sigma)
+    kernel_x = 1:x;
+    kernel_x = kernel_x - round(length(kernel_x)/2);
+    
+    % 计算高斯核
+    K = exp(-kernel_x.^2/(2*sigma.^2)) / (sqrt(2*pi)*sigma);
+    disp(K);
+end
+
+%%一维中值滤波核心
+function K = MedianFilrer(n) 
+    K=ones(1,n);
+    disp(K);
+end
