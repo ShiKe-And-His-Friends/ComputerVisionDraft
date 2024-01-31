@@ -1,0 +1,22 @@
+close all;
+clear all;
+clc;
+% 直方图均衡
+
+I = imread('F:\20230106\20240102-小面\05-样品856052\分水岭_结果(2).bmp'); %彩色图像
+H = histeq(I ,256); %直方图均衡成256个等级均衡化
+subplot(321);
+imshow(I);
+title("原图");
+subplot(322);
+imshow(H);
+title("均衡化后");
+
+[hspec ,x] = imhist(I);
+P = histeq(I ,hspec);%直方图匹配图
+subplot(323);
+imshow(hsepc);
+titile('匹配后图形');
+subplot(324);
+imshow(P);
+title('均衡化后直方图分布情况');

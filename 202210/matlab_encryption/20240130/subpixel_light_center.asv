@@ -1,0 +1,114 @@
+%%提取光条图片中心的坐标
+
+clc;
+clear;
+close all;
+
+%%遍历数据集
+str = 'E:\project\Matlab_code_lcubor\src_file\';
+
+%%常量定义
+file_num = 33;
+binary_threshold = 60;
+image_width = 4320;
+image_height = 1080;
+
+%% 5*5高斯滤波核
+core_gauss_5_5 = [15,29,36,29,15;29,56,70,56,29;36,70,87,70,36;29,56,70,56,29;15,29,36,29,15];
+gauss_row = [123,239,300,239,123];
+gauss_col = [122;244;292;244;122];
+
+%% 亚像素计算坐标滤波核
+core_gauss_7 = [4;63;250;390;250;63;4];
+core_gauss_15 = [2;7;20;44;80;121;154;168;154;121;80;44;20;7;2];
+core_gauss_31 = [1;2;3;5;8;12;18;25;33;41;50;58;67;73;77;78;77;73;67;58;50;41;33;25;18;12;8;5;3;2;1];
+
+%%内存分配
+center_stripe_diff = zeros(file_num ,image_width); %亚像素计算中心窗口坐标-差值和方法
+center_stripe_gauss = zeros(file_num ,image_width); %亚像素计算中心窗口坐标-高斯滤波方法
+image_stripe_width = zeros(file_num ,image_width); %每张图片列的光条宽度
+center_stripe_subpix = zeros(file_num ,image_width); %光条中心亚像素坐标
+center_stripe_intensity = zeros(file_num ,image_width); %光条中心灰度图
+
+%%循环处理图片
+
+for k = 1:file_num
+    %%获取文件夹图像
+    src = double(imread([str ,num2str(k),'.bmp']));
+    src = src(: ,: ,1);
+    
+    %% matlab仿真用高斯滤波核心
+    matlab_gauss_5_5 = imfilter(src ,core_gauss_5_5);
+    matlab_gauss_5_5 = double(floor(matlab_gauss_5_5 / sum(sum(core_gauss_5_5))));
+    
+    %%生成fpga滤波核
+    src_gauss_5_5 = matlab_gauss_5_5;
+    
+    %%用一维高斯滤波求亚像素计算窗口位置
+    src_gauss = imfilter(src_gauss_5_5 ,core_gauss_15); %/sum(core_gauss_15)
+    
+    %% 计算高斯一维滤波的最大位置
+    [~ ,index_gauss] = max(src_gauss ,[] ,1);
+    center_stripe_gauss(k ,:) = index_gauss;
+    
+    %%不加梯度判断光条搜索的起始位置和结束位置
+    coord_stripe = zeros(2 ,image_width);
+    for c =1:image_width
+        for r = 1: image_height -1
+            if src_gauss_5_5(r ,c) > binary_threshold - 1 && coord_stripe(1 ,c) == 0 && coord_stripe(2 ,c) ==0
+                coord_stripe(1 ,c) = r;
+            end
+            if src_gauss_5_5(r ,c)< binary_threshold && coord_stripe(1 ,c) ~= 0 && coord_stripe(2 ,c)~= 0
+                coord_stripe(2 ,c) = r;
+            end
+            if coord_stripe(1 ,c) ~= 0 && coord_stripe(2 ,c)~= 0
+                width_single = coord_stripe(2 ,c) - coord_stripe(1,c);
+                if width_single < 3 || width_single > 64
+                    coord_stripe(1 ,c) = 0;
+                    coord_stripe(2 ,c) = 0;
+                end
+            end
+        end
+    end
+    
+    %%计算每张图的平均光条宽度
+    single_image_stripe_width = coord_stripe(2 ,:) - coord_stripe(1 ,:);
+    image_stripe_width(k ,:) = single_image_stripe_width;
+    
+    %%对称性方法 亚像素坐标 计算窗口 中心行坐标
+    for i = 1:image_width
+        min_diff = realmax;
+        if image_stripe_width(k ,i) >= 3 && image_stripe_width(k ,i) <= 64
+            for j = coord_stripe(1 ,i):coord_stripe(2 ,i)
+                %计算最小差值和的窗口位置
+                sum_diff = 0;
+                for m = 1:(window_size-1)/2
+                    window_diff = abs(src_gauss_5_5(j+m ,i) - src_gauss_5_5(j-m ,i));
+                    sum_diff = sum_diff + window_diff;
+                end
+                if sum_diff < min_diff
+                    min_diff = sum_diff;
+                    center_stripe_diff(k ,i) = j;
+                end
+            end
+        end
+    end
+    
+end
+printf("");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
