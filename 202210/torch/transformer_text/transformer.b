@@ -327,4 +327,58 @@ class Decoder(nn.Module):
         return dec_outputs ,dec_self_attns ,dec_enc_attns
     
 #
-# 
+# Transformer
+class Transformer(nn.Module):
+    def __init__(self):
+        super(Transformer ,self).__init__()
+        self.encoder = Encoder().cuda()
+        self.decoder = Decoder().cuda()
+        self.projection = nn.Linear(d_model ,tgt_vocab ,bias=False).cuda()
+
+    def forward(self ,enc_inputs ,dec_inputs):
+        '''
+        enc_inputs : [batch_size ,src_len]
+        dec_inputs : [batch_size ,tgt_len]
+        '''
+        # tensor to store decoder outputs
+        # outputs = torch.zeros(batch_size ,tgt_len ,tgt_vocab_size).to(self.device)
+
+        # enc_outputs : [batch_size ,src_len ,d_model]
+        # enc_self_attns : [n_layers ,batch_size ,n_heads ,src_len ,src_len]
+        enc_outputs ,enc_self_attns = self.encoder(enc_inputs)
+
+        # dec_outputs : [batch_size ,tgt_len ,d_model]
+        # dec_self_attns : [n_layers ,batch_size ,n_heads ,tgt_len ,tgt_len]
+        # dec_enc_attn : [n_layers ,batch_size ,tgt_len ,src_len]
+        dec_outputs ,dec_self_attns ,dec_enc_attns = self.decoder(dec_inputs ,enc_inputs ,enc_outputs)
+        dec_logits = self.projection(dec_outputs) # dec_logits : [batch_size ,tgt_len ,tgt_vocab_size]
+
+        # dec_logits维度可以理解为，一个句子有batch_size*tgt_len个单词，每个单词有tgt_vocab_size种情况，取概率最大
+        return dec_logits.view(-1 ,dec_logits.size(-1)) ,enc_self_attns ,dec_self_attns ,dec_enc_attns
+
+#
+# Module ，Loss Function ，Optimizer
+model = Transformer.cuda()
+criterion = nn.CrossEntropyLoss(ignore_index=0) # pad索引0，不计算pad
+optimizer = optim.SGD(model.parameters() ,lr=1e-3 ,momentum=0.99)
+
+for epoch in range(30):
+    for enc_inputs ,dec_inputs ,dec_outputs in loader:
+        '''
+        enc_inputs : [batch_size ,src_len]
+        dec_inputs : [batch_size ,tgt_len]
+        dec_outputs : [batch_size ,tgt_len]
+        '''
+        enc_inputs ,dec_inputs ,dec_outputs = enc_inputs.cuda() ,dec_inputs.cuda() ,dec_outputs.cuda()
+
+        # output : [batch_size * tgt_len ,tgt_vocab_size]
+        outputs ,enc_self_attns ,dec_self_attns ,dec_enc_attns = model(enc_inputs ,dec_outputs)
+
+        loss = criterion(outputs ,dec_outputs.view(-1))
+        print('Epoch:' ,'%04d' % (epoch+1) ,' loss =' ,'{:.6f}'.format(loss))
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+
