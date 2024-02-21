@@ -78,9 +78,9 @@ class PositionalEncoding(nn.Module):
         self.dropout = nn.Dropout(p = dropout)
         pe = torch.zeros(max_len ,d_model)
         position = torch.arange(0,max_len ,dtype=torch.float).unsqueeze(1)
-        div_item = torch.exp(torch.arange(0,d_model,2).float() * (-math.log(10000.0) / d_model))
-        pe[:,0::2] = torch.sin(position * div_item)
-        pe[:,1::2] = torch.cos(position * div_item)
+        div_term = torch.exp(torch.arange(0,d_model,2).float() * (-math.log(10000.0) / d_model))
+        pe[:,0::2] = torch.sin(position * div_term)
+        pe[:,1::2] = torch.cos(position * div_term)
         pe = pe.unsqueeze(0).transpose(0 ,1)
         self.register_buffer('pe',pe)
 
@@ -97,7 +97,7 @@ def get_attn_pad_mask(seq_q ,seq_k):
     '''
     seq_q : [batch_size ,seq_len]
     seq_k : [batch_size ,seq_len]
-    seq_len could be src_len or it cloud be tgt_len
+    seq_len cloud be src_len or it cloud be tgt_len
     seq_len in seq_q and seq_len in seq_k maybe not equal
     '''
     batch_size , len_q = seq_q.size()
@@ -116,7 +116,7 @@ def get_attn_subsequence_mask(seq):
     '''
     attn_shape = [seq.size(0) ,seq.size(1) ,seq.size(1)]
     # 只有Decoder会用到，numpy生成一个全1的方阵，通过triu()生成上三角矩阵
-    subsequence_mask = np.triu(np.ones(attn_shape),k =1) #Upper trigangular matrix
+    subsequence_mask = np.triu(np.ones(attn_shape),k =1) #Upper triangular matrix
     subsequence_mask = torch.from_numpy(subsequence_mask).byte()
     return subsequence_mask #[batch_size ,tgt_len ,tgt_len]
 
@@ -134,7 +134,7 @@ class ScaledDotProductAttention(nn.Module):
         '''
         
         # 将需要屏蔽的信息屏蔽掉
-        scores = torch.matmul(Q ,K.transpose(-1,-2)) / np.sqrt(d_k) # socres : [batch_size ,n_heads ,len_q ,len_k]
+        scores = torch.matmul(Q ,K.transpose(-1,-2)) / np.sqrt(d_k) # scores : [batch_size ,n_heads ,len_q ,len_k]
         scores.masked_fill(attn_mask ,-1e9) # Fill elements of self tensor with value where mask is True
         
         # 将 Q 和 K 相乘计算scores ，然后scores和K相乘，得到每个单词的context vector
@@ -165,7 +165,7 @@ class MultiHeadAttention(nn.Module):
         attn_mask: [batch_size ,seq_len ,seq_len]
         '''
         residual ,batch_size = input_Q ,input_Q.size(0)
-        # (B ,S ,D) -proj -> (B ,S ,D_new) -spilt->(B ,S ,H ,W) -trans->(B ,H ,S ,W)
+        # (B ,S ,D) -proj -> (B ,S ,D_new) -split->(B ,S ,H ,W) -trans->(B ,H ,S ,W)
         Q = self.W_Q(input_Q).view(batch_size ,-1 ,n_heads ,d_k).transpose(1 ,2) # Q : [batch_size ,n_heads ,;en_q ,d_k]
         K = self.W_K(input_K).view(batch_size ,-1 ,n_heads ,d_k).transpose(1 ,2) # K : [batch_size ,n_heads ,len_k ,d_k]
         V = self.W_V(input_V).view(batch_size ,-1 ,n_heads ,d_v).transpose(1 ,2) # V : [batch_size ,n_heads ,len_v(=len_k),d_k]
@@ -371,7 +371,7 @@ for epoch in range(30):
         '''
         enc_inputs ,dec_inputs ,dec_outputs = enc_inputs.cuda() ,dec_inputs.cuda() ,dec_outputs.cuda()
 
-        # output : [batch_size * tgt_len ,tgt_vocab_size]
+        # outputs : [batch_size * tgt_len ,tgt_vocab_size]
         outputs ,enc_self_attns ,dec_self_attns ,dec_enc_attns = model(enc_inputs ,dec_outputs)
 
         loss = criterion(outputs ,dec_outputs.view(-1))
