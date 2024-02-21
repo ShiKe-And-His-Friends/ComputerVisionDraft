@@ -14,14 +14,14 @@ import torch.utils.data as Data
 sentences = [
     # enc_input     dec_input       dec_output
     ['ich mochte ein bier P' , 'S i want a beer .' ,'i want a beer . E'],
-    ['ich mochte ein cola P' , 'S i want a coke .' ,'i want a coke . E'],
+    ['ich mochte ein cola P' , 'S i want a coke .' ,'i want a coke . E']
 ]
 
 #padding should be zero
 src_vocab = {'P' : 0 ,'ich':1 ,'mochte':2 ,'ein':3 ,'bier':4 ,'cola':5}
 src_vocab_size = len(src_vocab)
 
-tgt_vocab = {'P' : 0 ,'ich':1 ,'mochte':2 ,'ein':3 ,'bier':4 ,'cola':5 ,'S':6,'E':7 ,'.':8}
+tgt_vocab = {'P' : 0 ,'i':1 ,'want':2 ,'a':3 ,'beer':4 ,'coke':5 ,'S':6,'E':7 ,'.':8}
 idx2word = {i: w for i ,w in enumerate(tgt_vocab)}
 tgt_vocab_size = len(tgt_vocab)
 
@@ -72,13 +72,13 @@ n_heads = 8 # number of heads in Multi-Head Attention
 
 #
 # Positional Encoding 位置编码
-class PositionalEncoding(nn.Modul):
+class PositionalEncoding(nn.Module):
     def __init__(self ,d_model ,dropout=0.1 ,max_len=5000):
         super(PositionalEncoding ,self).__init__()
         self.dropout = nn.Dropout(p = dropout)
         pe = torch.zeros(max_len ,d_model)
         position = torch.arange(0,max_len ,dtype=torch.float).unsqueeze(1)
-        div_item = torch.exp(torch.arange(0,d_model,2).float() * (-math.long(10000.0) / d_model))
+        div_item = torch.exp(torch.arange(0,d_model,2).float() * (-math.log(10000.0) / d_model))
         pe[:,0::2] = torch.sin(position * div_item)
         pe[:,1::2] = torch.cos(position * div_item)
         pe = pe.unsqueeze(0).transpose(0 ,1)
@@ -104,7 +104,7 @@ def get_attn_pad_mask(seq_q ,seq_k):
     batch_size , len_k = seq_k.size()
     #eq(zero) is PAD token
     # 函数核心是seq_k.data.eq(0) 返回一个大小和seq_k一样的tensor,只不过里面只有True和False
-    pad_attn_mask = seq_k.data.eq(0).unsquenze(1) #[batch_size ,1 ,len_k],True is masked
+    pad_attn_mask = seq_k.data.eq(0).unsqueeze(1) #[batch_size ,1 ,len_k],True is masked
     return pad_attn_mask.expand(batch_size ,len_q ,len_k) # [batch_size ,len_q ,len_k]
 
 
@@ -122,7 +122,7 @@ def get_attn_subsequence_mask(seq):
 
 #
 # ScaledDotProductAttention ,计算context vector
-class ScaledDotProductAttention(nn.Model):
+class ScaledDotProductAttention(nn.Module):
     def __init__(self):
         super(ScaledDotProductAttention ,self).__init__()
 
@@ -299,7 +299,7 @@ class Decoder(nn.Module):
         enc_inputs : [batch_size ,src_len]
         enc_outputs : [batch_size ,src_len ,d_model]
         '''
-        dec_outpust = self.tgt_emb(dec_inputs) #[batch_size ,tgt_len ,d_model]
+        dec_outputs = self.tgt_emb(dec_inputs) #[batch_size ,tgt_len ,d_model]
         # [batch_size ,tgt_len ,d_model]
         dec_outputs = self.pos_emb(dec_outputs.transpose(0,1)).transpose(0,1).cuda() 
         
@@ -333,7 +333,7 @@ class Transformer(nn.Module):
         super(Transformer ,self).__init__()
         self.encoder = Encoder().cuda()
         self.decoder = Decoder().cuda()
-        self.projection = nn.Linear(d_model ,tgt_vocab ,bias=False).cuda()
+        self.projection = nn.Linear(d_model ,tgt_vocab_size ,bias=False).cuda()
 
     def forward(self ,enc_inputs ,dec_inputs):
         '''
@@ -358,7 +358,7 @@ class Transformer(nn.Module):
 
 #
 # Module ，Loss Function ，Optimizer
-model = Transformer.cuda()
+model = Transformer().cuda()
 criterion = nn.CrossEntropyLoss(ignore_index=0) # pad索引0，不计算pad
 optimizer = optim.SGD(model.parameters() ,lr=1e-3 ,momentum=0.99)
 
