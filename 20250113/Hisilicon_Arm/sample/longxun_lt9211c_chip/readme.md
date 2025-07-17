@@ -1,2 +1,6 @@
-guozhao screen 0.37inch 
-guozhao_037inch
+longxun 9211
+
+1 mipi csi 
+
+2 mipi dsi
+
