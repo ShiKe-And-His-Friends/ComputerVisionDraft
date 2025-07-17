@@ -1,0 +1,1203 @@
+`timescale 1ns / 1ps
+module DDE_Timing #(
+	parameter 			H_ALL = 800,
+	parameter 			V_ALL = 520 )
+(
+input clk_i,
+input rst_n,
+input DDE_en,
+input [7:0]DDE_level,
+
+input HS_in,
+input VS_in,
+input [13:0]Data_in,
+
+output reg DDE_HS,
+output reg DDE_VS,
+output reg [13:0]DDE_lfdata,
+output reg signed[13:0]DDE_hfdata
+    );
+	 
+reg HS_in_r,HS_in_rr;	
+reg VS_in_r,VS_in_rr;	
+always @ (posedge clk_i or negedge rst_n)
+begin
+	if(!rst_n)
+		begin
+			HS_in_r  <=	1'd0;
+			HS_in_rr	<=	1'd0;
+			VS_in_r  <=	1'd0;
+			VS_in_rr	<=	1'd0;
+		end
+	else
+		begin
+			HS_in_r	<=	HS_in;
+			HS_in_rr	<=	HS_in_r;
+			VS_in_r	<=	VS_in;
+			VS_in_rr	<=	VS_in_r;
+		end
+end
+		
+reg [9:0]DDE_hcnt;
+reg [9:0]DDE_vcnt;
+reg Cnt_run; 
+always @ (posedge clk_i or negedge rst_n)
+begin
+	if(!rst_n)
+		begin
+			DDE_hcnt	<=	1'd0;
+			DDE_vcnt	<=	1'd0;
+			Cnt_run	<=	1'd0;
+		end
+	else
+		begin		
+			if(!VS_in_rr && VS_in_r)
+				Cnt_run <= 0;
+			else if(!HS_in_rr && HS_in_r)
+				Cnt_run <= 1;
+            else ;
+
+			if(Cnt_run)
+				begin
+					if(DDE_hcnt == H_ALL-1)
+						begin
+							DDE_hcnt <= 0;
+							if(DDE_vcnt == V_ALL)
+								begin
+									DDE_vcnt <= 0;
+									Cnt_run <= 0;
+								end
+							else
+								DDE_vcnt <= DDE_vcnt + 1'b1;
+						end
+					else
+						DDE_hcnt <= DDE_hcnt + 1;
+				end
+			else
+				begin
+					DDE_hcnt <= H_ALL-34;
+					DDE_vcnt <= 0;
+				end
+		end
+end
+
+wire [9:0]h_cnt;
+wire [9:0]v_cnt;		
+wire [13:0]line1_data1;
+wire [13:0]line1_data2;
+wire [13:0]line1_data3;
+wire [13:0]line1_data4;
+wire [13:0]line1_data5;
+wire [13:0]line2_data1;
+wire [13:0]line2_data2;
+wire [13:0]line2_data3;
+wire [13:0]line2_data4;
+wire [13:0]line2_data5;
+wire [13:0]line3_data1;
+wire [13:0]line3_data2;
+wire [13:0]line3_data3;
+wire [13:0]line3_data4;
+wire [13:0]line3_data5;
+wire [13:0]line4_data1;
+wire [13:0]line4_data2;
+wire [13:0]line4_data3;
+wire [13:0]line4_data4;
+wire [13:0]line4_data5;
+wire [13:0]line5_data1;
+wire [13:0]line5_data2;
+wire [13:0]line5_data3;
+wire [13:0]line5_data4;
+wire [13:0]line5_data5;
+Line_Buffer  #(
+		.H_ALL			(H_ALL),
+		.V_ALL			(V_ALL)
+)DDE_Line_Buffer (
+    .clk_i(clk_i), 
+    .rst_n(rst_n), 
+    .HS_in(HS_in), 
+    .VS_in(VS_in), 
+    .Data_in(Data_in), 
+    .h_cnt(h_cnt), 
+    .v_cnt(v_cnt), 
+    .line1_data1(line1_data1), 
+    .line1_data2(line1_data2), 
+    .line1_data3(line1_data3), 
+    .line1_data4(line1_data4), 
+    .line1_data5(line1_data5), 
+    .line2_data1(line2_data1), 
+    .line2_data2(line2_data2), 
+    .line2_data3(line2_data3), 
+    .line2_data4(line2_data4), 
+    .line2_data5(line2_data5), 
+    .line3_data1(line3_data1), 
+    .line3_data2(line3_data2), 
+    .line3_data3(line3_data3), 
+    .line3_data4(line3_data4), 
+    .line3_data5(line3_data5), 
+    .line4_data1(line4_data1), 
+    .line4_data2(line4_data2), 
+    .line4_data3(line4_data3), 
+    .line4_data4(line4_data4), 
+    .line4_data5(line4_data5), 
+    .line5_data1(line5_data1), 
+    .line5_data2(line5_data2), 
+    .line5_data3(line5_data3), 
+    .line5_data4(line5_data4), 
+    .line5_data5(line5_data5)
+    );
+	 
+reg [13:0]line1_data2_d1;
+reg [13:0]line1_data3_d1;
+reg [13:0]line1_data4_d1;
+reg [13:0]line2_data1_d1;
+reg [13:0]line2_data2_d1;
+reg [13:0]line2_data3_d1;
+reg [13:0]line2_data4_d1;
+reg [13:0]line2_data5_d1;
+reg [13:0]line3_data1_d1;
+reg [13:0]line3_data2_d1;
+reg [13:0]line3_data3_d1;
+reg [13:0]line3_data4_d1;
+reg [13:0]line3_data5_d1;
+reg [13:0]line4_data1_d1;
+reg [13:0]line4_data2_d1;
+reg [13:0]line4_data3_d1;
+reg [13:0]line4_data4_d1;
+reg [13:0]line4_data5_d1;
+reg [13:0]line5_data2_d1;
+reg [13:0]line5_data3_d1;
+reg [13:0]line5_data4_d1;
+reg [13:0]line1_data2_d2;
+reg [13:0]line1_data3_d2;
+reg [13:0]line1_data4_d2;
+reg [13:0]line2_data1_d2;
+reg [13:0]line2_data2_d2;
+reg [13:0]line2_data3_d2;
+reg [13:0]line2_data4_d2;
+reg [13:0]line2_data5_d2;
+reg [13:0]line3_data1_d2;
+reg [13:0]line3_data2_d2;
+reg [13:0]line3_data3_d2;
+reg [13:0]line3_data4_d2;
+reg [13:0]line3_data5_d2;
+reg [13:0]line4_data1_d2;
+reg [13:0]line4_data2_d2;
+reg [13:0]line4_data3_d2;
+reg [13:0]line4_data4_d2;
+reg [13:0]line4_data5_d2;
+reg [13:0]line5_data2_d2;
+reg [13:0]line5_data3_d2;
+reg [13:0]line5_data4_d2;
+reg [13:0]line1_data2_d3;
+reg [13:0]line1_data3_d3;
+reg [13:0]line1_data4_d3;
+reg [13:0]line2_data1_d3;
+reg [13:0]line2_data2_d3;
+reg [13:0]line2_data3_d3;
+reg [13:0]line2_data4_d3;
+reg [13:0]line2_data5_d3;
+reg [13:0]line3_data1_d3;
+reg [13:0]line3_data2_d3;
+reg [13:0]line3_data3_d3;
+reg [13:0]line3_data4_d3;
+reg [13:0]line3_data5_d3;
+reg [13:0]line4_data1_d3;
+reg [13:0]line4_data2_d3;
+reg [13:0]line4_data3_d3;
+reg [13:0]line4_data4_d3;
+reg [13:0]line4_data5_d3;
+reg [13:0]line5_data2_d3;
+reg [13:0]line5_data3_d3;
+reg [13:0]line5_data4_d3;
+
+reg [13:0]line3_data3_d4;
+reg [13:0]line3_data3_d5;
+reg [13:0]line3_data3_d6;
+reg [13:0]line3_data3_d7;
+reg [13:0]line3_data3_d8;
+reg [13:0]line3_data3_d9;
+reg [13:0]line3_data3_d10;
+reg [13:0]line3_data3_d11;
+reg [13:0]line3_data3_d12;
+reg [13:0]line3_data3_d13;
+reg [13:0]line3_data3_d14;
+reg [13:0]line3_data3_d15;
+reg [13:0]line3_data3_d16;
+reg [13:0]line3_data3_d17;
+reg [13:0]line3_data3_d18;
+reg [13:0]line3_data3_d19;
+reg [13:0]line3_data3_d20;
+reg [13:0]line3_data3_d21;
+reg [13:0]line3_data3_d22;
+reg [13:0]line3_data3_d23;
+reg [13:0]line3_data3_d24;
+reg [13:0]line3_data3_d25;
+reg [13:0]line3_data3_d26;
+reg [13:0]line3_data3_d27;
+reg [13:0]line3_data3_d28;
+reg [13:0]line3_data3_d29;
+reg [13:0]line3_data3_d30;
+reg [13:0]line3_data3_d31;
+reg [13:0]line3_data3_d32;
+reg [13:0]line3_data3_d33;
+reg [13:0]line3_data3_d34;
+reg [13:0]line3_data3_d35;
+reg [13:0]line3_data3_d36;
+reg [13:0]line3_data3_d37;
+reg [13:0]line3_data3_d38;
+reg [13:0]line3_data3_d39;
+reg [13:0]line3_data3_d40;
+reg [13:0]line3_data3_d41;
+reg [13:0]line3_data3_d42;
+reg [13:0]line3_data3_d43;
+always @(posedge clk_i)
+begin
+	if(!rst_n)
+		begin
+			line1_data2_d1 <= 0;
+			line1_data3_d1 <= 0;
+			line1_data4_d1 <= 0;
+			line2_data1_d1 <= 0;
+			line2_data2_d1 <= 0;
+			line2_data3_d1 <= 0;
+			line2_data4_d1 <= 0;
+			line2_data5_d1 <= 0;
+			line3_data1_d1 <= 0;
+			line3_data2_d1 <= 0;
+			line3_data3_d1 <= 0;
+			line3_data4_d1 <= 0;
+			line3_data5_d1 <= 0;
+			line4_data1_d1 <= 0;
+			line4_data2_d1 <= 0;
+			line4_data3_d1 <= 0;
+			line4_data4_d1 <= 0;
+			line4_data5_d1 <= 0;
+			line5_data2_d1 <= 0;
+			line5_data3_d1 <= 0;
+			line5_data4_d1 <= 0;
+			line1_data2_d2 <= 0;
+			line1_data3_d2 <= 0;
+			line1_data4_d2 <= 0;
+			line2_data1_d2 <= 0;
+			line2_data2_d2 <= 0;
+			line2_data3_d2 <= 0;
+			line2_data4_d2 <= 0;
+			line2_data5_d2 <= 0;
+			line3_data1_d2 <= 0;
+			line3_data2_d2 <= 0;
+			line3_data3_d2 <= 0;
+			line3_data4_d2 <= 0;
+			line3_data5_d2 <= 0;
+			line4_data1_d2 <= 0;
+			line4_data2_d2 <= 0;
+			line4_data3_d2 <= 0;
+			line4_data4_d2 <= 0;
+			line4_data5_d2 <= 0;
+			line5_data2_d2 <= 0;
+			line5_data3_d2 <= 0;
+			line5_data4_d2 <= 0;
+			line1_data2_d3 <= 0;
+			line1_data3_d3 <= 0;
+			line1_data4_d3 <= 0;
+			line2_data1_d3 <= 0;
+			line2_data2_d3 <= 0;
+			line2_data3_d3 <= 0;
+			line2_data4_d3 <= 0;
+			line2_data5_d3 <= 0;
+			line3_data1_d3 <= 0;
+			line3_data2_d3 <= 0;
+			line3_data3_d3 <= 0;
+			line3_data4_d3 <= 0;
+			line3_data5_d3 <= 0;
+			line4_data1_d3 <= 0;
+			line4_data2_d3 <= 0;
+			line4_data3_d3 <= 0;
+			line4_data4_d3 <= 0;
+			line4_data5_d3 <= 0;
+			line5_data2_d3 <= 0;
+			line5_data3_d3 <= 0;
+			line5_data4_d3 <= 0;
+			
+			line3_data3_d4  <= 0;
+			line3_data3_d5  <= 0;
+			line3_data3_d6  <= 0;
+			line3_data3_d7  <= 0;
+			line3_data3_d8  <= 0;
+			line3_data3_d9  <= 0;
+			line3_data3_d10 <= 0;
+			line3_data3_d11 <= 0;
+			line3_data3_d12 <= 0;
+			line3_data3_d13 <= 0;
+			line3_data3_d14 <= 0;
+			line3_data3_d15 <= 0;
+			line3_data3_d16 <= 0;
+			line3_data3_d17 <= 0;
+			line3_data3_d18 <= 0;
+			line3_data3_d19 <= 0;
+			line3_data3_d20 <= 0;
+			line3_data3_d21 <= 0;
+			line3_data3_d22 <= 0;
+			line3_data3_d23 <= 0;
+			line3_data3_d24 <= 0;
+			line3_data3_d25 <= 0;
+			line3_data3_d26 <= 0;
+			line3_data3_d27 <= 0;
+		end
+	else
+		begin
+			line1_data2_d1 <= line1_data2;
+			line1_data3_d1 <= line1_data3;
+			line1_data4_d1 <= line1_data4;
+			line2_data1_d1 <= line2_data1;
+			line2_data2_d1 <= line2_data2;
+			line2_data3_d1 <= line2_data3;
+			line2_data4_d1 <= line2_data4;
+			line2_data5_d1 <= line2_data5;
+			line3_data1_d1 <= line3_data1;
+			line3_data2_d1 <= line3_data2;
+			line3_data3_d1 <= line3_data3;
+			line3_data4_d1 <= line3_data4;
+			line3_data5_d1 <= line3_data5;
+			line4_data1_d1 <= line4_data1;
+			line4_data2_d1 <= line4_data2;
+			line4_data3_d1 <= line4_data3;
+			line4_data4_d1 <= line4_data4;
+			line4_data5_d1 <= line4_data5;
+			line5_data2_d1 <= line5_data2;
+			line5_data3_d1 <= line5_data3;
+			line5_data4_d1 <= line5_data4;
+			line1_data2_d2 <= line1_data2_d1;
+			line1_data3_d2 <= line1_data3_d1;
+			line1_data4_d2 <= line1_data4_d1;
+			line2_data1_d2 <= line2_data1_d1;
+			line2_data2_d2 <= line2_data2_d1;
+			line2_data3_d2 <= line2_data3_d1;
+			line2_data4_d2 <= line2_data4_d1;
+			line2_data5_d2 <= line2_data5_d1;
+			line3_data1_d2 <= line3_data1_d1;
+			line3_data2_d2 <= line3_data2_d1;
+			line3_data3_d2 <= line3_data3_d1;
+			line3_data4_d2 <= line3_data4_d1;
+			line3_data5_d2 <= line3_data5_d1;
+			line4_data1_d2 <= line4_data1_d1;
+			line4_data2_d2 <= line4_data2_d1;
+			line4_data3_d2 <= line4_data3_d1;
+			line4_data4_d2 <= line4_data4_d1;
+			line4_data5_d2 <= line4_data5_d1;
+			line5_data2_d2 <= line5_data2_d1;
+			line5_data3_d2 <= line5_data3_d1;
+			line5_data4_d2 <= line5_data4_d1;
+			line1_data2_d3 <= line1_data2_d2;
+			line1_data3_d3 <= line1_data3_d2;
+			line1_data4_d3 <= line1_data4_d2;
+			line2_data1_d3 <= line2_data1_d2;
+			line2_data2_d3 <= line2_data2_d2;
+			line2_data3_d3 <= line2_data3_d2;
+			line2_data4_d3 <= line2_data4_d2;
+			line2_data5_d3 <= line2_data5_d2;
+			line3_data1_d3 <= line3_data1_d2;
+			line3_data2_d3 <= line3_data2_d2;
+			line3_data3_d3 <= line3_data3_d2;
+			line3_data4_d3 <= line3_data4_d2;
+			line3_data5_d3 <= line3_data5_d2;
+			line4_data1_d3 <= line4_data1_d2;
+			line4_data2_d3 <= line4_data2_d2;
+			line4_data3_d3 <= line4_data3_d2;
+			line4_data4_d3 <= line4_data4_d2;
+			line4_data5_d3 <= line4_data5_d2;
+			line5_data2_d3 <= line5_data2_d2;
+			line5_data3_d3 <= line5_data3_d2;
+			line5_data4_d3 <= line5_data4_d2;	
+			
+			line3_data3_d4  <= line3_data3_d3 ;
+			line3_data3_d5  <= line3_data3_d4 ;
+			line3_data3_d6  <= line3_data3_d5 ;
+			line3_data3_d7  <= line3_data3_d6 ;
+			line3_data3_d8  <= line3_data3_d7 ;
+			line3_data3_d9  <= line3_data3_d8 ;
+			line3_data3_d10 <= line3_data3_d9 ;
+			line3_data3_d11 <= line3_data3_d10;
+			line3_data3_d12 <= line3_data3_d11;
+			line3_data3_d13 <= line3_data3_d12;
+			line3_data3_d14 <= line3_data3_d13;
+			line3_data3_d15 <= line3_data3_d14;
+			line3_data3_d16 <= line3_data3_d15;
+			line3_data3_d17 <= line3_data3_d16;
+			line3_data3_d18 <= line3_data3_d17;
+			line3_data3_d19 <= line3_data3_d18;
+			line3_data3_d20 <= line3_data3_d19;
+			line3_data3_d21 <= line3_data3_d20;
+			line3_data3_d22 <= line3_data3_d21;
+			line3_data3_d23 <= line3_data3_d22;
+			line3_data3_d24 <= line3_data3_d23;
+			line3_data3_d25 <= line3_data3_d24;
+			line3_data3_d26 <= line3_data3_d25;
+			line3_data3_d27 <= line3_data3_d26;
+			line3_data3_d28 <= line3_data3_d27;
+			line3_data3_d29 <= line3_data3_d28;
+			line3_data3_d30 <= line3_data3_d29;
+			line3_data3_d31 <= line3_data3_d30;
+			line3_data3_d32 <= line3_data3_d31;
+			line3_data3_d33 <= line3_data3_d32;
+			line3_data3_d34 <= line3_data3_d33;
+			line3_data3_d35 <= line3_data3_d34;
+			line3_data3_d36 <= line3_data3_d35;
+			line3_data3_d37 <= line3_data3_d36;
+			line3_data3_d38 <= line3_data3_d37;
+			line3_data3_d39 <= line3_data3_d38;
+			line3_data3_d40 <= line3_data3_d39;
+			line3_data3_d41 <= line3_data3_d40;
+			line3_data3_d42 <= line3_data3_d41;
+			line3_data3_d43 <= line3_data3_d42;
+		end
+end
+	 
+reg [13:0]line1_abso2;
+reg [13:0]line1_abso3;
+reg [13:0]line1_abso4;
+reg [13:0]line2_abso1;
+reg [13:0]line2_abso2;
+reg [13:0]line2_abso3;
+reg [13:0]line2_abso4;
+reg [13:0]line2_abso5;
+reg [13:0]line3_abso1;
+reg [13:0]line3_abso2;
+reg [13:0]line3_abso4;
+reg [13:0]line3_abso5;
+reg [13:0]line4_abso1;
+reg [13:0]line4_abso2;
+reg [13:0]line4_abso3;
+reg [13:0]line4_abso4;
+reg [13:0]line4_abso5;
+reg [13:0]line5_abso2;
+reg [13:0]line5_abso3;
+reg [13:0]line5_abso4;
+reg [13:0]line1_abso2_r;
+reg [13:0]line1_abso3_r;
+reg [13:0]line1_abso4_r;
+reg [13:0]line2_abso1_r;
+reg [13:0]line2_abso2_r;
+reg [13:0]line2_abso3_r;
+reg [13:0]line2_abso4_r;
+reg [13:0]line2_abso5_r;
+reg [13:0]line3_abso1_r;
+reg [13:0]line3_abso2_r;
+reg [13:0]line3_abso4_r;
+reg [13:0]line3_abso5_r;
+reg [13:0]line4_abso1_r;
+reg [13:0]line4_abso2_r;
+reg [13:0]line4_abso3_r;
+reg [13:0]line4_abso4_r;
+reg [13:0]line4_abso5_r;
+reg [13:0]line5_abso2_r;
+reg [13:0]line5_abso3_r;
+reg [13:0]line5_abso4_r;
+always @(posedge clk_i)
+begin
+	if(!rst_n)
+		begin
+			line1_abso2   <= 0;
+			line1_abso3   <= 0;
+			line1_abso4   <= 0;
+			line2_abso1   <= 0;
+			line2_abso2   <= 0;
+			line2_abso3   <= 0;
+			line2_abso4   <= 0;
+			line2_abso5   <= 0;
+			line3_abso1   <= 0;
+			line3_abso2   <= 0;
+			line3_abso4   <= 0;
+			line3_abso5   <= 0;
+			line4_abso1   <= 0;
+			line4_abso2   <= 0;
+			line4_abso3   <= 0;
+			line4_abso4   <= 0;
+			line4_abso5   <= 0;
+			line5_abso2   <= 0;
+			line5_abso3   <= 0;
+			line5_abso4   <= 0;
+			line1_abso2_r <= 0;
+			line1_abso3_r <= 0;
+			line1_abso4_r <= 0;
+			line2_abso1_r <= 0;
+			line2_abso2_r <= 0;
+			line2_abso3_r <= 0;
+			line2_abso4_r <= 0;
+			line2_abso5_r <= 0;
+			line3_abso1_r <= 0;
+			line3_abso2_r <= 0;
+			line3_abso4_r <= 0;
+			line3_abso5_r <= 0;
+			line4_abso1_r <= 0;
+			line4_abso2_r <= 0;
+			line4_abso3_r <= 0;
+			line4_abso4_r <= 0;
+			line4_abso5_r <= 0;
+			line5_abso2_r <= 0;
+			line5_abso3_r <= 0;
+			line5_abso4_r <= 0;
+		end
+	else
+		begin
+			if(line1_data2 > line3_data3)
+				line1_abso2_r <= line1_data2 - line3_data3;
+			else
+				line1_abso2_r <= line3_data3 - line1_data2;
+				
+			if(line1_data3 > line3_data3)
+				line1_abso3_r <= line1_data3 - line3_data3;
+			else
+				line1_abso3_r <= line3_data3 - line1_data3;
+				
+			if(line1_data4 > line3_data3)
+				line1_abso4_r <= line1_data4 - line3_data3;
+			else
+				line1_abso4_r <= line3_data3 - line1_data4;
+				
+			if(line2_data1 > line3_data3)
+				line2_abso1_r <= line2_data1 - line3_data3;
+			else
+				line2_abso1_r <= line3_data3 - line2_data1;
+				
+			if(line2_data2 > line3_data3)
+				line2_abso2_r <= line2_data2 - line3_data3;
+			else
+				line2_abso2_r <= line3_data3 - line2_data2;
+				
+			if(line2_data3 > line3_data3)
+				line2_abso3_r <= line2_data3 - line3_data3;
+			else
+				line2_abso3_r <= line3_data3 - line2_data3;
+				
+			if(line2_data4 > line3_data3)
+				line2_abso4_r <= line2_data4 - line3_data3;
+			else
+				line2_abso4_r <= line3_data3 - line2_data4;
+				
+			if(line2_data5 > line3_data3)
+				line2_abso5_r <= line2_data5 - line3_data3;
+			else
+				line2_abso5_r <= line3_data3 - line2_data5;
+				
+			if(line3_data1 > line3_data3)
+				line3_abso1_r <= line3_data1 - line3_data3;
+			else
+				line3_abso1_r <= line3_data3 - line3_data1;
+				
+			if(line3_data2 > line3_data3)
+				line3_abso2_r <= line3_data2 - line3_data3;
+			else
+				line3_abso2_r <= line3_data3 - line3_data2;
+				
+			if(line3_data4 > line3_data3)
+				line3_abso4_r <= line3_data4 - line3_data3;
+			else
+				line3_abso4_r <= line3_data3 - line3_data4;
+				
+			if(line3_data5 > line3_data3)
+				line3_abso5_r <= line3_data5 - line3_data3;
+			else
+				line3_abso5_r <= line3_data3 - line3_data5;
+				
+			if(line4_data1 > line3_data3)
+				line4_abso1_r <= line4_data1 - line3_data3;
+			else
+				line4_abso1_r <= line3_data3 - line4_data1;
+				
+			if(line4_data2 > line3_data3)
+				line4_abso2_r <= line4_data2 - line3_data3;
+			else
+				line4_abso2_r <= line3_data3 - line4_data2;
+				
+			if(line4_data3 > line3_data3)
+				line4_abso3_r <= line4_data3 - line3_data3;
+			else
+				line4_abso3_r <= line3_data3 - line4_data3;
+				
+			if(line4_data4 > line3_data3)
+				line4_abso4_r <= line4_data4 - line3_data3;
+			else
+				line4_abso4_r <= line3_data3 - line4_data4;
+				
+			if(line4_data5 > line3_data3)
+				line4_abso5_r <= line4_data5 - line3_data3;
+			else
+				line4_abso5_r <= line3_data3 - line4_data5;
+
+			if(line5_data2 > line3_data3)
+				line5_abso2_r <= line5_data2 - line3_data3;
+			else
+				line5_abso2_r <= line3_data3 - line5_data2;
+				
+			if(line5_data3 > line3_data3)
+				line5_abso3_r <= line5_data3 - line3_data3;
+			else
+				line5_abso3_r <= line3_data3 - line5_data3;
+				
+			if(line5_data4 > line3_data3)
+				line5_abso4_r <= line5_data4 - line3_data3;
+			else
+				line5_abso4_r <= line3_data3 - line5_data4;
+
+			line1_abso2 <= line1_abso2_r >= 254 ? 254 : line1_abso2_r;
+			line1_abso3 <= line1_abso3_r >= 254 ? 254 : line1_abso3_r;
+			line1_abso4 <= line1_abso4_r >= 254 ? 254 : line1_abso4_r;
+			line2_abso1 <= line2_abso1_r >= 254 ? 254 : line2_abso1_r;
+			line2_abso2 <= line2_abso2_r >= 254 ? 254 : line2_abso2_r;
+			line2_abso3 <= line2_abso3_r >= 254 ? 254 : line2_abso3_r;
+			line2_abso4 <= line2_abso4_r >= 254 ? 254 : line2_abso4_r;
+			line2_abso5 <= line2_abso5_r >= 254 ? 254 : line2_abso5_r;
+			line3_abso1 <= line3_abso1_r >= 254 ? 254 : line3_abso1_r;
+			line3_abso2 <= line3_abso2_r >= 254 ? 254 : line3_abso2_r;
+			line3_abso4 <= line3_abso4_r >= 254 ? 254 : line3_abso4_r;
+			line3_abso5 <= line3_abso5_r >= 254 ? 254 : line3_abso5_r;
+			line4_abso1 <= line4_abso1_r >= 254 ? 254 : line4_abso1_r;
+			line4_abso2 <= line4_abso2_r >= 254 ? 254 : line4_abso2_r;
+			line4_abso3 <= line4_abso3_r >= 254 ? 254 : line4_abso3_r;
+			line4_abso4 <= line4_abso4_r >= 254 ? 254 : line4_abso4_r;
+			line4_abso5 <= line4_abso5_r >= 254 ? 254 : line4_abso5_r;
+			line5_abso2 <= line5_abso2_r >= 254 ? 254 : line5_abso2_r;
+			line5_abso3 <= line5_abso3_r >= 254 ? 254 : line5_abso3_r;
+			line5_abso4 <= line5_abso4_r >= 254 ? 254 : line5_abso4_r;
+		end
+end
+
+reg [13:0]line1_gs2;
+reg [13:0]line1_gs3;
+reg [13:0]line1_gs4;
+reg [13:0]line2_gs1;
+reg [13:0]line2_gs2;
+reg [13:0]line2_gs3;
+reg [13:0]line2_gs4;
+reg [13:0]line2_gs5;
+reg [13:0]line3_gs1;
+reg [13:0]line3_gs2;
+reg [13:0]line3_gs3;
+reg [13:0]line3_gs4;
+reg [13:0]line3_gs5;
+reg [13:0]line4_gs1;
+reg [13:0]line4_gs2;
+reg [13:0]line4_gs3;
+reg [13:0]line4_gs4;
+reg [13:0]line4_gs5;
+reg [13:0]line5_gs2;
+reg [13:0]line5_gs3;
+reg [13:0]line5_gs4;
+always @(posedge clk_i)
+begin
+	if(!rst_n)
+		begin
+			line1_gs2 <= 0;
+			line1_gs3 <= 0;
+			line1_gs4 <= 0;
+			line2_gs1 <= 0;
+			line2_gs2 <= 0;
+			line2_gs3 <= 0;
+			line2_gs4 <= 0;
+			line2_gs5 <= 0;
+			line3_gs1 <= 0;
+			line3_gs2 <= 0;
+			line3_gs3 <= 0;
+			line3_gs4 <= 0;
+			line3_gs5 <= 0;
+			line4_gs1 <= 0;
+			line4_gs2 <= 0;
+			line4_gs3 <= 0;
+			line4_gs4 <= 0;
+			line4_gs5 <= 0;
+			line5_gs2 <= 0;
+			line5_gs3 <= 0;
+			line5_gs4 <= 0;
+		end
+	else
+		begin
+			line1_gs2 <= 1021 - (line1_abso2<<2);
+			line1_gs3 <= 2041 - (line1_abso3<<3);
+			line1_gs4 <= 1021 - (line1_abso4<<2);
+			
+			line2_gs1 <= 1021 - (line2_abso1<<2);
+			line2_gs2 <= 4081 - (line2_abso2<<4);
+			line2_gs3 <= 8161 - (line2_abso3<<5);
+			line2_gs4 <= 4081 - (line2_abso4<<4);
+			line2_gs5 <= 1021 - (line2_abso5<<2);
+			
+			line3_gs1 <= 2041 - (line3_abso1<<3);
+			line3_gs2 <= 8161 - (line3_abso2<<5);
+			line3_gs3 <= 16321;
+			line3_gs4 <= 8161 - (line3_abso4<<5);
+			line3_gs5 <= 2041 - (line3_abso5<<3);
+			
+			line4_gs1 <= 1021 - (line4_abso1<<2);
+			line4_gs2 <= 4081 - (line4_abso2<<4);
+			line4_gs3 <= 8161 - (line4_abso3<<5);
+			line4_gs4 <= 4081 - (line4_abso4<<4);
+			line4_gs5 <= 1021 - (line4_abso5<<2);
+			
+			line5_gs2 <= 1021 - (line5_abso2<<2);
+			line5_gs3 <= 2041 - (line5_abso3<<3);
+			line5_gs4 <= 1021 - (line5_abso4<<2);
+		end
+end
+	
+	
+wire [27:0]line1_mult2;
+wire [27:0]line1_mult3;
+wire [27:0]line1_mult4;
+wire [27:0]line2_mult1;
+wire [27:0]line2_mult2;
+wire [27:0]line2_mult3;
+wire [27:0]line2_mult4;
+wire [27:0]line2_mult5;
+wire [27:0]line3_mult1;
+wire [27:0]line3_mult2;
+wire [27:0]line3_mult3;
+wire [27:0]line3_mult4;
+wire [27:0]line3_mult5;
+wire [27:0]line4_mult1;
+wire [27:0]line4_mult2;
+wire [27:0]line4_mult3;
+wire [27:0]line4_mult4;
+wire [27:0]line4_mult5;
+wire [27:0]line5_mult2;
+wire [27:0]line5_mult3;
+wire [27:0]line5_mult4;
+//DDE_mult DDE_mult_1_2(
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line1_gs2), //input [13:0] a
+//    .b(line1_data2_d3), //input [13:0] b
+//    .dout(line1_mult2) //output [27:0] dout
+//);
+//DDE_mult DDE_mult_1_3 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line1_gs3), //input [13:0] a
+//    .b(line1_data3_d3), //input [13:0] b
+//    .dout(line1_mult3) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_1_4 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line1_gs4), //input [13:0] a
+//    .b(line1_data4_d3), //input [13:0] b
+//    .dout(line1_mult4) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_2_1 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line2_gs1), //input [13:0] a
+//    .b(line2_data1_d3), //input [13:0] b
+//    .dout(line2_mult1) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_2_2 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line2_gs2), //input [13:0] a
+//    .b(line2_data2_d3), //input [13:0] b
+//    .dout(line2_mult2) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_2_3 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line2_gs3), //input [13:0] a
+//    .b(line2_data3_d3), //input [13:0] b
+//    .dout(line2_mult3) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_2_4 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line2_gs4), //input [13:0] a
+//    .b(line2_data4_d3), //input [13:0] b
+//    .dout(line2_mult4) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_2_5 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line2_gs5), //input [13:0] a
+//    .b(line2_data5_d3), //input [13:0] b
+//    .dout(line2_mult5) //output [27:0] dout
+//); 
+
+//DDE_mult DDE_mult_3_1 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line3_gs1), //input [13:0] a
+//    .b(line3_data1_d3), //input [13:0] b
+//    .dout(line3_mult1) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_3_2 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line3_gs2), //input [13:0] a
+//    .b(line3_data2_d3), //input [13:0] b
+//    .dout(line3_mult2) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_3_3 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line3_gs3), //input [13:0] a
+//    .b(line3_data3_d3), //input [13:0] b
+//    .dout(line3_mult3) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_3_4 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line3_gs4), //input [13:0] a
+//    .b(line3_data4_d3), //input [13:0] b
+//    .dout(line3_mult4) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_3_5 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line3_gs5), //input [13:0] a
+//    .b(line3_data5_d3), //input [13:0] b
+//    .dout(line3_mult5) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_4_1 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line4_gs1), //input [13:0] a
+//    .b(line4_data1_d3), //input [13:0] b
+//    .dout(line4_mult1) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_4_2 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line4_gs2), //input [13:0] a
+//    .b(line4_data2_d3), //input [13:0] b
+//    .dout(line4_mult2) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_4_3 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line4_gs3), //input [13:0] a
+//    .b(line4_data3_d3), //input [13:0] b
+//    .dout(line4_mult3) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_4_4 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line4_gs4), //input [13:0] a
+//    .b(line4_data4_d3), //input [13:0] b
+//    .dout(line4_mult4) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_4_5 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line4_gs5), //input [13:0] a
+//    .b(line4_data5_d3), //input [13:0] b
+//    .dout(line4_mult5) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_5_2 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line5_gs2), //input [13:0] a
+//    .b(line5_data2_d3), //input [13:0] b
+//    .dout(line5_mult2) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_5_3 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line5_gs3), //input [13:0] a
+//    .b(line5_data3_d3), //input [13:0] b
+//    .dout(line5_mult3) //output [27:0] dout
+//); 
+//DDE_mult DDE_mult_5_4 (
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(line5_gs4), //input [13:0] a
+//    .b(line5_data4_d3), //input [13:0] b
+//    .dout(line5_mult4) //output [27:0] dout
+//); 
+DDE_mult DDE_mult_1_2(
+  .CLK(clk_i),  // input wire CLK
+  .A(line1_gs2),      // input wire [13 : 0] A
+  .B(line1_data2_d3),      // input wire [14 : 0] B
+  .P(line1_mult2)      // output wire [28 : 0] P
+);
+DDE_mult DDE_mult_1_3 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line1_gs3),      // input wire [13 : 0] A
+  .B(line1_data3_d3),      // input wire [14 : 0] B
+  .P(line1_mult3)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_1_4 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line1_gs4),      // input wire [13 : 0] A
+  .B(line1_data4_d3),      // input wire [14 : 0] B
+  .P(line1_mult4)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_2_1 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line2_gs1),      // input wire [13 : 0] A
+  .B(line2_data1_d3),      // input wire [14 : 0] B
+  .P(line2_mult1)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_2_2 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line2_gs2),      // input wire [13 : 0] A
+  .B(line2_data2_d3),      // input wire [14 : 0] B
+  .P(line2_mult2)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_2_3 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line2_gs3),      // input wire [13 : 0] A
+  .B(line2_data3_d3),      // input wire [14 : 0] B
+  .P(line2_mult3)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_2_4 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line2_gs4),      // input wire [13 : 0] A
+  .B(line2_data4_d3),      // input wire [14 : 0] B
+  .P(line2_mult4)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_2_5 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line2_gs5),      // input wire [13 : 0] A
+  .B(line2_data5_d3),      // input wire [14 : 0] B
+  .P(line2_mult5)      // output wire [28 : 0] P
+); 
+
+DDE_mult DDE_mult_3_1 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line3_gs1),      // input wire [13 : 0] A
+  .B(line3_data1_d3),      // input wire [14 : 0] B
+  .P(line3_mult1)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_3_2 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line3_gs2),      // input wire [13 : 0] A
+  .B(line3_data2_d3),      // input wire [14 : 0] B
+  .P(line3_mult2)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_3_3 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line3_gs3),      // input wire [13 : 0] A
+  .B(line3_data3_d3),      // input wire [14 : 0] B
+  .P(line3_mult3)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_3_4 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line3_gs4),      // input wire [13 : 0] A
+  .B(line3_data4_d3),      // input wire [14 : 0] B
+  .P(line3_mult4)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_3_5 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line3_gs5),      // input wire [13 : 0] A
+  .B(line3_data5_d3),      // input wire [14 : 0] B
+  .P(line3_mult5)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_4_1 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line4_gs1),      // input wire [13 : 0] A
+  .B(line4_data1_d3),      // input wire [14 : 0] B
+  .P(line4_mult1)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_4_2 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line4_gs2),      // input wire [13 : 0] A
+  .B(line4_data2_d3),      // input wire [14 : 0] B
+  .P(line4_mult2)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_4_3 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line4_gs3),      // input wire [13 : 0] A
+  .B(line4_data3_d3),      // input wire [14 : 0] B
+  .P(line4_mult3)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_4_4 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line4_gs4),      // input wire [13 : 0] A
+  .B(line4_data4_d3),      // input wire [14 : 0] B
+  .P(line4_mult4)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_4_5 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line4_gs5),      // input wire [13 : 0] A
+  .B(line4_data5_d3),      // input wire [14 : 0] B
+  .P(line4_mult5)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_5_2 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line5_gs2),      // input wire [13 : 0] A
+  .B(line5_data2_d3),      // input wire [14 : 0] B
+  .P(line5_mult2)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_5_3 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line5_gs3),      // input wire [13 : 0] A
+  .B(line5_data3_d3),      // input wire [14 : 0] B
+  .P(line5_mult3)      // output wire [28 : 0] P
+); 
+DDE_mult DDE_mult_5_4 (
+  .CLK(clk_i),  // input wire CLK
+  .A(line5_gs4),      // input wire [13 : 0] A
+  .B(line5_data4_d3),      // input wire [14 : 0] B
+  .P(line5_mult4)      // output wire [28 : 0] P
+); 
+reg [15:0]sum_gs;
+reg [18:0]sum_gs_r;
+reg [18:0]sum_gs_rr;
+reg [18:0]sum_gs_rrr;
+reg [29:0]sum_mult;
+reg [32:0]sum_mult_r;
+always @(posedge clk_i)
+begin
+	if(!rst_n)
+		begin
+			sum_gs <= 0;
+			sum_gs_r <= 0;
+			sum_gs_rr <= 0;
+			sum_gs_rrr <= 0;
+			sum_mult <= 0;
+			sum_mult_r <= 0;
+		end
+	else
+		begin
+			sum_gs_rrr <= 		  	   line1_gs2+line1_gs3+line1_gs4
+							+line2_gs1+line2_gs2+line2_gs3+line2_gs4+line2_gs5
+							+line3_gs1+line3_gs2+line3_gs3+line3_gs4+line3_gs5
+							+line4_gs1+line4_gs2+line4_gs3+line4_gs4+line4_gs5
+									  +line5_gs2+line5_gs3+line5_gs4;
+			sum_gs_rr <= sum_gs_rrr;					 
+			sum_gs_r  <= sum_gs_rr;					 
+			sum_gs	 <= sum_gs_rr >> 3;					 
+			sum_mult_r <= 		  	     line1_mult2+line1_mult3+line1_mult4
+							+line2_mult1+line2_mult2+line2_mult3+line2_mult4+line2_mult5
+							+line3_mult1+line3_mult2+line3_mult3+line3_mult4+line3_mult5
+							+line4_mult1+line4_mult2+line4_mult3+line4_mult4+line4_mult5
+										+line5_mult2+line5_mult3+line5_mult4;	
+			sum_mult <= sum_mult_r >> 3;
+		end
+end
+
+wire [47:0]div_data;
+//gw_div_s30_s20_ur_p20_speed_Top gw_div(
+//  .aclr(0),
+//  .clken(1'b1),
+//  .clock(clk_i),
+//  .numer(sum_mult), // input [29:0] dividend
+//  .denom(sum_gs), // input [19:0] dividend
+//  .quotient(div_data), //output [29:0] quotient
+//  .remain()
+//);
+div_dde div_dde (
+  .aclk(clk_i),                                      // input wire aclk
+  .s_axis_divisor_tvalid(1'b1),    // input wire s_axis_divisor_tvalid
+  .s_axis_divisor_tdata({5'd0,sum_gs}),      // input wire [23 : 0] s_axis_divisor_tdata
+  .s_axis_dividend_tvalid(1'b1),  // input wire s_axis_dividend_tvalid
+  .s_axis_dividend_tdata(sum_mult),    // input wire [31 : 0] s_axis_dividend_tdata
+  .m_axis_dout_tvalid(),          // output wire m_axis_dout_tvalid
+  .m_axis_dout_tdata(div_data)            // output wire [55 : 0] m_axis_dout_tdata
+);
+reg DDE_en_r;
+reg [13:0]DDE_level_r;
+reg [13:0]l_data;
+reg [13:0]l_data_r;
+reg [13:0]l_data_rr;
+reg signed[14:0]h_data;
+always @(posedge clk_i)
+begin
+	if(!rst_n)
+		begin
+			DDE_en_r <= 0;
+			DDE_level_r <= 0;
+			l_data <= 0;
+			l_data_r <= 0;
+			l_data_rr <= 0;
+			h_data <= 0;
+		end
+	else
+		begin
+			if(DDE_vcnt == 0)
+                begin
+                    DDE_en_r <= DDE_en;
+                    DDE_level_r <= {DDE_level,4'd0} + 40;
+                end
+			else ;
+			
+			l_data <= div_data[13+16:16];
+			l_data_r <= l_data;
+			l_data_rr <= l_data_r;
+			h_data <= line3_data3_d38 - div_data[13+16:16]; 
+		end
+end
+
+wire signed[28:0]h_data_rr;
+//DDE_mult2 DDE_mult_level(
+//    .clk(clk_i), //input clk
+//    .reset(!rst_n), //input reset
+//    .ce(1'b1), //input ce
+//    .a(DDE_level_r), //input [13:0] a
+//    .b(h_data), //input [14:0] b
+//    .dout(h_data_rr) //output [28:0] dout
+//);
+DDE_mult_level DDE_mult_level(
+    .CLK(clk_i), //input clk
+    .A(DDE_level_r),      // input wire [13 : 0] A
+    .B(h_data),      // input wire [14 : 0] B
+    .P(h_data_rr)      // output wire [28 : 0] P
+);
+reg [13:0]l_data_rrr;
+reg signed [22:0]h_data_rrr;
+always @(posedge clk_i)
+begin
+	if(!rst_n)
+		begin
+			DDE_HS <= 0;
+			DDE_VS <= 0;
+			DDE_lfdata <= 0;
+			DDE_hfdata <= 0;
+			l_data_rrr <= 0;
+			h_data_rrr <= 0;
+		end
+	else
+		begin
+            l_data_rrr <= l_data_rr;
+			h_data_rrr <= h_data_rr[28:6]; 
+
+            if(DDE_en_r)
+                begin
+                    DDE_HS <= DDE_VS && DDE_hcnt >= 2+11 && DDE_hcnt < 642+11;
+                    DDE_VS <= DDE_vcnt >= 3 && DDE_vcnt < 515;
+                    DDE_lfdata <= l_data_rrr >>1;
+                    if(h_data_rrr < -8191)
+                        DDE_hfdata <= -8191;
+                    else if(h_data_rrr > 8191)
+                        DDE_hfdata <= 8191;
+                    else
+                        DDE_hfdata <= h_data_rrr;
+                end
+            else
+                begin
+                    DDE_HS <= HS_in;
+                    DDE_VS <= VS_in;
+                    DDE_lfdata <= Data_in;
+                    DDE_hfdata <= 0;
+                end
+		end
+end
+
+endmodule

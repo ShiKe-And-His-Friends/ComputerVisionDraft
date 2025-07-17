@@ -1,0 +1,93 @@
+function [ cdf_matrix ] = make_cdf_matrix(p_image, block_size,limit)
+%MAKE_CDF_MATRIX creates a CDF array for every tile in the input image
+
+M = size(p_image,1);
+N = size(p_image,2);
+M_block = block_size(1);
+N_block = block_size(2);
+T1 = M/M_block;
+T2 = N/N_block;
+max_gray_value = max(p_image(:));
+min_gray_value = min(p_image(:));
+cdf_matrix = zeros(T1,T2,65534);
+
+% iterate through the tiles
+for i = 1:T1
+    for j = 1:T2
+        % extract a block
+        a = (i-1)*M_block+1;
+        b = i*M_block;
+        c = (j-1)*N_block+1;
+        d = j*N_block;
+        current_block = p_image(a:b,c:d);
+        current_block = uint16(current_block);
+        % find normalized histogram
+        hnorm = imhist(current_block,65534)./numel(current_block);
+        
+        %找到直方图均衡的区间
+        min_value = -1;
+        max_value = -1;
+        for m = 1:65535
+            if hnorm(m)<=0
+                continue;
+            end
+            min_value = m;
+            break;
+        end
+        m = 65534;
+        while(max_value==-1)
+            if hnorm(m)<=0
+                m = m -1;
+                continue;
+            end
+            max_value = m;
+        end
+        fprintf("gray_min = %d ,gary_max = %d \n",min_value ,max_value);        
+       
+        % clip the normalized histogram 
+        sum = 0;
+        sum_count = 0;
+        for m = 1:65534
+            if hnorm(m)<=0
+                continue;
+            end
+           if (hnorm(m)>limit) 
+               sum = sum + (hnorm(m)-limit);
+               hnorm(m) = limit;
+           end
+           sum_count = sum_count + 1;
+        end
+        average_add = sum/sum_count;
+        for m = 1:65534
+            if hnorm(m)<=0
+                continue;
+            end
+            hnorm(m) = hnorm(m) +average_add;
+        end      
+        cdf = cumsum(hnorm);
+        %cdf2 = cdf * (max_value - min_value + 1) + min_value; %wrong
+        %cdf2 = cdf * 255; %fine
+        
+        cdf2 = cdf * (max_gray_value - min_gray_value + 1)  + double(min_gray_value); %fine
+        
+        %cdf2 = cdf * (max_value - min_value + 1)  + double(min_gray_value);
+
+
+        % 第一公式
+        %cdf2 = cdf * (max_value - min_value + 1) + min_value; %8bitwrong 16bitfine
+        
+        % 第二公式
+        %cdf2 = cdf * 255; %fine
+        
+        % 第三公式
+        %cdf2 = cdf * (max_gray_value - min_gray_value + 1)  + double(min_gray_value); %fine
+        
+        % 第四公式
+        %cdf2 = cdf * (max_value - min_value + 1)  + double(min_gray_value);
+        
+        cdf_matrix(i,j,:) = cdf2;
+    end
+end
+
+end
+

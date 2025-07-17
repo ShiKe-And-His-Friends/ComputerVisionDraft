@@ -1,0 +1,95 @@
+%线性压缩DDE + 轻微的增益 效果不好
+
+function [newPixelVal,validNum] = muliti_CLHE_PixelMapping(hist ,dimImage)
+   
+    frequency = hist;
+    accumulation = zeros(1,16384); %14bits位宽
+    
+    %对直方图进行线性增益
+%level = [0.01,0.03,0.06,0.11,0.20,0.4,0.6];
+gain_level = 0.01; %0.008; %增益挡位
+max_gray = max(frequency); 
+min_number = uint16(1);
+while frequency(min_number) < max_gray* gain_level
+    min_number = min_number + 1;
+end
+max_number = uint16(16383);
+while frequency(max_number) < max_gray* gain_level
+    max_number = max_number - 1;
+end
+fprintf("挡位增益 最小 %d  ,最大 %d \n",min_number,max_number);
+for j = 1:min_number
+    frequency(j) = 0;
+end
+for j = max_number:16383
+    frequency(j) = 0;
+end
+    
+    % 重新生成非无效元素的概率函数
+    newFrequency = []; % 初始化新数组为空
+    for i = 1:length(frequency)
+        if frequency(i) ~= 0 %是否不等于0
+            newFrequency = [newFrequency, frequency(i)]; % 将不为0的元素添加到新数组
+        end
+    end
+    disp("有效灰度级 = " + length(newFrequency))
+
+    average_gray = 255 / length(newFrequency);
+    gray_value = 0;
+    for i = 1:length(frequency)
+        if frequency(i) ~= 0 %是否不等于0
+           accumulation(1,i) = gray_value;
+           gray_value = gray_value + average_gray;
+        else
+           accumulation(1,i) = gray_value;
+        end
+    end
+    
+    newPixelVal = uint8(accumulation );
+    
+    
+    validNum = length(newFrequency);
+end
+
+function filtered_data = fpge_filter_nonzero(arr)
+    % 获取输入数组的长度
+    data_length = length(arr);
+    % 初始化滤波后的数据，与原数组长度相同
+    filtered_data = zeros(1, data_length);
+    window_size = 9;
+    % 计算窗口半径（窗口大小为奇数时）
+    half_window = floor(window_size / 2);
+    
+    gaussian_kernel = [4 8 4 8 16 8 4 8 4];
+
+    for i = 1 :half_window
+        filtered_data(i) = arr(i);
+    end
+    for i = data_length - half_window :data_length
+        filtered_data(i) = arr(i);
+    end
+
+    % 遍历输入数组的每一个元素
+    for i = half_window + 1:data_length - half_window -1
+        if arr(i) == 0
+           continue; 
+        end
+        % 用于存储当前元素与滤波核卷积的结果（即滤波后的值）
+        sum_value = 0;
+        sum_kernel = 0;
+        % 遍历滤波核与当前元素对应的位置
+        for j = max(half_window + 1, i - half_window):min(data_length - half_window -1, i + half_window)
+            index = j - (i - half_window);
+            if arr(j) ~= 0
+                sum_value = sum_value + arr(j) * gaussian_kernel(index + 1);
+                sum_kernel = sum_kernel + gaussian_kernel(index + 1);
+            end
+        end
+        if sum_kernel ~= 0
+            filtered_data(i) = round(sum_value / sum_kernel);
+        else
+            filtered_data(i) =  0;
+        end
+
+    end
+end

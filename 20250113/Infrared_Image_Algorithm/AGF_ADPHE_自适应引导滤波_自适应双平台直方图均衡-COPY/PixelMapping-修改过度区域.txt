@@ -1,0 +1,22 @@
+% 平滑过渡区域（使用加权平均）
+transition_width = 10; % 过渡区域的宽度，可以调整
+for i = 1:transition_width
+    weight = i / transition_width;
+    hist_foreground(end - i + 1) = (1 - weight) * hist_foreground(end - i + 1) + weight * hist_background(1);
+    hist_background(1) = weight * hist_foreground(end - i + 1) + (1 - weight) * hist_background(1);
+end
+
+
+transition_width = min(non_zero_count_left ,non_zero_count_right) * 0.25; % 过渡区域的宽度，可以调整
+for i = 1:transition_width
+    weight = i / transition_width;
+    frequency(draw2threshold - i + 1) = (1 - weight) * frequency(draw2threshold - i + 1) + weight * frequency(draw2threshold+1);
+    frequency(draw2threshold+i) = weight * frequency(draw2threshold - i + 1) + (1 - weight) * frequency(draw2threshold+i);
+%         frequency(draw2threshold - i + 1) = frequency(draw2threshold - i + 1) * 4.0;
+%         frequency(draw2threshold+i) = frequency(draw2threshold+i)  * 4.0; 
+end
+
+% 调整灰度值分配比例（给过渡区域更多灰度级）
+extra_gray_levels = 30; % 额外分配给过渡区域的灰度级数量，可以调整
+range_foreground = round((num_foreground / total_pixels) * (255 - extra_gray_levels));
+range_background = 255 - range_foreground;

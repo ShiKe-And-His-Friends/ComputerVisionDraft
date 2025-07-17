@@ -1,0 +1,343 @@
+#include <linux/delay.h>
+#include <linux/gpio.h>
+#include <linux/interrupt.h>
+#include <linux/module.h>
+
+#include <linux/module.h>	//所有模块都需要的头文件
+#include <linux/kernel.h>
+#include <linux/fs.h>	//文件系统有关的，结构体file_operations也在fs头文件定义
+#include <linux/init.h>	//init和exit相关宏
+#include <linux/delay.h>
+#include <linux/irq.h>
+#include <asm/uaccess.h>	//linux中的用户态内存交互函数，copy_from_user(),copy_to_user()等
+#include <asm/irq.h>	//linux中断定义
+#include <asm/io.h>
+#include <linux/sched.h>	//声明printk()这个内核态的函数
+#include <linux/interrupt.h>	//包含与中断相关的大部分宏及结构体的定义，request_irq()等
+#include <linux/device.h>	//
+#include <linux/poll.h>
+#include <linux/slab.h>
+#include <linux/gfp.h>
+#include <linux/jiffies.h>  // 用于时间戳处理
+
+// 定义消抖时间间隔（毫秒）
+#define DEBOUNCE_TIME_MS 1200
+#define MS_TO_JIFFIES(ms) ((ms) * HZ / 1000)
+// 全局变量：记录上次触发时间
+static unsigned long last_trigger_time = 0;
+
+//模块参数，GPIO组号、组内偏移、方向、输出时的输出初始值
+static unsigned int gpio_chip_num = 5;
+module_param(gpio_chip_num, uint, S_IRUGO);
+MODULE_PARM_DESC(gpio_chip_num, "gpio chip num");
+
+static unsigned int gpio_offset_num = 2;
+module_param(gpio_offset_num, uint, S_IRUGO);
+MODULE_PARM_DESC(gpio_offset_num, "gpio offset num");
+
+static unsigned int gpio_dir = 0;
+module_param(gpio_dir, uint, S_IRUGO);
+MODULE_PARM_DESC(gpio_dir, "gpio dir");
+
+static unsigned int gpio_out_val = 1;
+module_param(gpio_out_val, uint, S_IRUGO);
+MODULE_PARM_DESC(gpio_out_val, "gpio out val");
+
+//模块参数，中断触发类型
+/*
+* 0 - disable irq
+* 1 - rising edge triggered
+* 2 - falling edge triggered
+* 3 - rising and falling edge triggered
+* 4 - high level triggered
+* 8 - low level triggered
+*/
+static unsigned int gpio_irq_type = 2;
+module_param(gpio_irq_type, uint, S_IRUGO);
+MODULE_PARM_DESC(gpio_irq_type, "gpio irq type");
+
+spinlock_t lock;
+// 中断事件标志, 中断服务程序将它置1，btn_drv_read将它清0 
+static volatile int ev_press = 0;
+static struct fasync_struct *button_async;  //定义一个结构
+static DECLARE_WAIT_QUEUE_HEAD(button_waitq);
+static struct class *btndrv_class;
+static struct device *btndrv_dev;
+int major;
+unsigned char key_val = 0x00;
+
+static int gpio_dev_test_in(unsigned int gpio_num)
+{
+	//设置方向为输入
+	if (gpio_direction_input(gpio_num)) {
+		pr_err("[%s %d]gpio_direction_input fail!\n",
+		__func__, __LINE__);
+		return -EIO;
+	}
+	//读出GPIO输入值
+	pr_info ("[%s %d]gpio%d_%d in %d\n", __func__, __LINE__,
+	gpio_num / 8, gpio_num % 8,
+	gpio_get_value(gpio_num));
+	return 0;
+}
+
+
+
+static irqreturn_t gpio_dev_test_isr(int irq, void *dev_id)
+{
+    unsigned long flags;
+    unsigned long current_time;
+    irqreturn_t ret = IRQ_NONE;
+
+    // 获取当前时间戳
+    current_time = jiffies;
+
+    // 关中断并加锁（保护共享变量）
+    spin_lock_irqsave(&lock, flags);
+
+    // 检查是否在消抖时间内
+    if (time_after(current_time, last_trigger_time + MS_TO_JIFFIES(DEBOUNCE_TIME_MS))) {
+        // 超过消抖时间，处理本次中断
+        pr_info("[%s %d] Valid button press\n", __func__, __LINE__);
+        
+        key_val = 0x01;
+        ev_press = 1;
+        
+        // 更新上次触发时间
+        last_trigger_time = current_time;
+        
+        // 唤醒等待队列和发送异步通知
+        wake_up_interruptible(&button_waitq);
+        kill_fasync(&button_async, SIGIO, POLL_IN);
+        
+        ret = IRQ_HANDLED;
+    } else {
+        // 消抖时间内的重复触发，忽略
+        pr_info("[%s %d] Debounce: Ignored button press\n", __func__, __LINE__);
+    }
+
+    // 解锁并恢复中断
+    spin_unlock_irqrestore(&lock, flags);
+
+    return ret;
+}
+
+static int gpio_dev_test_irq(unsigned int gpio_num)
+{
+	unsigned int irq_num;
+	unsigned int irqflags = 0;
+	//设置方向为输入
+	if (gpio_direction_input(gpio_num)) {
+		pr_err("[%s %d]gpio_direction_input fail!\n",
+		__func__, __LINE__);
+		return -EIO;
+	}
+	switch (gpio_irq_type) {
+		case 1:
+			irqflags = IRQF_TRIGGER_RISING;
+		break;
+		
+		case 2:
+			irqflags = IRQF_TRIGGER_FALLING;
+		break;
+		
+		case 3:
+			irqflags = IRQF_TRIGGER_RISING |
+			IRQF_TRIGGER_FALLING;
+		break;
+		
+		case 4:
+			irqflags = IRQF_TRIGGER_HIGH;
+		break;
+		
+		case 8:
+			irqflags = IRQF_TRIGGER_LOW;
+		break;
+		
+		default:
+			pr_info("[%s %d]gpio_irq_type error!\n",__func__, __LINE__);
+		return -1;
+	}
+	pr_info("[%s %d]gpio_irq_type = %d\n", __func__, __LINE__, gpio_irq_type);
+	irqflags |= IRQF_SHARED;
+	//根据GPIO编号映射中断号
+	irq_num = gpio_to_irq(gpio_num);
+	//注册中断
+	if (request_irq(irq_num, gpio_dev_test_isr, irqflags,"gpio_dev_test", &gpio_irq_type)) {
+		pr_info("[%s %d]request_irq error!\n", __func__, __LINE__);
+		return -1;
+	}
+	return 0;
+}
+
+static void gpio_dev_test_irq_exit(unsigned int gpio_num)
+{
+	unsigned long flags;
+	pr_info("[%s %d]\n", __func__, __LINE__);
+	//释放注册的中断
+	spin_lock_irqsave(&lock, flags);
+	free_irq(gpio_to_irq(gpio_num), &gpio_irq_type);
+	spin_unlock_irqrestore(&lock, flags);
+}
+
+static int gpio_dev_test_out(unsigned int gpio_num, unsigned int gpio_out_val)
+{
+	//设置方向为输出，并输出一个初始值
+	if (gpio_direction_output(gpio_num, !!gpio_out_val)) {
+		pr_err("[%s %d]gpio_direction_output fail!\n",	__func__, __LINE__);
+		return -EIO;
+	}
+	pr_info("[%s %d]gpio%d_%d out %d\n", __func__, __LINE__,
+	gpio_num / 8, gpio_num % 8, !!gpio_out_val);
+	return 0;
+}
+
+/*********************************************************************************************************
+*功能：模块打开函数
+*参数：
+*返回值：无
+**********************************************************************************************************/
+static int btn_drv_open(struct inode *inode, struct file *file)
+{
+	printk("driver: btn_drv open\n");  
+
+	//err = request_irq(keys_desc[i].irq, buttons_irq, IRQF_SHARED, keys_desc[i].name,(void *)&keys_desc[i]);
+	
+	int status = 0;
+	unsigned int gpio_num;
+	gpio_num = gpio_chip_num * 8 + gpio_offset_num;
+	//注册要操作的GPIO编号
+	if (gpio_request(gpio_num, NULL)) {
+		pr_err("[%s %d]gpio_request fail! gpio_num=%d \n", __func__, __LINE__, gpio_num);
+		return -EIO;
+	}
+	if (gpio_dir) {
+		status = gpio_dev_test_out(gpio_num, gpio_out_val);
+	} else {
+		if (gpio_irq_type)
+			status = gpio_dev_test_irq(gpio_num);
+		else
+			status = gpio_dev_test_in(gpio_num);
+	}
+	if (status)
+		gpio_free(gpio_num);
+
+	return status;
+}
+
+/*********************************************************************************************************
+*功能：模块读取函数
+*参数：
+*返回值：无
+**********************************************************************************************************/
+ssize_t btn_drv_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
+{
+	printk("driver: btn_drv read\n");  
+
+	if(file->f_flags & O_NONBLOCK){       /* 非 阻塞操作 */  
+		
+		//read
+		//copy_to_user(buf, key_val, sizeof(keys_desc)/sizeof(keys_desc[0]));
+		
+		copy_to_user(buf, &key_val,1);
+	}else{
+		//如果没有按键动作, 休眠
+		wait_event_interruptible(button_waitq, ev_press);
+
+		copy_to_user(buf, &key_val,1);
+
+		//如果有按键动作, 返回键值
+		//copy_to_user(buf, key_val, sizeof(keys_desc)/sizeof(keys_desc[0]));
+		ev_press = 0;
+	}
+	key_val = 0x00;
+	
+	return 1;
+}
+
+/*********************************************************************************************************
+*功能：模块关闭函数
+*参数：
+*返回值：无
+**********************************************************************************************************/
+int btn_drv_close(struct inode *inode, struct file *file)     //出链，禁止中断
+{
+	printk("driver: btn_drv close\n");  
+	//free_irq(keys_desc[i].irq, (void *)&keys_desc[i]);
+
+	unsigned int gpio_num;
+	gpio_num = gpio_chip_num * 8 + gpio_offset_num;
+	if (gpio_irq_type)
+		gpio_dev_test_irq_exit(gpio_num);
+	//释放注册的GPIO编号
+	gpio_free(gpio_num);
+
+	return 0;
+}
+
+/*********************************************************************************************************
+*功能：模块软件轮循函数
+*参数：
+*返回值：无
+**********************************************************************************************************/
+static unsigned btn_drv_poll(struct file *file, poll_table *wait)
+{
+	printk("driver: btn_drv poll\n");  
+
+	unsigned int mask = 0;
+	poll_wait(file, &button_waitq, wait); // 不会立即休眠，只是把进程挂到队列里面去
+
+	if (ev_press)                          //判断是否有数据返回。有的话进行赋值，没有的话休眠
+		mask |= POLLIN | POLLRDNORM;    //返回位掩码, 它描述哪个操作可马上被实现。
+
+	return mask;
+}
+
+/*********************************************************************************************************
+*功能：模块异步通知函数
+*参数：
+*返回值：无
+**********************************************************************************************************/
+static int btn_drv_fasync (int fd, struct file *filp, int on)   
+{
+	printk("driver: btn_drv_fasync\n");             //为了说明次函数被调用增加一条打印语句
+	return fasync_helper (fd, filp, on, &button_async); //初始化定义的结构体
+}
+
+static struct file_operations g_key_event_fops = {
+    .owner   =  THIS_MODULE,    // 这是一个宏，推向编译模块时自动创建的__this_module变量
+    .open    =  btn_drv_open,     
+	.read	 =	btn_drv_read,	   
+	.release =  btn_drv_close,
+	.poll    =  btn_drv_poll,	//用户程序使用select调用的时候才会用到poll
+	.fasync	 =  btn_drv_fasync,	//用户程序用异步通知的时候才会用到fasync
+};
+
+static int __init gpio_dev_test_init(void)
+{
+	pr_info("[%s %d]\n", __func__, __LINE__);
+	spin_lock_init(&lock);
+	
+	major = register_chrdev(0, "btn_drv", &g_key_event_fops);	//自动分配主设备号
+
+	btndrv_class = class_create(THIS_MODULE, "btn_drv");
+
+	btndrv_dev = device_create(btndrv_class, NULL, MKDEV(major, 0), NULL, "buttons"); // 设备节点 /dev/buttons
+
+	return 0;
+}
+module_init(gpio_dev_test_init);
+
+static void __exit gpio_dev_test_exit(void)
+{	
+	pr_info("[%s %d]\n", __func__, __LINE__);
+
+	unregister_chrdev(major, "btn_drv");
+	device_unregister(btndrv_dev);
+	class_destroy(btndrv_class);
+
+}
+
+module_exit(gpio_dev_test_exit);
+MODULE_DESCRIPTION("GPIO device test Driver sample");
+MODULE_LICENSE("GPL");

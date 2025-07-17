@@ -1,0 +1,88 @@
+%对直方图分20段或者4段，进行两条直线斜率的线性拉伸 
+
+   % 按照灰度数量级进行10等分
+    total_pixels = sum(frequency);
+    pixels_per_bin = floor(total_pixels/20.0);
+    cumulative_count = 0;
+    bin_boundaries = [];
+    for i = 1:length(frequency)
+        cumulative_count = cumulative_count + frequency(i);
+        while cumulative_count >= pixels_per_bin
+            bin_boundaries = [bin_boundaries; i]; 
+            cumulative_count = cumulative_count - pixels_per_bin;
+        end
+    end
+    fprintf("灰度级10等分: ");
+    for i = 1:length(bin_boundaries)
+        fprintf('%d ', bin_boundaries(i)); 
+    end
+    fprintf("\n");
+    
+    %重新10等分更新直方图
+    start_index = 1;
+    for i = 1:length(bin_boundaries)
+        end_index = bin_boundaries(i);
+                
+        %更新1个直方图
+        accumulation(1,1)=frequency(1,start_index);
+        for j = start_index + 1 : end_index-1
+            accumulation(1,j) = accumulation(1,j-1) + frequency(1,j);
+        end   
+        
+        start_index = bin_boundaries(i);
+    end
+    
+    % 图像的灰度级数
+    validNum = length(newFrequency);
+    fprintf("灰度级数 %d \n" ,validNum);
+    
+    % ADPHE双平台自适应直方图均衡
+    start_index = 1;
+    threshold = 12.75;
+    base_threshold = 0;
+    star_gray = 0;
+    end_gray = threshold;
+    for i = 1:length(bin_boundaries)
+        end_index = bin_boundaries(i);
+        
+        %遍历最大值、最小值
+        min_value = accumulation(1,start_index);
+        max_value = min_value;
+        for j = start_index + 1 : end_index-1
+            value = accumulation(1,j);
+            if min_value > value
+                min_value = value;
+            end
+            if max_value<value
+                max_value = value;
+            end
+        end
+        
+        %线性HE直方图拉伸
+
+        xa = start_index;
+        ya = min_value;
+        xb = end_index-1;
+        yb = max_value;
+        xc = start_index;
+        yc = star_gray;
+        xd = end_index-1;
+        yd = end_gray;
+        
+        %HE直方图均衡化
+        for j = start_index : end_index-1
+%             y1 = accumulation(1,j);
+%             y2 = (yd-yc)/(xd-xc)*((y1-ya)/(yb-ya)*(xb-xa)+xa-xc)+yc;
+%             accumulation(1,j) = floor(y2); 
+            
+            value = accumulation(1,j);
+            value = threshold * ((value - min_value) / (max_value - min_value)) + base_threshold;
+            accumulation(1,j) = floor(value); 
+            
+        end
+        start_index = bin_boundaries(i);
+        base_threshold = base_threshold + threshold;
+        
+        star_gray = star_gray + threshold;
+        end_gray = end_gray + threshold;
+    end

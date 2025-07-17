@@ -1,0 +1,175 @@
+%Tripartite sub-image histogram equalization for slightly low contrast gray-tone image enhancement
+ function [newPixelVal,validNum] = PixelMapping(hist ,dimImage)
+    frequency = hist;
+    accumulation = zeros(1,16384); %14bits位宽
+    
+    L = length(frequency);
+    hist_sum = sum(frequency);
+    space_hist_val = hist_sum / 3;
+    
+    Xf = -1;
+    Xs = -1;
+    
+    v = 0;
+    for i = 1:L
+        if frequency(i) ~= 0
+            v = v + frequency(i);
+            if v>= space_hist_val && Xf == -1
+                Xf = i;
+            end
+            if v>= space_hist_val*2 && Xs == -1
+                Xs = i;
+            end
+        end
+    end
+    
+    fprintf("左侧分点 %d 右侧分点 %d\n",Xf ,Xs);
+    
+    newFrequency = []; % 初始化新数组为空
+    for i = 1:Xf
+        if frequency(i) ~= 0 %是否不等于0
+            newFrequency = [newFrequency, frequency(i)]; % 将不为0的元素添加到新数组
+        end
+    end
+    TL = median(newFrequency);
+    newFrequency = []; % 初始化新数组为空
+    for i = Xf+1:Xs
+        if frequency(i) ~= 0 %是否不等于0
+            newFrequency = [newFrequency, frequency(i)]; % 将不为0的元素添加到新数组
+        end
+    end
+    TM = median(newFrequency);
+    newFrequency = []; % 初始化新数组为空
+    for i = Xs+1:L
+        if frequency(i) ~= 0 %是否不等于0
+            newFrequency = [newFrequency, frequency(i)]; % 将不为0的元素添加到新数组
+        end
+    end
+    TU = median(newFrequency);
+    
+    fprintf("中值点 %d %d %d\n",TL ,TM ,TU);
+    
+    %更改概率密度
+    for i =1:Xf
+        if frequency(i) ~= 0
+            if frequency(i) > TL
+                frequency(i)=TL;
+            end
+        end
+    end
+    for i =Xf+1:Xs
+        if frequency(i) ~= 0
+            if frequency(i) > TM
+                frequency(i)=TM;
+            end
+        end
+    end
+    for i =Xs+1:L
+        if frequency(i) ~= 0
+            if frequency(i) > TU
+                frequency(i)=TU;
+            end
+        end
+    end
+    
+    %概率分布
+    NL = sum(frequency(1:Xf));
+    NM = sum(frequency(Xf+1:Xs));
+    NU = sum(frequency(Xs+1:L));
+    frequency(1:Xf) = frequency(1:Xf) / NL;
+    frequency(Xf+1:Xs) = frequency(Xf+1:Xs) /NM;
+    frequency(Xs+1:L) = frequency(Xs+1:L)/ NU;
+    CC = zeros(1,L);
+    
+    CC(1,1)=frequency(1,1);
+    for i = 2:Xf
+        CC(1,i) = CC(1,i-1) + frequency(1,i);
+    end
+    CC(1,Xf + 1)=frequency(1,Xf + 1);
+    for i = Xf + 2:Xs
+        CC(1,i) = CC(1,i-1) + frequency(1,i);
+    end
+    CC(1,Xs + 1)=frequency(1,Xs + 1);
+    for i = Xs + 2:L
+        CC(1,i) = CC(1,i-1) + frequency(1,i);
+    end
+    X0 = 0;
+    XG = 16384;
+    %改数域起止
+    
+    FF = zeros(1,L);
+    for i = 1:Xf
+        FF(i) = X0 + (Xf - X0)*(CC(i) - 0.5*frequency(i));
+    end
+    for i = Xf + 1:Xs
+        FF(i) = Xf + (Xs - Xf)*(CC(i) - 0.5*frequency(i));
+    end
+    for i = Xs + 1:L
+        FF(i) = Xs + (XG - Xs)*(CC(i) - 0.5*frequency(i));
+    end
+    
+    
+    newFrequency = []; % 初始化新数组为空
+    for i = 1:length(frequency)
+        if frequency(i) ~= 0 %是否不等于0
+            newFrequency = [newFrequency, frequency(i)]; % 将不为0的元素添加到新数组
+        end
+    end
+    % 图像的灰度级数
+    validNum = length(newFrequency);
+    fprintf("灰度级数 %d \n" ,validNum);
+    
+    accumulation = FF;
+    accumulation(1,:) = round(accumulation(1,:));
+    
+    %处理有效灰度集数
+    base_threshold = 0;
+    if validNum < 255
+        base_threshold = floor((255 - validNum)/2.0);
+    end
+ 
+    %更新灰度区间
+     for i = 1:L
+        accumulation(1,i) = accumulation(1,i) / 16384  * (255.0-2.0*base_threshold) + base_threshold;
+        %accumulation(1,i) = 0;
+     end
+     
+     %二值图
+%      for i = 1:length(frequency)
+%         if i < best_threshold
+%             accumulation(1,i) = 0;
+%         else
+%             accumulation(1,i) = 255;
+%         end
+%     end
+     
+
+
+    newPixelVal = uint8(accumulation );
+
+end
+
+
+function filtered_data = mean_filter_1d(data, window_size)
+    % 获取数据长度
+    data_length = length(data);
+    % 初始化滤波后的数据
+    filtered_data = zeros(1, data_length);
+    % 计算窗口半径（假设窗口大小为奇数）
+    half_window = floor(window_size / 2);
+    
+    % 遍历数据进行滤波操作
+    for i = 1:data_length
+        % 用于存储窗口内数据的和
+        sum_value = 0;
+        % 确定当前元素对应的滤波窗口范围
+        start_idx = max(1, i - half_window);
+        end_idx = min(data_length, i + half_window);
+        % 计算窗口内数据的和
+        for j = start_idx:end_idx
+            sum_value = sum_value + data(j);
+        end
+        % 计算窗口内数据的平均值，并赋值给滤波后的数据
+        filtered_data(i) = sum_value / (end_idx - start_idx + 1);
+    end
+end

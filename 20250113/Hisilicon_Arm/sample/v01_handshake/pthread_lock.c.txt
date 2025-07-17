@@ -1,0 +1,113 @@
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+
+// 共享资源结构体
+typedef struct {
+    pthread_mutex_t mutex;      // 互斥锁
+    pthread_cond_t cond;        // 条件变量
+    int button_id;              // 按钮编号
+    int exit_flag;              // 退出标志
+} ButtonEvent;
+
+ButtonEvent g_event;            // 全局事件对象
+
+// 子线程函数：监控按键
+void* button_monitor_thread(void* arg) {
+    int fd = open("/dev/buttons", O_RDONLY);
+    if (fd < 0) {
+        perror("Failed to open buttons device");
+        return NULL;
+    }
+
+    unsigned char button_state;
+    while (1) {
+        // 读取按键状态（阻塞模式）
+        if (read(fd, &button_state, 1) != 1) {
+            perror("Read button state failed");
+            break;
+        }
+
+        // 检查按钮编号是否非0
+        if (button_state != 0) {
+            // 加锁保护共享资源
+            pthread_mutex_lock(&g_event.mutex);
+            
+            // 更新按钮编号
+            g_event.button_id = button_state;
+            
+            // 通知主线程
+            pthread_cond_signal(&g_event.cond);
+            
+            // 解锁
+            pthread_mutex_unlock(&g_event.mutex);
+        }
+
+        // 检查退出标志
+        pthread_mutex_lock(&g_event.mutex);
+        if (g_event.exit_flag) {
+            pthread_mutex_unlock(&g_event.mutex);
+            break;
+        }
+        pthread_mutex_unlock(&g_event.mutex);
+    }
+
+    close(fd);
+    return NULL;
+}
+
+int main() {
+    // 初始化互斥锁和条件变量
+    pthread_mutex_init(&g_event.mutex, NULL);
+    pthread_cond_init(&g_event.cond, NULL);
+    g_event.button_id = 0;
+    g_event.exit_flag = 0;
+
+    // 创建子线程
+    pthread_t monitor_thread;
+    if (pthread_create(&monitor_thread, NULL, button_monitor_thread, NULL) != 0) {
+        perror("Failed to create monitor thread");
+        return -1;
+    }
+
+    // 主线程：处理按钮事件
+    while (1) {
+        // 加锁
+        pthread_mutex_lock(&g_event.mutex);
+        
+        // 等待按钮事件（按钮编号非0）
+        while (g_event.button_id == 0 && !g_event.exit_flag) {
+            pthread_cond_wait(&g_event.cond, &g_event.mutex);
+        }
+        
+        // 检查是否需要退出
+        if (g_event.exit_flag) {
+            pthread_mutex_unlock(&g_event.mutex);
+            break;
+        }
+        
+        // 处理按钮事件
+        printf("Main thread: Button %d pressed!\n", g_event.button_id);
+        
+        // 重置按钮编号
+        g_event.button_id = 0;
+        
+        // 解锁
+        pthread_mutex_unlock(&g_event.mutex);
+        
+        // 执行按钮对应的操作
+        // ...
+    }
+
+    // 等待子线程退出
+    pthread_join(monitor_thread, NULL);
+
+    // 清理资源
+    pthread_mutex_destroy(&g_event.mutex);
+    pthread_cond_destroy(&g_event.cond);
+
+    return 0;
+}

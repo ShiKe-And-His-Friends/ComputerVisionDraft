@@ -1,0 +1,216 @@
+function [out_image ] = CLAHE_PixelMapping(num_tiles ,limit ,image ,save_dir)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% EXAMPLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% created: 25.11.2016 (Aleksa Gordic)
+% mars = imread('mars_moon.tif');
+% mars_clahe = dos_clahe(mars,[4 8],0.03);
+% imshow(mars_clahe);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    fprintf("num_tiles =  %f %f\n" ,num_tiles );
+    fprintf("limit = %d\n" ,limit);
+
+    % check if the number of tiles is correct:
+    T1 = num_tiles(1);
+    T2 = num_tiles(2);
+    % we should also set upper limit ...
+    if (T1 <= 0 || T2 <= 0)
+        disp('Number of vertical and horizontal tiles must be positive');
+        out_image = -4; % error_code
+        return;
+    end
+
+    % check if the limit parameter is correct:
+    if (limit < 0 || limit > 1)
+        disp('Limit should be in the range: [0,1]');
+        return;
+    end
+
+    %IMAGE PADDING
+    M = size(image,1);
+    N = size(image,2);
+
+    % assume we don't need any padding on both dimensions
+    pad_M = 0;
+    pad_N = 0;
+    % adjust so that we can cover the image with the tiles
+    if (mod(M,T1) ~= 0)
+        pad_M = T1 - mod(M,T1);
+    end
+    if (mod(N,T2) ~= 0)
+        pad_N = T2 - mod(N,T2);
+    end
+
+    p_image = padarray(image,[pad_M,pad_N],'replicate','post');
+
+    %CLAHE PREPROCESSING
+    M = size(p_image,1);
+    N = size(p_image,2);
+    M_block = M/T1;
+    N_block = N/T2;
+
+    block_size = [M_block N_block];
+    % matrix of cdf functions for every block in the image
+    cdf_matrix = make_cdf_matrix(p_image,block_size,limit);
+
+    % preallocate the output image
+    out_image = zeros(M,N);
+    save_block_image = zeros(M,N); %分块图
+
+    % coordinates of the center pixel of the upper-left block
+    [xc11,yc11] = center_of_block(1,1,block_size);
+    % coordinates of the center pixel of the down-right block
+    [xcT1T2,ycT1T2] = center_of_block(T1,T2,block_size);
+
+    %CLAHE STARTS HERE
+    for i = 1:M
+        for j = 1:N
+
+            % block index of the current pixel
+            [k,m] = block_index(i,j,block_size);
+            % coordinates of the center pixel of the current block
+            [xc,yc] = center_of_block(k,m,block_size);
+
+            % if we are located in the frame
+            if (i < xc11 || i >= xcT1T2 || j < yc11 || j >= ycT1T2)
+                % if corner subblock => no interpolation occurs
+                if ((i < xc11 && j < yc11) || (i >= xcT1T2 && j < yc11) || (i < xc11 && j >= ycT1T2) || ( i >= xcT1T2 && j >= ycT1T2))
+                    out_image(i,j) = cdf_matrix(k,m,p_image(i,j));
+                    
+                    %保存分块图
+                    save_block_image(i,j) = cdf_matrix(k,m,p_image(i,j));
+                % otherwise we are in the frame subblock => linear interpolation
+                else
+                    % if horizontal frame part
+                    if ((k == 1 || k == T1) && (j >= yc11 && j < ycT1T2))
+                        if (j < yc)
+                            a = j-(yc-N_block);
+                            b = yc-j;
+                            s = (a*cdf_matrix(k,m,p_image(i,j)) + b*cdf_matrix(k,m-1,p_image(i,j)))/(a+b);
+                            out_image(i,j) = s;
+                            
+                            %保存分块图
+                            save_block_image(i,j) = cdf_matrix(k,m,p_image(i,j));
+                        else
+                            a = j - yc;
+                            b = (yc+N_block)-j;
+                            s = (b*cdf_matrix(k,m,p_image(i,j)) + a*cdf_matrix(k,m+1,p_image(i,j)))/(a+b);
+                            out_image(i,j) = s;    
+                            
+                            %保存分块图
+                            save_block_image(i,j) = cdf_matrix(k,m,p_image(i,j));
+                        end
+                    % else vertical frame part
+                    else
+                        if (i < xc)
+                            a = xc - i;
+                            b = i - (xc-M_block);
+                            s = (a*cdf_matrix(k-1,m,p_image(i,j)) + b*cdf_matrix(k,m,p_image(i,j)))/(a+b);
+                            out_image(i,j) = s;
+                            
+                            %保存分块图
+                            save_block_image(i,j) = cdf_matrix(k,m,p_image(i,j));
+                        else
+                            a = (xc+M_block) - i;
+                            b = i - xc;
+                            s = (a*cdf_matrix(k,m,p_image(i,j)) + b*cdf_matrix(k+1,m,p_image(i,j)))/(a+b);
+                            out_image(i,j) = s;
+                            
+                            %保存分块图
+                            save_block_image(i,j) = cdf_matrix(k,m,p_image(i,j));
+                        end
+                    end
+                end
+            % otherwise we are in the inner part of the image => bilinear 
+            % a,b,c,d - distances from the centers of the neighboring blocks
+            elseif (i<xc && j<yc) % upper-left subblock
+                a = j - (yc-N_block);
+                b = yc - j;
+                c = i - (xc-M_block);
+                d = xc - i;
+                sh1 = (b*cdf_matrix(k-1,m-1,p_image(i,j)) + a*cdf_matrix(k-1,m,p_image(i,j)))/(a+b);
+                sh2 = (b*cdf_matrix(k,m-1,p_image(i,j)) + a*cdf_matrix(k,m,p_image(i,j)))/(a+b);
+                out_image(i,j) = (d*sh1 + c*sh2)/(c+d);
+
+                %保存分块图
+                save_block_image(i,j) = cdf_matrix(k,m,p_image(i,j));
+            elseif (i >= xc && j < yc) % lower-left subblock
+                a = j - (yc-N_block);
+                b = yc - j;
+                c = i - xc;
+                d = xc+M_block-i;
+                sh1 = (b*cdf_matrix(k,m-1,p_image(i,j)) + a*cdf_matrix(k,m,p_image(i,j)))/(a+b);
+                sh2 = (b*cdf_matrix(k+1,m-1,p_image(i,j)) + a*cdf_matrix(k+1,m,p_image(i,j)))/(a+b);
+                out_image(i,j) = (d*sh1 + c*sh2)/(c+d);
+                
+                %保存分块图
+                save_block_image(i,j) = cdf_matrix(k,m,p_image(i,j));
+            elseif (i < xc && j >= yc)  % upper-right subblock
+                a = j-yc;
+                b = yc+N_block-j;
+                c = i - (xc-M_block);
+                d = xc - i;
+                sh1 = (b*cdf_matrix(k-1,m,p_image(i,j)) + a*cdf_matrix(k-1,m+1,p_image(i,j)))/(a+b);
+                sh2 = (b*cdf_matrix(k,m,p_image(i,j)) + a*cdf_matrix(k,m+1,p_image(i,j)))/(a+b);
+                out_image(i,j) = (d*sh1 + c*sh2)/(c+d);
+
+                %保存分块图
+                save_block_image(i,j) = cdf_matrix(k,m,p_image(i,j));
+            else % lower-right subblock (i >= xc & j >= yc)
+                a = j-yc;
+                b = yc+N_block-j;
+                c = i - xc;
+                d = xc+M_block - i;
+                sh1 = (b*cdf_matrix(k,m,p_image(i,j)) + a*cdf_matrix(k,m+1,p_image(i,j)))/(a+b);
+                sh2 = (b*cdf_matrix(k+1,m,p_image(i,j)) + a*cdf_matrix(k+1,m+1,p_image(i,j)))/(a+b);
+                out_image(i,j) = (d*sh1 + c*sh2)/(c+d); 
+             
+                %保存分块图
+                save_block_image(i,j) = cdf_matrix(k,m,p_image(i,j));
+            end
+
+        end
+    end
+    %保存分块图
+    fileID = fopen(save_dir + "-分块.raw", 'wb');
+    fwrite(fileID, uint16(save_block_image), 'uint16'); 
+    fclose(fileID);
+
+    %CROPPING AND CONVERTING
+    M = size(image,1);
+    N = size(image,2);
+    % convert to uint8
+    %out_image = im2uint8(out_image);
+    disp("转换16位图片");
+    out_image = uint16(floor(out_image));
+
+    % crop the padding we added
+    out_image = out_image(1:M,1:N);
+    
+    fileID = fopen(save_dir + "-插值.raw", 'wb');
+    fwrite(fileID, uint16(out_image), 'uint16'); 
+    fclose(fileID);
+        
+end
+
+function [ xc,yc ] = center_of_block( k,m,block_size )
+    %CENTER_OF_BLOCK returns the coordinates of the center pixel
+    % of the block with index (k,m)
+
+    M_block = block_size(1);
+    N_block = block_size(2);
+    xc = (k-1)*M_block + (M_block+1)/2;
+    yc = (m-1)*N_block + (N_block+1)/2;
+end
+
+function [ k,m ] = block_index( i,j,block_size )
+    %BLOCK_INDEX returns the block index of the pixel (i,j)
+    M_block = block_size(1);
+    N_block = block_size(2);
+    k = ceil(i/M_block);
+    m = ceil(j/N_block);
+end
+
+
+
+
+

@@ -1,0 +1,55 @@
+%对直方图进行线性增益
+%level = [0.01,0.03,0.06,0.11,0.20,0.4,0.6];
+gain_level = 0.01; %0.008; %增益挡位
+max_gray = max(frequency); 
+min_number = uint16(1);
+while frequency(min_number) < max_gray* gain_level
+    min_number = min_number + 1;
+end
+max_number = uint16(16383);
+while frequency(max_number) < max_gray* gain_level
+    max_number = max_number - 1;
+end
+fprintf("挡位增益 最小 %d  ,最大 %d \n",min_number,max_number);
+for j = 1:min_number
+    frequency(j) = 0;
+end
+for j = max_number:16383
+    frequency(j) = 0;
+end
+
+
+
+
+
+
+
+
+%直方图裁剪后的
+ %对直方图进行线性增益
+    %level = [0.01,0.03,0.06,0.11,0.20,0.4,0.6];
+    gain_level = 0.02; %0.008; %增益挡位
+    max_gray = max(frequency); 
+    min_number = uint16(1);
+    while frequency(min_number) < max_gray* gain_level
+        min_number = min_number + 1;
+    end
+    max_number = uint16(16383);
+    while frequency(max_number) < max_gray* gain_level
+        max_number = max_number - 1;
+    end
+    fprintf("挡位增益 最小 %d  ,最大 %d \n",min_number,max_number);
+    for j = 1:min_number
+        frequency(j) = 0;
+    end
+    for j = max_number:16383
+        frequency(j) = 0;
+    end
+    
+    % 重新生成非无效元素的概率函数
+    newFrequency = []; % 初始化新数组为空
+    for i = 1:length(frequency)
+        if frequency(i) ~= 0 %是否不等于0
+            newFrequency = [newFrequency, frequency(i)]; % 将不为0的元素添加到新数组
+        end
+    end

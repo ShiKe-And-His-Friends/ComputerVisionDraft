@@ -1,0 +1,197 @@
+function [out_image ] = CLAHE_PixelMapping(num_tiles ,limit ,image ,save_dir)
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% EXAMPLE %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % created: 25.11.2016 (Aleksa Gordic)
+    % mars = imread('mars_moon.tif');
+    % mars_clahe = dos_clahe(mars,[4 8],0.03);
+    % imshow(mars_clahe);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    fprintf("num_tiles =  %f %f\n" ,num_tiles );
+    fprintf("limit = %d\n" ,limit);
+
+    % check if the number of tiles is correct:
+    T1 = num_tiles(1);
+    T2 = num_tiles(2);
+    % we should also set upper limit ...
+    if (T1 <= 0 || T2 <= 0)
+        disp('Number of vertical and horizontal tiles must be positive');
+        out_image = -4; % error_code
+        return;
+    end
+
+    % check if the limit parameter is correct:
+    if (limit < 0 || limit > 1)
+        disp('Limit should be in the range: [0,1]');
+        return;
+    end
+
+    %IMAGE PADDING
+    M = size(image,1);
+    N = size(image,2);
+
+    % 计算 μ/σ?
+    mu = mean(image(:));
+    sigma_squared = var(image(:));
+    climp_limit_value = mu / sigma_squared;
+    fprintf("抑制阈值 %f\n",climp_limit_value);
+  
+    %% 1. 预处理：16位→256bins + 对称填充
+    pad = 0; %floor(block_size/2);
+    I_bin = uint16(image); 
+    I_pad = padarray(I_bin, [pad pad], 'symmetric', 'both'); % 对称填充
+
+    %% 2. 分块计算映射表（16位→8位）
+    [H, W] = size(I_pad);
+    block_size = H / T1;
+    map = cell(H/block_size, W/block_size); % 存储每个块的映射表（65536长度）
+
+    for i = 1:block_size:H
+        for j = 1:block_size:W
+                
+            block = I_pad(i:i+block_size-1, j:j+block_size-1);
+            
+            % 计算 μ/σ?
+            block_d = double(block);
+            mu = mean(block_d(:));
+            sigma_squared = var(block_d(:));
+            climp_limit_value_part = mu / sigma_squared;
+            fprintf("抑制阈值 %f\n",climp_limit_value_part);
+            
+            hist = calc_hist(block, 16384); % 计算256bins直方图
+            [hist,gray_level] = clip_hist(hist, 0.005, block_size); % 裁剪
+            cdf = normalize_cdf(hist); % 生成16→8映射表
+            if gray_level < 255
+                cdf = cdf * gray_level;
+            else
+                cdf = cdf * 255;
+            end
+            map{(i-1)/block_size+1, (j-1)/block_size+1} = cdf;
+        end
+    end
+
+    O = fast_interpolate(image, map, block_size, pad);
+
+    %O = imgaussfilt(O, 1.0);
+    
+    out_image = uint8(max(min(O, 255), 0)); % 截断到0-255
+    
+end    
+
+
+function hist = calc_hist(arrys, bins)
+    hist_info = zeros(1,bins);
+    [H, W] = size(arrys);
+    for i = 1:H
+        for j = 1:W
+            val = arrys(i,j);
+            hist_info(1,val) = hist_info(1,val) + 1;
+        end
+    end
+    %直方图按照个数或者按照频率
+    %hist = double(hist_info) /(H*W);
+    hist = hist_info;
+end
+
+function [hist_limit,gray_level] = clip_hist(hist, clip, block_size)
+    %找到直方图均衡的区间
+    min_value = -1;
+    max_value = -1;
+    for m = 1:length(hist)
+        if hist(m)<=0
+            continue;
+        end
+        min_value = m;
+        break;
+    end
+    m = length(hist);
+    while(max_value==-1)
+        if hist(m)<=0
+            m = m -1;
+            continue;
+        end
+        max_value = m;
+    end     
+    gray_level = 0;
+    for m = 1:length(hist)
+        if hist(m)<=0
+            continue;
+        end
+        gray_level = gray_level+1;
+    end
+    
+    % clip the normalized histogram 
+    sum_val = 0;
+    limit =  clip * block_size^2;
+    for m = min_value : max_value
+        if (hist(m)>limit) 
+            sum_val = sum_val + (hist(m)-limit);
+            hist(m) = limit;
+        end
+    end
+
+    %除最重复值外平均分配
+    while(sum_val > 0)
+        for m = min_value : max_value
+            if hist(m) == 0
+                continue;
+            end
+            if hist(m) < limit
+                hist(m) = hist(m) + 1;
+            end
+            sum_val = sum_val - 1;
+            if (sum_val <= 0)
+                break;
+            end
+        end
+    end
+    hist_limit = hist;
+end
+
+function cdf = normalize_cdf(hist)
+    % 生成65536长度的映射表（每个bin对应256个16位值）
+    cdf = cumsum(hist);
+    cdf = (cdf - cdf(1)) / (cdf(end) - cdf(1));
+end
+
+% 左下角的4个块
+function O = fast_interpolate(I, map, block, pad)
+    [H, W] = size(I);
+    O = zeros(H, W, 'uint8');
+
+    for y = 1:uint16(H)
+        for x = 1:uint16(W)
+            % 定位块索引（浮点）
+            i = double(y + pad) / block; % 含填充的块行坐标（MATLAB从1开始）
+            j = double(x + pad) / block;
+            i1 = ceil(i); i2 = i1+1; j1 = ceil(j); j2 = j1+1;
+
+            % 边界处理
+            i1 = max(1, min(i1, size(map,1)));
+            i2 = max(1, min(i2, size(map,1)));
+            j1 = max(1, min(j1, size(map,2)));
+            j2 = max(1, min(j2, size(map,2))); % 右边界不超过
+           
+            % 获取4个块的映射值
+            val16 = I(y,x);
+            v11 = map{i1,j1}(val16); % 16位索引+1（MATLAB从1开始）
+            v12 = map{i1,j2}(val16);
+            v21 = map{i2,j1}(val16);
+            v22 = map{i2,j2}(val16);
+
+            % 双线性插值权重
+            dx = double(y) - double(i1) * block + block; dy = double(x) - double(j1) * block + block;
+            dx = (block-dx+1)/block;
+            dy = (block-dy+1)/block;
+            
+            %dx*dy,     dx*(1 - dy),     (1 - dx)*dy,     (1 - dx)*(1 - dy)
+            weight = [dx*dy,     dx*(1 - dy),     (1 - dx)*dy,     (1 - dx)*(1 - dy)];
+            
+            % 转换为浮点类型进行计算
+            weight_double = double(weight);
+            v_double = double([v11; v12; v21; v22]);
+
+            % 双线性插值
+            O(y,x) = uint8(round(weight_double * v_double));
+        end
+    end
+
+end
