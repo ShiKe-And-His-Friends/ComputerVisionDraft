@@ -32,30 +32,59 @@ struct gpio_desc {
     unsigned char base_key_val;  
     unsigned char key_val;       // 键值
     spinlock_t lock;             // 每个GPIO独立的锁
+
+    // 新增长按相关字段
+    bool is_pressed;             // 按键是否处于按下状态
+    unsigned long press_start;   // 按下开始时间（jiffies）
+    unsigned int long_press_ms;  // 长按判定阈值（ms）
 };
 
 // 定义多个GPIO描述符
 static struct gpio_desc gpio_descs[] = {
-    // 原有GPIO2_6 (1200ms)
-    { .gpio_num = 2*8 + 6, .irq_type = IRQF_TRIGGER_RISING, .debounce_time = 1200,.base_key_val=0x00 ,.key_val = 0x00 },
+    // 原有GPIO2_6 (1200ms)，增加长按检测
+    // 临时设置按键是6_2
+    { 
+        .gpio_num = 2*8 + 6, 
+        .irq_type = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING,  // 修改为双沿触发
+        .debounce_time = 10,
+        .base_key_val = 0x00,
+        .key_val = 0x00,
+        .is_pressed = false,
+        .long_press_ms = 1500  // 长按阈值设为2000ms
+    },
     
     // 新增GPIO3_5 (上升沿+下降沿, 20ms)
-    { .gpio_num = 3*8 + 5, .irq_type = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, .debounce_time = 1,.base_key_val=0x04 ,.key_val = 0x00 },
+    { .gpio_num = 3*8 + 5, .irq_type = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, .debounce_time = 1,.base_key_val=0x04 ,.key_val = 0x00, .is_pressed = false, .long_press_ms = 0 },
     
     // 新增GPIO4_7 (上升沿+下降沿, 30ms)
-    { .gpio_num = 4*8 + 7, .irq_type = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, .debounce_time = 1,.base_key_val=0x08 , .key_val = 0x00 },
+    { .gpio_num = 4*8 + 7, .irq_type = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, .debounce_time = 1,.base_key_val=0x08 , .key_val = 0x00, .is_pressed = false, .long_press_ms = 0 },
 
     // 原有GPIO0_0 (1200ms)
-    //{ .gpio_num = 0*8 + 0, .irq_type = IRQF_TRIGGER_RISING, .debounce_time = 1200,.base_key_val=0x0B ,.key_val = 0x00 },
+    { 
+        .gpio_num = 0*8 + 0, 
+        .irq_type = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, 
+        .debounce_time = 10,
+        .base_key_val=0x0B ,
+        .key_val = 0x00, 
+        .is_pressed = false, 
+        .long_press_ms = 1500 },
 
     // 原有GPIO5_2 (1200ms)
-    { .gpio_num = 5*8 + 2, .irq_type = IRQF_TRIGGER_RISING, .debounce_time = 1200,.base_key_val=0x0E ,.key_val = 0x00 },
+    { 
+        .gpio_num = 5*8 + 2, 
+        .irq_type = IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, 
+        .debounce_time = 10,
+        .base_key_val=0x0E ,
+        .key_val = 0x00, 
+        .is_pressed = false, 
+        .long_press_ms = 1500 
+    },
     
 };
 
 #define GPIO_DESC_CNT (sizeof(gpio_descs) / sizeof(gpio_descs[0]))
 
-// 中断事件标志, 中断服务程序将它置1，btn_drv_read将它清0 
+// 中断事件标志, 中断服务程序将它置1，buttons_read将它清0 
 static volatile int ev_press = 0;
 static struct fasync_struct *button_async;  // 定义一个结构
 static DECLARE_WAIT_QUEUE_HEAD(button_waitq);
@@ -69,7 +98,7 @@ static irqreturn_t gpio_dev_test_isr(int irq, void *dev_id)
     unsigned long flags;
     unsigned long current_time;
     irqreturn_t ret = IRQ_NONE;
-    int gpio_val;
+    int gpio_val;  // 0：低电平（按下），1：高电平（抬起）
 
     current_time = jiffies;
     
@@ -82,26 +111,55 @@ static irqreturn_t gpio_dev_test_isr(int irq, void *dev_id)
         printk(KERN_DEBUG "[%s %d] Valid interrupt on GPIO%d_%d (value=%d)\n",
                 __func__, __LINE__, desc->gpio_num/8, desc->gpio_num%8, gpio_val);
         
-        // 更新键值（根据边沿类型设置不同值）
-        if (desc->irq_type & IRQF_TRIGGER_RISING && gpio_val){
-            desc->key_val = 0x02;  // 上升沿
+        // 处理GPIO2_6的长按逻辑（仅对配置了长按阈值的GPIO生效）
+        if (desc->long_press_ms > 0) {
+            if (!gpio_val) {  // 低电平：按键按下
+                desc->is_pressed = true;
+                desc->press_start = current_time;  // 记录按下开始时间
+                desc->key_val = 0x00;  // 按下过程中暂不发送事件
+            } else {  // 高电平：按键抬起
+                if (desc->is_pressed) {  // 之前处于按下状态
+                    unsigned long press_duration = current_time - desc->press_start;
+                    // 转换持续时间为毫秒
+                    unsigned int duration_ms = press_duration * 1000 / HZ;
+
+                    if (duration_ms >= desc->long_press_ms) {
+                        // 长按事件（键值0x03）
+                        desc->key_val = 0x03;
+                        printk(KERN_DEBUG "GPIO%d_%d 长按：%dms\n", 
+                               desc->gpio_num/8, desc->gpio_num%8, duration_ms);
+                    } else {
+                        // 短按事件（键值0x02）
+                        desc->key_val = 0x02;
+                        printk(KERN_DEBUG "GPIO%d_%d 短按：%dms\n", 
+                               desc->gpio_num/8, desc->gpio_num%8, duration_ms);
+                    }
+                    desc->is_pressed = false;  // 重置按下状态
+                    ev_press = 1;  // 标记有事件
+                }
+            }
+        } else {
+            // 其他GPIO保持原有逻辑
+            if (desc->irq_type & IRQF_TRIGGER_RISING && gpio_val){
+                desc->key_val = 0x02;  // 上升沿
+                ev_press = 1;
+            }
+            else if (desc->irq_type & IRQF_TRIGGER_FALLING && !gpio_val)
+            {
+                desc->key_val = 0x01;  // 下降沿
+                ev_press = 1;
+            }
         }
-        else if (desc->irq_type & IRQF_TRIGGER_FALLING && !gpio_val)
-        {
-            desc->key_val = 0x01;  // 下降沿
-        }
-            
-        ev_press = 1;
+
         desc->last_time = current_time;
         
-        // 解锁后再唤醒队列，减少锁持有时间
+        // 解锁后唤醒队列
         spin_unlock_irqrestore(&desc->lock, flags);
-        
         wake_up_interruptible(&button_waitq);
         kill_fasync(&button_async, SIGIO, POLL_IN);
         ret = IRQ_HANDLED;
     } else {
-        // 解锁
+        // 消抖忽略
         spin_unlock_irqrestore(&desc->lock, flags);
         printk(KERN_DEBUG "[%s %d] Debounce: Ignored interrupt on GPIO%d_%d\n",
                 __func__, __LINE__, desc->gpio_num/8, desc->gpio_num%8);
@@ -115,9 +173,9 @@ static irqreturn_t gpio_dev_test_isr(int irq, void *dev_id)
 *参数：
 *返回值：无
 **********************************************************************************************************/
-static int btn_drv_open(struct inode *inode, struct file *file)
+static int buttons_open(struct inode *inode, struct file *file)
 {
-    printk(KERN_DEBUG "driver: btn_drv open\n");  
+    printk(KERN_DEBUG "driver: buttons open\n");  
     return 0;
 }
 
@@ -126,7 +184,7 @@ static int btn_drv_open(struct inode *inode, struct file *file)
 *参数：
 *返回值：无
 **********************************************************************************************************/
-ssize_t btn_drv_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
+ssize_t buttons_read(struct file *file, char __user *buf, size_t size, loff_t *ppos)
 {
     struct gpio_desc *desc = NULL;
     int i;
@@ -211,9 +269,9 @@ ssize_t btn_drv_read(struct file *file, char __user *buf, size_t size, loff_t *p
 *参数：
 *返回值：无
 **********************************************************************************************************/
-int btn_drv_close(struct inode *inode, struct file *file)
+int buttons_close(struct inode *inode, struct file *file)
 {
-    printk(KERN_DEBUG "driver: btn_drv close\n");  
+    printk(KERN_DEBUG "driver: buttons close\n");  
     return 0;
 }
 
@@ -222,7 +280,7 @@ int btn_drv_close(struct inode *inode, struct file *file)
 *参数：
 *返回值：无
 **********************************************************************************************************/
-static unsigned btn_drv_poll(struct file *file, poll_table *wait)
+static unsigned buttons_poll(struct file *file, poll_table *wait)
 {
     unsigned int mask = 0;
     int i;
@@ -248,19 +306,19 @@ static unsigned btn_drv_poll(struct file *file, poll_table *wait)
 *参数：
 *返回值：无
 **********************************************************************************************************/
-static int btn_drv_fasync(int fd, struct file *filp, int on)   
+static int buttons_fasync(int fd, struct file *filp, int on)   
 {
-    printk(KERN_DEBUG "driver: btn_drv_fasync\n");
+    printk(KERN_DEBUG "driver: buttons_fasync\n");
     return fasync_helper(fd, filp, on, &button_async);
 }
 
 static struct file_operations g_key_event_fops = {
     .owner   =  THIS_MODULE,
-    .open    =  btn_drv_open,     
-    .read    =  btn_drv_read,     
-    .release =  btn_drv_close,
-    .poll    =  btn_drv_poll,
-    .fasync  =  btn_drv_fasync,
+    .open    =  buttons_open,     
+    .read    =  buttons_read,     
+    .release =  buttons_close,
+    .poll    =  buttons_poll,
+    .fasync  =  buttons_fasync,
 };
 
 static int __init gpio_dev_test_init(void)
@@ -307,14 +365,14 @@ static int __init gpio_dev_test_init(void)
     }
 
     // 注册字符设备和创建设备节点
-    major = register_chrdev(0, "btn_drv", &g_key_event_fops);
+    major = register_chrdev(0, "buttons", &g_key_event_fops);
     if (major < 0) {
         printk(KERN_DEBUG "[%s %d]register_chrdev fail!\n", __func__, __LINE__);
         ret = major;
         goto err_free_irqs;
     }
 
-    btndrv_class = class_create(THIS_MODULE, "btn_drv");
+    btndrv_class = class_create(THIS_MODULE, "buttons");
     if (IS_ERR(btndrv_class)) {
         printk(KERN_DEBUG "[%s %d]class_create fail!\n", __func__, __LINE__);
         ret = PTR_ERR(btndrv_class);
@@ -333,7 +391,7 @@ static int __init gpio_dev_test_init(void)
 err_destroy_class:
     class_destroy(btndrv_class);
 err_unregister_chrdev:
-    unregister_chrdev(major, "btn_drv");
+    unregister_chrdev(major, "buttons");
 err_free_irqs:
     for (i = 0; i < GPIO_DESC_CNT; i++) {
         if (gpio_is_valid(gpio_descs[i].gpio_num))
@@ -356,7 +414,7 @@ static void __exit gpio_dev_test_exit(void)
     // 释放设备和类
     device_unregister(btndrv_dev);
     class_destroy(btndrv_class);
-    unregister_chrdev(major, "btn_drv");
+    unregister_chrdev(major, "buttons");
 
     // 释放中断和GPIO
     for (i = 0; i < GPIO_DESC_CNT; i++) {
@@ -367,5 +425,5 @@ static void __exit gpio_dev_test_exit(void)
 
 module_init(gpio_dev_test_init);
 module_exit(gpio_dev_test_exit);
-MODULE_DESCRIPTION("Multi-GPIO Interrupt Driver with Debounce");
+MODULE_DESCRIPTION("Multi-GPIO Interrupt Driver with Debounce and Long Press");
 MODULE_LICENSE("GPL");
